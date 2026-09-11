@@ -5,7 +5,7 @@
 O que muda no site publicado, em relação ao PyCampus aberto no seu computador:
 
 - **O Lumi fica mudo.** A IA roda no seu computador, em localhost, e o celular não alcança esse endereço. As dicas escritas de cada degrau continuam funcionando normalmente, e a tela avisa.
-- **As respostas de  precisam ser preenchidas antes de executar**, no campo "Entradas para input()". Responder durante a execução exige cabeçalhos que o GitHub Pages não envia. No computador funciona dos dois jeitos.
+- **As respostas de `input()` precisam ser preenchidas antes de executar**, no campo "Entradas para input()". Responder durante a execução exige cabeçalhos que o GitHub Pages não envia. No computador funciona dos dois jeitos.
 - **O progresso é de cada aparelho.** O que você faz no celular não aparece no computador. Use a exportação de backup em Configurações para levar de um para o outro.
 
 Atualização dos projetos: os oito projetos agora abrem no estúdio, com 42 passos de tarefa, dicas graduais, conferência e explicação escrita pelo estudante. Os programas resolvidos da calculadora são apenas fixtures de teste; não são entregues pelo estúdio. Código, posição, respostas e rascunhos de README sobrevivem ao recarregamento e ao backup. As respostas dos projetos também entram no relatório de aprendizagem.
