@@ -36,3 +36,20 @@ python.run(codigo, entradas, resultado => { /* resultado.ok, resultado.output */
 > absoluto ele some quando o site vive num subcaminho como `/pycampus/`.
 
 Relacionado: [[Arquitetura]] · [[Regras que não se quebram]] · [[Publicação e hospedagem]]
+
+## Visualizador passo a passo
+
+O mesmo worker atende um segundo modo. Com `{ trace: true }`, em vez de executar e devolver a
+saída, ele roda o programa sob `sys.settrace` e devolve o **rastro**: para cada linha
+percorrida, quais variáveis existiam e o que já tinha sido impresso até ali.
+
+- `src/trace.js` — `tracePython(code, stdin)`, com worker próprio e descartável, para a
+  visualização nunca entrar no [[Diário e diagnóstico|diário de tentativas]].
+- `src/Visualizador.jsx` — a tela: linha atual destacada, variáveis do momento (as que
+  mudaram ficam em amarelo), saída parcial e controles de passo.
+
+O arquivo é compilado com o nome `<visualizador>` justamente para o rastreador ignorar tudo
+que não é código do estudante. O limite é de 400 passos; acima disso a tela avisa que mostra
+só o começo, em vez de travar o navegador.
+
+Aparece no passo 2 de cada aula e no Laboratório.

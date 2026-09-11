@@ -338,3 +338,14 @@ Pedido do estudante depois do bug da previsão: procurar mais casos do mesmo tip
 - Total: de 53 para 70 passos. Os ids originais continuam com o mesmo sentido e as anotações já salvas.
 - `tests/project-levelling.test.js` passa com a **lista de dívida vazia**. Ele também aprendeu que um projeto batiza as próprias funções: nomes em português com sublinhado (`criar_habito`, `pode_sacar`) são do exercício, enquanto `print`, `append`, `fetchall` e `commit` continuam sendo cobrados como vocabulário a ensinar.
 - 133 testes e a jornada do iniciante sem regressão.
+
+## Visualizador de execução (11/09/2026)
+
+- O worker ganhou um segundo modo: com `trace: true`, roda o programa sob `sys.settrace` e devolve, para cada linha percorrida, as variáveis daquele instante e a saída já impressa. É a técnica do Python Tutor, feita dentro do Pyodide que a plataforma já usa.
+- Conferido no Python real com um laço: o rastro mostra a volta à linha do `for`, `total` indo de 0 a 1, 3 e 6, `numero` de 1 a 3, e a saída crescendo linha a linha. 13 passos para um programa de 5 linhas.
+- A tela destaca a linha atual e **pinta de amarelo só as variáveis que mudaram naquele passo** — é o que faz a causa ficar visível. Tem passo a passo, reprodução automática e linha do tempo arrastável.
+- Roda num worker próprio e descartável: a visualização nunca entra no diário de tentativas do estudante.
+- Limite de 400 passos, com aviso na tela quando o programa é maior, em vez de travar o navegador.
+- Aparece no passo 2 de cada aula, com o exemplo daquela aula, e no Laboratório, com o código livre.
+- Verificado em 1440 px e 390 px na aula "Contas e operadores": começa no passo 1, a linha destacada muda ao avançar, as variáveis aparecem com os valores certos e uma delas fica destacada. Sem erro de console e sem rolagem horizontal.
+- Um detalhe de acessibilidade corrigido no caminho: os controles chamavam-se "Próximo passo", igual ao botão do passo a passo comentado da aula — duas coisas diferentes com o mesmo nome na mesma tela.
