@@ -317,3 +317,13 @@ Pedido do estudante depois do bug da previsão: procurar mais casos do mesmo tip
 - O Lumi passou a ler essas explicações a pedido, dizendo o que ficou certo, o que faltou dizer e uma pergunta para aprofundar. **Ele não conclui etapa e não dá XP** — os requisitos continuam sendo prova respondida e código com a saída certa, e a tela diz isso.
 - O botão fica bloqueado enquanto não há texto escrito, e com o Ollama desligado a mensagem explica o motivo.
 - Verificado no navegador, 1440 px e 390 px, com uma explicação incompleta de propósito: apontou corretamente que faltava falar da atribuição e perguntou o que a primeira linha guarda. 123 testes automatizados.
+
+## Publicação, app no celular e IA no site (11/09/2026)
+
+- Site no ar em `https://jaoabyo.github.io/pycampus/`, publicado pelo GitHub Actions a cada envio para `main`, **depois** de a suíte passar.
+- Repositório limpo: 3,8 MB de capturas de desenvolvimento saíram do versionamento.
+- App instalável: manifesto, ícone próprio (o Lumi) e service worker verificados no site ao vivo — todos respondendo 200, service worker registrado no escopo `/pycampus/`. As aulas passam a abrir sem internet depois do primeiro acesso.
+- Lembrete de estudo com permissão de notificação. Sem servidor não há push: o aviso em segundo plano depende do aparelho permitir disparo periódico, e a tela diz exatamente isso em vez de prometer.
+- **A IA passou a funcionar no site publicado.** O endereço do Ollama deixou de ser fixo; três travas precisavam cair juntas, e cada uma foi diagnosticada por teste: página https não pode chamar http (resolvido por túnel https), o Ollama recusa origem não declarada (`OLLAMA_ORIGINS`) e recusa `Host` estranho (`--http-host-header`). Verificado de ponta a ponta: o Lumi respondeu no celular, no site, com o modelo rodando no computador.
+- Limite honesto: o endereço do túnel gratuito muda a cada início, e sem o computador ligado não há conversa — só as dicas escritas, que funcionam sempre.
+- **Degrau 1 do Lumi agora é garantido no código.** Instruído a responder só com uma pergunta, o modelo obedeceu em dois de três testes e no terceiro entregou a correção antes de perguntar. `onlyQuestion` descarta tudo antes da primeira pergunta; resposta sem pergunta não vai para a tela. Quatro execuções seguidas depois da mudança: nenhuma vazou. 124 testes.
