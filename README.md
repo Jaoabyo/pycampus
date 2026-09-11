@@ -1,5 +1,13 @@
 # PyCampus
 
+**Estude online: https://jaoabyo.github.io/pycampus/** — abre no celular e no computador, sem instalar nada.
+
+O que muda no site publicado, em relação ao PyCampus aberto no seu computador:
+
+- **O Lumi fica mudo.** A IA roda no seu computador, em localhost, e o celular não alcança esse endereço. As dicas escritas de cada degrau continuam funcionando normalmente, e a tela avisa.
+- **As respostas de  precisam ser preenchidas antes de executar**, no campo "Entradas para input()". Responder durante a execução exige cabeçalhos que o GitHub Pages não envia. No computador funciona dos dois jeitos.
+- **O progresso é de cada aparelho.** O que você faz no celular não aparece no computador. Use a exportação de backup em Configurações para levar de um para o outro.
+
 Atualização dos projetos: os oito projetos agora abrem no estúdio, com 42 passos de tarefa, dicas graduais, conferência e explicação escrita pelo estudante. Os programas resolvidos da calculadora são apenas fixtures de teste; não são entregues pelo estúdio. Código, posição, respostas e rascunhos de README sobrevivem ao recarregamento e ao backup. As respostas dos projetos também entram no relatório de aprendizagem.
 
 Cada projeto inclui um roteiro para escrever README com palavras próprias, baixar código e documentação, testar no computador e publicar pelo navegador do GitHub. A maior parte da prática Python roda no navegador; duas etapas de servidor da API rodam no computador e uma etapa do projeto final é planejamento, explicitamente identificadas. A conferência de projetos abertos e de explicações é autoavaliação, não correção automática de domínio. Nenhum repositório é criado ou publicado automaticamente.
