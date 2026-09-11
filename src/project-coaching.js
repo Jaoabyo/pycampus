@@ -63,9 +63,6 @@ export const coachedProjects = Object.fromEntries(Object.entries(prompts).map(([
   }))];
 }));
 
-coachedProjects.estoque[0].hints[1] = 'Importe sqlite3 e abra sqlite3.connect("estoque.db"). CREATE TABLE IF NOT EXISTS cria a tabela sem falhar se ela já existir. Defina as colunas id, nome e estoque como na aula de SQL.';
-coachedProjects.estoque[4].hints[1] = 'Feche con com close(). Abra uma nova conexão para estoque.db e faça um SELECT. O arquivo existe no ambiente Python enquanto a sessão do projeto estiver aberta. Depois, baixe o código e repita no computador para ter persistência durável.';
-coachedProjects.estoque[4].check = 'Crie um produto, feche a conexão, reabra o mesmo arquivo e confira o produto. No computador, teste também encerrar e reabrir o programa. Não espere persistência do banco ao fechar a plataforma.';
 coachedProjects.api[2].hints.push('Reutilize as consultas com parâmetros do projeto de estoque. Além de INSERT e SELECT, acrescente UPDATE para editar o nome e DELETE para remover pelo id. Teste as quatro funções antes das rotas.');
 coachedProjects['qualidade-projeto'][3].title = 'Rodar todos os testes';
 coachedProjects['qualidade-projeto'][3].hints[1] = 'Crie funções com nomes como test_caso_comum e test_limite, colocando assert dentro de cada uma. Chame cada função ao final do arquivo. Sem erro, os asserts passaram; acrescente uma mensagem no final para confirmar. pytest no computador é uma extensão posterior.';
@@ -204,9 +201,138 @@ coachedProjects.tarefas = [
       'Antes de cadastrar, use strip para conferir se o título tem conteúdo. Para ids inexistentes, mostre uma mensagem e volte ao menu sem alterar as tarefas.'],
     'Cadastre duas tarefas, liste, conclua uma, apague outra e saia. Confira que os números não se repetem e que sair encerra o programa.')
 ];
-coachedProjects.banco[4].hints.push('Crie também Cliente com um atributo nome e associe cada Conta a um Cliente. Mostre o nome do titular ao apresentar o histórico. Teste dois clientes para conferir que os dados não se misturam.');
+// A auditoria apontou cinco saltos aqui: o construtor pedia três atributos de uma vez, o
+// depósito exigia raise ValueError (que só é ensinado no módulo 05), a retirada juntava duas
+// guardas sem nunca ter praticado uma, a transferência estreava "método que recebe outro
+// objeto" e a apresentação misturava laço, centavos e classe composta. Os cinco ids originais
+// continuam com o mesmo sentido e as anotações salvas; os novos preenchem os degraus.
+coachedProjects.banco = [
+  coachStep('banco-conta-simples', 'A classe mais simples',
+    'Antes de qualquer regra: crie a classe Conta guardando apenas o nome do titular, e mostre esse nome a partir de uma conta criada.',
+    'O que o self guarda que a variável comum não guardaria?',
+    ['Diga em português o que uma conta precisa saber quando nasce. Comece por uma informação só.',
+      'Use class Conta: e def __init__(self, titular):. Dentro, escreva self.titular = titular. Depois crie conta = Conta("Ana") e mostre conta.titular.'],
+    'Crie duas contas com titulares diferentes e mostre os dois nomes. Cada objeto guarda o seu.'),
+  coachStep('construcao-1', 'Uma conta',
+    'Agora a mesma conta nasce também com saldo zero e um histórico vazio. Mostre o saldo e o histórico de uma conta recém-criada.',
+    'Por que cada conta precisa ter sua própria lista de movimentos?',
+    ['Descreva o que muda no nascimento da conta. Quantas informações ela passa a guardar?',
+      'No mesmo __init__, acrescente self.saldo_centavos = 0 e self.historico = []. Os colchetes criam uma lista vazia nova para cada conta.'],
+    'Crie duas contas e acrescente um texto ao histórico de uma delas com append. O histórico da outra precisa continuar vazio.'),
+  coachStep('banco-guarda-simples', 'Uma regra por vez',
+    'Crie o método depositar, que aceita apenas valores positivos. Por enquanto ele só soma ao saldo e devolve True quando aceitou, ou False quando recusou.',
+    'O que a função devolve quando recusa, e por que devolver algo é melhor do que só não fazer nada?',
+    ['Antes de escrever, diga em voz alta a regra em uma frase: quando o depósito deve ser recusado?',
+      'Escreva def depositar(self, valor):. Comece com if valor <= 0: e return False. Depois da condição, some ao saldo e termine com return True.'],
+    'Deposite 1000 e confira o saldo. Depois deposite -1 e confira que a resposta foi False e o saldo não mudou.'),
+  coachStep('construcao-2', 'Depositar',
+    'Faça o depósito aceito registrar o movimento no histórico, além de mudar o saldo.',
+    'Você confere o valor antes ou depois de mudar o saldo? Por quê?',
+    ['Diga em português onde o registro entra: antes da regra, depois dela, ou dentro do caminho que aceitou?',
+      'Use self.historico.append("deposito de 1000") no mesmo trecho que já soma ao saldo. O depósito recusado não pode deixar rastro no histórico.'],
+    'Depositar 1000 deve produzir saldo 1000 centavos e uma linha no histórico. Depositar -1 não pode mudar nem o saldo nem o histórico.'),
+  coachStep('banco-duas-regras', 'Duas regras na mesma decisão',
+    'Crie o método pode_sacar, que responde True ou False para um valor: ele precisa ser positivo e caber no saldo. Este método apenas responde, não mexe em nada.',
+    'As duas regras precisam ser verdadeiras juntas ou basta uma? O que isso significa em Python?',
+    ['Escreva as duas condições em português antes de codar. Elas se somam ou se substituem?',
+      'Pode ser um if para cada regra, com return False em cada um, e return True no fim. Ou uma linha só com and, como na aula de booleanos.'],
+    'Com saldo 1000: pode_sacar(300) responde True, pode_sacar(800000) responde False e pode_sacar(-5) também. O saldo continua 1000 nos três testes.'),
+  coachStep('construcao-3', 'Sacar',
+    'Agora crie sacar, que usa a resposta de pode_sacar para decidir, e só então subtrai do saldo e registra a saída.',
+    'O que deve acontecer com o saldo quando o saque é recusado?',
+    ['Diga o que o saque faz a mais do que só responder sim ou não.',
+      'Comece com if not self.pode_sacar(valor): return False. Depois disso o caminho já está liberado: subtraia e registre no histórico.'],
+    'Saque 300 de um saldo 1000: sobram 700. Tentar sacar 800000 deve manter 700 e não registrar nada.'),
+  coachStep('banco-outra-conta', 'Um método que recebe outra conta',
+    'Crie o método mesmo_titular, que recebe outra conta e responde se as duas pertencem à mesma pessoa. Nada de dinheiro ainda.',
+    'Dentro do método, o que é self e o que é a outra conta?',
+    ['Diga em português o que entra: um número, um texto, ou uma conta inteira?',
+      'Use def mesmo_titular(self, outra):. Dentro, compare self.titular com outra.titular. O ponto funciona igual em qualquer objeto, inclusive no que chegou como parâmetro.'],
+    'Crie duas contas com o mesmo titular e duas com titulares diferentes, e confira as duas respostas.'),
+  coachStep('construcao-4', 'Transferir',
+    'Transfira um valor de uma conta para outra, conferindo as regras antes de mexer em qualquer saldo.',
+    'Se a transferência falhar, quais saldos devem permanecer como estavam?',
+    ['Descreva a ordem: o que precisa ser verificado antes de tirar de um lado e pôr no outro?',
+      'O método recebe a conta de destino e o valor, como no passo anterior. Reaproveite pode_sacar para a origem e depositar para o destino, em vez de refazer as regras.'],
+    'Uma transferência válida conserva a soma dos saldos das duas contas. Uma inválida não pode alterar nenhuma delas.'),
+  coachStep('banco-mostrar-reais', 'De centavos para reais',
+    'Mostre o saldo em reais a partir dos centavos guardados, sem mudar a forma como o saldo é calculado.',
+    'Por que guardar centavos inteiros e só dividir na hora de mostrar?',
+    ['Diga a diferença entre o número que o programa usa para contar e o número que a pessoa lê.',
+      'Divida o saldo por 100 apenas dentro do print. A variável do saldo continua inteira, em centavos: dividir ali quebraria as contas seguintes.'],
+    'Com saldo 1250 centavos, deve aparecer 12.5 na tela, e o saldo guardado continua 1250.'),
+  coachStep('construcao-5', 'Apresentar',
+    'Mostre o histórico completo das duas contas e demonstre um depósito, um saque recusado e uma transferência.',
+    'Como você prova, pela saída do programa, que a regra recusou o saque em vez de simplesmente não ter rodado?',
+    ['Planeje a demonstração antes: quais operações, nesta ordem, provam que cada regra funciona?',
+      'Percorra self.historico com for e mostre uma linha por movimento. Use a divisão por 100 do passo anterior para os valores em reais.',
+      'Para ir além, se quiser: crie uma classe Cliente com um atributo nome e associe cada Conta a um Cliente, mostrando o nome do titular no histórico. É ampliação, não requisito.'],
+    'Demonstre depósito, saque recusado e transferência, com o histórico das duas contas. Este é um simulador educacional, sem dinheiro real.')
+];
 coachedProjects['qualidade-projeto'][4].hints.push('Acrescente anotações como valor: int e -> int nas funções adequadas. Para revisar alterações com Git: na pasta do projeto, use git init, git add com o nome do arquivo e git commit para guardar uma primeira versão. Depois edite uma linha e execute git diff. Estude a aula de Git antes desses comandos.');
 coachedProjects.final[4].hints.push('No README, registre cada critério e um teste que demonstra o resultado. Informe a configuração e os limites do programa; registre somente o que você testou.');
+
+// Os saltos apontados aqui: a aula de SQL só usa banco em memória, e o passo 1 já pedia
+// arquivo com IF NOT EXISTS; commit e fetchall não aparecem em código executado em aula
+// nenhuma; e a entrada/saída juntava ler, calcular, conferir a regra e gravar dentro de
+// with con:. Cada uma dessas ideias ganhou seu próprio degrau.
+coachedProjects.estoque = [
+  coachStep('estoque-memoria', 'O banco que você já conhece',
+    'Comece exatamente como na aula: um banco em memória, uma tabela de produtos com id, nome e estoque, um produto inserido e esse produto lido de volta.',
+    'O que acontece com esse banco quando o programa termina?',
+    ['Descreva as quatro ações em português antes de escrever: abrir, criar, inserir, ler.',
+      'Use sqlite3.connect(":memory:"), CREATE TABLE produtos, INSERT com valores entre parênteses e SELECT com fetchone, como na aula de SQL.'],
+    'O produto inserido precisa aparecer na leitura. Execute duas vezes e repare que o banco sempre começa vazio.'),
+  coachStep('construcao-1', 'Tabela',
+    'Agora troque o banco em memória por um arquivo, de modo que executar o programa duas vezes não apague nem duplique a tabela.',
+    'O que precisa acontecer quando o programa abre uma tabela que já existe?',
+    ['Diga o que muda entre guardar na memória e guardar num arquivo. O que sobrevive ao fim do programa?',
+      'Troque ":memory:" por "estoque.db". E como a tabela agora sobrevive, CREATE TABLE IF NOT EXISTS evita o erro de tentar criar de novo o que já existe.'],
+    'Execute duas vezes seguidas: a tabela deve continuar existindo, sem erro na segunda execução.'),
+  coachStep('estoque-gravar-de-verdade', 'Gravar para valer',
+    'Insira um produto, feche a conexão, abra o arquivo de novo e procure o produto. Descubra se ele sobreviveu.',
+    'O que faltou para a gravação valer, e por que o SQLite não grava sozinho?',
+    ['Antes de testar, escreva sua previsão: o produto vai estar lá ou não?',
+      'Se o produto sumiu, faltou confirmar a gravação com con.commit() antes de fechar. Sem isso o SQLite desfaz o que foi feito. Refaça o teste com o commit no lugar.'],
+    'Depois do commit, o produto precisa aparecer na segunda abertura do arquivo. Sem commit, não aparece — vale ver os dois resultados.'),
+  coachStep('construcao-2', 'Cadastrar',
+    'Cadastre um produto com nome e quantidade vindos de variáveis, nunca escritos dentro do texto da consulta, e busque o registro para conferir.',
+    'Por que os valores devem ser enviados como parâmetros da consulta?',
+    ['Diga a diferença entre montar o texto da consulta com os valores dentro e enviar os valores separados.',
+      'Use INSERT INTO produtos (nome, estoque) VALUES (?, ?) e envie os dois valores, "Livro" e 3, como segundo argumento do execute, como na aula de CRUD. Confirme com commit.'],
+    'O SELECT deve devolver o produto com estoque 3. Tente cadastrar um nome com aspas dentro e veja que nada quebra.'),
+  coachStep('estoque-ler-varias', 'Ler vários de uma vez',
+    'Cadastre um segundo produto e mostre todos os produtos da tabela, um por linha.',
+    'O que muda entre pedir um registro e pedir todos eles?',
+    ['Diga o que você espera receber: um produto ou uma lista de produtos?',
+      'fetchone devolve um registro; fetchall devolve a lista com todos. Percorra essa lista com for e mostre uma linha por produto, como você faria com qualquer lista.'],
+    'Com dois produtos cadastrados, devem aparecer duas linhas. Cadastre um terceiro e confira que aparecem três, sem mudar o código.'),
+  coachStep('estoque-calcular-antes', 'Calcular antes de gravar',
+    'Leia o estoque de um produto, calcule em Python quanto ficaria depois de uma entrada de 2 unidades e mostre o valor calculado. Ainda não grave.',
+    'Por que calcular primeiro e só depois decidir se grava?',
+    ['Separe as três ações em português: ler, calcular, mostrar. Onde entraria a gravação?',
+      'Busque o estoque com SELECT e fetchone, guarde o número numa variável e some 2 a ela. O resultado do fetchone vem numa tupla: o primeiro valor é acessado com [0].'],
+    'Com estoque 3, o valor calculado precisa ser 5, e o banco precisa continuar com 3 — nada foi gravado ainda.'),
+  coachStep('construcao-3', 'Entrada e saída',
+    'Agora grave o novo valor, recusando qualquer operação que deixaria o estoque negativo.',
+    'Qual regra você verifica antes de gravar a nova quantidade?',
+    ['Diga em que ponto exato a regra entra: antes de calcular, depois de calcular, ou depois de gravar?',
+      'Com o valor já calculado, use if novo < 0 para recusar antes de gravar. Para gravar, UPDATE produtos SET estoque = ? WHERE id = ?, com os valores como parâmetros.',
+      'Colocar o UPDATE dentro de with con: confirma a gravação sozinho ao final do bloco, como na aula de transações — e desfaz tudo se algo falhar no meio.'],
+    'Entrar 2 e sair 1 de um estoque 3 deve deixar 4. Uma saída maior que o estoque deve ser recusada e não pode alterar o banco.'),
+  coachStep('construcao-4', 'Relatório',
+    'Mostre um relatório com todos os produtos: número, nome e quantidade atual.',
+    'Como você sabe que o relatório está lendo o banco e não um texto fixo?',
+    ['Planeje a saída antes: quais colunas aparecem e em que ordem?',
+      'Reaproveite o fetchall com for do passo anterior, agora trazendo SELECT id, nome, estoque FROM produtos.'],
+    'Cadastre dois produtos e confira os dois no relatório. Mude o estoque de um deles e rode o relatório de novo: o número precisa acompanhar.'),
+  coachStep('construcao-5', 'Persistência',
+    'Prove que os dados sobrevivem: feche a conexão, abra o arquivo de novo e mostre o relatório.',
+    'O que é diferente entre salvar o código do editor e salvar os dados do banco?',
+    ['Descreva o teste que provaria a persistência para outra pessoa, passo a passo.',
+      'Feche a conexão com con.close() e abra uma nova para "estoque.db" antes do SELECT. O arquivo existe no ambiente Python enquanto a sessão do projeto estiver aberta; para persistência durável, baixe o código e repita no computador.'],
+    'Crie um produto, feche a conexão, reabra o mesmo arquivo e confira o produto. No computador, teste também encerrar e reabrir o programa. Não espere persistência do banco ao fechar a plataforma.')
+];
 
 export const calculatorCoaching = {
   valores: ['Guarde uma renda de 3000.0 e três despesas: 1200.0, 450.0 e 300.0. Mostre só a renda.', 'Se você tirar o print, a renda deixa de ser guardada ou apenas deixa de aparecer?', ['Cada informação precisa de um nome. Use uma linha para cada valor.', 'Lembre de outra situação: idade = 18 guarda um número; print(idade) mostra esse número. Use essa ideia com a renda.']],

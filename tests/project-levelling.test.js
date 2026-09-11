@@ -36,8 +36,6 @@ const taughtForProject = project => lessons
 // Cada id aqui é um passo que pede algo nunca mostrado; some da lista quando o projeto ganhar
 // o passo intermediário que faltava.
 const DEBT = new Set([
-  'banco/construcao-1', 'banco/construcao-2', 'banco/construcao-3', 'banco/construcao-4', 'banco/construcao-5',
-  'estoque/construcao-1', 'estoque/construcao-2', 'estoque/construcao-3', 'estoque/construcao-4', 'estoque/construcao-5',
   'api/construcao-1', 'api/construcao-2', 'api/construcao-3', 'api/construcao-4', 'api/construcao-5',
   'qualidade-projeto/construcao-1', 'qualidade-projeto/construcao-2', 'qualidade-projeto/construcao-3', 'qualidade-projeto/construcao-4', 'qualidade-projeto/construcao-5',
   'final/construcao-1', 'final/construcao-2', 'final/construcao-3', 'final/construcao-4', 'final/construcao-5'
@@ -47,15 +45,21 @@ const DEBT = new Set([
 // exercício em si — por isso não contam como salto.
 const INVENTED = new Set(['perguntar', 'ler_cor', 'funcao', 'minha_funcao']);
 
+// Um projeto batiza as próprias funções: "crie o método pode_sacar" inventa um nome que não
+// existe em aula nenhuma, e usá-lo no passo seguinte é reaproveitar, não saltar.
+const batizados = text => [...text.matchAll(/(?:\bdef\s+|m[ée]todo\s+|fun[çc][ãa]o\s+)([a-z_][a-z0-9_]*)/gi)].map(match => match[1]);
+
 function gapsFor(project) {
   // Um projeto também ensina: o passo 4 pode se apoiar no que o passo 3 introduziu com sua
   // dica. O que nunca vale é o primeiro encontro com uma sintaxe ser a hora de usá-la sozinho.
   let taught = taughtForProject(project);
+  const proprios = new Set();
   const gaps = [];
   for (const step of projectSteps[project.id]) {
     const text = `${step.instruction} ${step.hints.join(' ')} ${step.check}`;
+    for (const nome of batizados(text)) proprios.add(nome);
     for (const name of callables(text)) {
-      if (INVENTED.has(name)) continue;
+      if (INVENTED.has(name) || proprios.has(name)) continue;
       if (!new RegExp(`\\b${name}\\b`).test(taught)) gaps.push(`${project.id}/${step.id}: ${name}()`);
     }
     taught += `\n${text}`;
@@ -78,7 +82,7 @@ test('the inherited debt list only shrinks, and never covers a project already l
     assert.ok(projectSteps[projectId], `dívida aponta para projeto inexistente: ${id}`);
     assert.ok(projectSteps[projectId].some(step => step.id === stepId), `dívida aponta para passo inexistente: ${id}`);
   }
-  for (const project of ['calculadora', 'quiz', 'tarefas']) {
+  for (const project of ['calculadora', 'quiz', 'tarefas', 'banco', 'estoque']) {
     assert.ok(![...DEBT].some(id => id.startsWith(`${project}/`)), `${project} já foi nivelado e não pode voltar para a dívida`);
   }
 });
