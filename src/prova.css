@@ -1,0 +1,28 @@
+.prova-abertura>p{font-size:13.5px;line-height:1.85}
+.prova-abertura .button{margin-top:8px}
+.prova-vazia{font-size:13px}
+
+.prova-barra{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+.prova-barra .progress{flex:1;min-width:120px}
+
+.prova-questao h2{font-size:18px;line-height:1.5;margin:8px 0 14px}
+
+.prova-resultado{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.prova-resultado.is-cheia{background:#f0faf5;border-color:#cce9db}
+.prova-nota{display:flex;align-items:baseline;gap:6px}
+.prova-nota strong{font-family:var(--heading);font-size:46px;line-height:1;color:#3d3357}
+.prova-nota span{font-size:13px;color:#8a7da3}
+.prova-resultado h2{font-size:19px;margin:0}
+.prova-resultado p{margin:6px 0 0;font-size:13px}
+
+.prova-falhas,.prova-historico{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:7px}
+.prova-falhas>li,.prova-historico>li{display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:9px;background:#faf8fe;border:1px solid #ece6f8;font-size:13px}
+.prova-falhas>li>span{flex:1}
+.prova-historico>li>span:first-child{min-width:82px;color:#8a7da3;font-size:12px}
+.prova-historico>li>strong{font-family:var(--heading);font-size:15px;color:#4a3d63}
+.prova-historico>li>span:last-child{margin-left:auto;font-family:Consolas,monospace;font-size:12px;color:#8a7da3}
+
+@media(max-width:760px){
+  .prova-nota strong{font-size:38px}
+  .prova-questao .button-row>.button{flex:1}
+}

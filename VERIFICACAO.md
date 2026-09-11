@@ -349,3 +349,13 @@ Pedido do estudante depois do bug da previsão: procurar mais casos do mesmo tip
 - Aparece no passo 2 de cada aula, com o exemplo daquela aula, e no Laboratório, com o código livre.
 - Verificado em 1440 px e 390 px na aula "Contas e operadores": começa no passo 1, a linha destacada muda ao avançar, as variáveis aparecem com os valores certos e uma delas fica destacada. Sem erro de console e sem rolagem horizontal.
 - Um detalhe de acessibilidade corrigido no caminho: os controles chamavam-se "Próximo passo", igual ao botão do passo a passo comentado da aula — duas coisas diferentes com o mesmo nome na mesma tela.
+
+## Modo prova (11/09/2026)
+
+- Aba nova: cinco questões sorteadas entre as aulas **já concluídas**, com editor vazio, sem dica, sem quebra-cabeça e sem o Lumi. Abre a partir de três aulas concluídas.
+- Verificado no navegador, 1440 px e 390 px, que nenhum dos três apoios aparece na tela da prova, e que a solução de referência da aula sorteada é aceita pela comparação de saída.
+- O relatório final diz quantas foram aceitas, o tempo, e lista as aulas para revisar com atalho para cada uma. Encerrar antes do fim conta as não respondidas como erradas — verificado: 1 de 4 com 3 para revisar.
+- **A prova não concede XP**, de propósito: ela mede o que já foi aprendido, e pagar de novo inflaria o nível sem aprendizado novo. Conta como atividade do dia e as tentativas entram no diário, alimentando o treino dirigido.
+- Três minutos por questão é referência, não limite: passar disso entra no relatório e não reprova.
+- Registros de prova passam por `normalizeProvas`: data inválida, acertos maiores que o total e aulas inexistentes são descartados, como em todo o resto do estado.
+- 140 testes, jornada do iniciante sem regressão.

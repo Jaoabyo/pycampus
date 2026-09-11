@@ -4,10 +4,11 @@ import { normalizeLearning, practiceProjects, practiceDone, practiceXp } from '.
 import { normalizeProjectWork } from './project-steps.js';
 import { normalizeMastery, patterns } from './diagnosis.js';
 import { normalizeBridges } from './function-bridges.js';
+import { normalizeProvas } from './exam.js';
 export const STORAGE_KEY = 'pycampus.v1';
 export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 export const shiftDate = (key, days) => { const date = new Date(`${key}T12:00:00`); date.setDate(date.getDate() + days); return localDate(date); };
-export const initialState = () => ({ version: 1, name: 'Estudante', bio: 'Um passo de cada vez, uma linha de código por dia.', avatar: '🚀', goal: 1, weeklyGoal: 5, lembrete: '', completed: [], history: [], projectChecks: {}, projectLinks: {}, projectGrades: {}, projectCodes: {}, projectStepsDone: {}, mastery: {}, functionBridges: {}, customLessons: {}, activities: {}, sessions: [], codes: {}, learning: {}, playground: '# Seu espaço para experimentar\nprint("Olá, PyCampus!")\n', joined: localDate() });
+export const initialState = () => ({ version: 1, name: 'Estudante', bio: 'Um passo de cada vez, uma linha de código por dia.', avatar: '🚀', goal: 1, weeklyGoal: 5, lembrete: '', completed: [], history: [], projectChecks: {}, projectLinks: {}, projectGrades: {}, projectCodes: {}, projectStepsDone: {}, mastery: {}, functionBridges: {}, customLessons: {}, provas: [], activities: {}, sessions: [], codes: {}, learning: {}, playground: '# Seu espaço para experimentar\nprint("Olá, PyCampus!")\n', joined: localDate() });
 const validDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T12:00:00`).valueOf()) && localDate(new Date(`${value}T12:00:00`)) === value;
 const validTime = value => typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 const bounded = (value, fallback, min, max) => Number.isInteger(value) && value >= min && value <= max ? value : fallback;
@@ -18,6 +19,7 @@ export function normalizeState(input) {
   normalizeProjectWork(input, base);
   base.mastery = normalizeMastery(input);
   base.functionBridges = normalizeBridges(input);
+  base.provas = normalizeProvas(input);
   const ids = new Set(lessons.map(l => l.id));
   base.name = typeof input.name === 'string' ? input.name.trim().slice(0, 40) || 'Estudante' : base.name;
   base.bio = typeof input.bio === 'string' ? input.bio.slice(0, 200) : base.bio;
@@ -65,7 +67,7 @@ export function normalizeState(input) {
     };
   }
   for (const [date, entries] of Object.entries(input.activities || {})) {
-    if (validDate(date) && date <= localDate() && Array.isArray(entries)) base.activities[date] = [...new Set(entries.filter(id => typeof id === 'string' && (ids.has(id) || id.startsWith('session:') || patterns.some(p => `lumi:${p.id}` === id) || projects.some(p => `project:${p.id}` === id) || practiceProjects.some(p => `practice:${p.id}` === id))))].slice(0, 200);
+    if (validDate(date) && date <= localDate() && Array.isArray(entries)) base.activities[date] = [...new Set(entries.filter(id => typeof id === 'string' && (ids.has(id) || id === 'prova' || id.startsWith('session:') || patterns.some(p => `lumi:${p.id}` === id) || projects.some(p => `project:${p.id}` === id) || practiceProjects.some(p => `practice:${p.id}` === id))))].slice(0, 200);
   }
   base.sessions = (Array.isArray(input.sessions) ? input.sessions : []).filter(s => s && typeof s.id === 'string' && validDate(s.date) && typeof s.title === 'string' && validTime(s.time)).slice(0, 1000).map(s => ({ id: s.id.slice(0, 80), title: s.title.slice(0, 100), date: s.date, time: s.time, minutes: bounded(s.minutes, 30, 10, 240), done: Boolean(s.done) }));
   for (const l of lessons) if (typeof input.codes?.[l.id] === 'string') base.codes[l.id] = input.codes[l.id].slice(0, 50000);

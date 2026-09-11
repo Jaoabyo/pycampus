@@ -60,6 +60,7 @@ XP: **100** por aula, **40** por miniprojeto, **250** por projeto. Nível a cada
 - [[Conteúdo · Projetos]]
 - [[Quebra-cabeça de código]]
 - [[Diário e diagnóstico]]
+- [[Modo prova]]
 - [[Lumi · Como ele ajuda]]
 - [[Lumi no celular]]
 - [[Lumi · Avaliação de projeto]]
