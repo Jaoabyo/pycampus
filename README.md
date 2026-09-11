@@ -15,7 +15,7 @@ Abre no celular e no computador, sem instalar nada. Dá para **adicionar à tela
 
 O que muda no site publicado, em relação ao PyCampus aberto no seu computador:
 
-- **O Lumi conversa se você apontar onde a IA está.** O modelo roda no seu computador; em Configurações há o campo do endereço, com teste de conexão e instruções para alcançá-lo do celular. Sem isso, as dicas escritas dos quatro degraus continuam funcionando em qualquer aparelho.
+- **O Lumi conversa também aqui**, com o computador ligado: dê um duplo clique em `iniciar-lumi-online.cmd`, copie o endereço que aparecer e cole em *Configurações → Onde a IA do Lumi mora*. Sem isso, as dicas escritas dos quatro degraus continuam funcionando em qualquer aparelho, sem depender de nada.
 - **As respostas de `input()` precisam ser preenchidas antes de executar**, no campo "Entradas para input()". Responder durante a execução exige cabeçalhos que o GitHub Pages não envia. No computador funciona dos dois jeitos.
 - **O progresso é de cada aparelho.** O que você faz no celular não aparece no computador. Use a exportação de backup em Configurações para levar de um para o outro.
 

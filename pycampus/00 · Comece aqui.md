@@ -12,7 +12,7 @@ entender as decisões de uma plataforma que é sua.
 ## O caminho mais curto
 
 - Quer mexer no **conteúdo** (aulas, exercícios, projetos)? → [[Conteúdo · Aulas]], [[Conteúdo · Oficina de prática]], [[Conteúdo · Pontes de função]], [[Conteúdo · Projetos]]
-- Quer mexer no **Lumi**? → [[Lumi · Como ele ajuda]]
+- Quer mexer no **Lumi**? → [[Lumi · Como ele ajuda]] · usá-lo no celular: [[Lumi no celular]]
 - Quer mexer em **XP, emblemas ou progresso**? → [[Estado e progresso]]
 - Quer entender por que uma etapa está **travada**? → [[Liberação de etapas]]
 - Quer saber **o que não pode ser quebrado**? → [[Regras que não se quebram]]
@@ -61,6 +61,7 @@ XP: **100** por aula, **40** por miniprojeto, **250** por projeto. Nível a cada
 - [[Quebra-cabeça de código]]
 - [[Diário e diagnóstico]]
 - [[Lumi · Como ele ajuda]]
+- [[Lumi no celular]]
 - [[Lumi · Avaliação de projeto]]
 - [[Lumi · Lições personalizadas]]
 - [[Lumi · Leitura de explicações]]
