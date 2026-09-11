@@ -4,3 +4,7 @@ dist/
 *.local
 .DS_Store
 .playwright-mcp/
+
+# capturas de verificação ficam só na máquina
+*.png
+!public/*.png
