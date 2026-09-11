@@ -58,7 +58,7 @@ export function localHelp(context, level) {
 export function mentorPrompt(context, level, question = '') {
   const error = readError(context.output);
   const rules = {
-    1: 'Faça UMA pergunta curta sobre o que o estudante queria que a linha do erro fizesse, citando pelo nome as variáveis ou valores envolvidos. Não diga o que está errado, não dê a causa e não escreva nenhuma linha de código.',
+    1: 'Sua resposta inteira precisa ser UMA ÚNICA pergunta, terminada em "?", e nada mais. Nenhuma afirmação antes dela. A pergunta leva o estudante a olhar a linha do erro, citando pelo nome as variáveis ou valores envolvidos. É proibido dizer o que está errado, dar a causa, sugerir a correção ou escrever código.',
     2: 'Explique a ideia por trás desse tipo de erro, em no máximo três frases. Ainda não diga o que mudar no código dele e não escreva nenhuma linha de código.',
     3: 'Diga em palavras o que precisa mudar e em qual linha. Pode mostrar no máximo duas linhas de código, e apenas de um exemplo diferente do exercício dele.',
     4: 'Mostre o código corrigido e explique em duas frases por que agora funciona.'
@@ -86,14 +86,24 @@ export function mentorPrompt(context, level, question = '') {
 const fence = /```[\s\S]*?(?:```|$)/g;
 const lineCount = block => block.replace(/```[a-z]*\n?/gi, '').split('\n').filter(line => line.trim()).length;
 
+// No degrau 1 a resposta é só uma pergunta. Mandado a obedecer isso, o modelo obedeceu em
+// dois de três casos e no terceiro entregou a correção antes de perguntar. Então a regra
+// também é aplicada aqui: tudo que vem antes da primeira pergunta é descartado, e uma
+// resposta sem pergunta nenhuma não chega à tela — a ajuda escrita já está lá.
+export function onlyQuestion(text) {
+  const question = text.match(/[^.!?]*\?/);
+  return question ? question[0].trim() : '';
+}
+
 // A trava de verdade: o que o modelo mandar além do degrau é removido antes de chegar na tela.
 export function sanitizeReply(text, level) {
   if (typeof text !== 'string') return '';
   if (level >= MAX_LEVEL) return text.trim();
   const limit = level >= 3 ? 2 : 0;
-  return text.replace(fence, block => lineCount(block) <= limit
+  const clean = text.replace(fence, block => lineCount(block) <= limit
     ? block
     : '[o código fica para o próximo degrau — tente você primeiro]').trim();
+  return level === 1 ? onlyQuestion(clean) : clean;
 }
 
 export async function mentorAvailable(signal) {
