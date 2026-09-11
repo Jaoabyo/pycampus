@@ -1,4 +1,4 @@
-import { MENTOR_MODEL, OLLAMA_URL } from './mentor.js';
+import { MENTOR_MODEL, ollamaUrl } from './mentor.js';
 
 // A plataforma pede explicação escrita em quatro lugares e nunca respondia nada a nenhuma
 // delas. Não era mentira — o texto sempre disse que não havia julgamento automático — mas
@@ -36,7 +36,7 @@ export function parseExplanationReview(raw) {
 export async function reviewExplanation({ subject, reference, explanation, signal }) {
   if (!String(explanation || '').trim()) throw new Error('Escreva sua explicação antes de pedir a leitura.');
   const { system, user } = explanationPrompt({ subject, reference, explanation });
-  const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+  const response = await fetch(`${ollamaUrl()}/api/chat`, {
     method: 'POST', signal,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

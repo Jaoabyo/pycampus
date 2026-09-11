@@ -5,6 +5,10 @@ import './mentor.css';
 
 // O Lumi é um vaga-lume: ele ilumina o caminho, não caminha por você.
 // A arte segue o mesmo desenho à mão do projeto (paleta roxo/amarelo, traço arredondado).
+// No computador, "abra o Ollama" resolve. Num celular abrindo o site publicado, esse conselho
+// é impossível de seguir: não há Ollama ali. O aviso precisa dizer a verdade de cada lugar.
+const remoto = typeof location !== 'undefined' && !['localhost', '127.0.0.1', '[::1]', ''].includes(location.hostname);
+
 export function LumiArt({ size = 34, awake = true }) {
   return <svg className={`lumi-art ${awake ? 'is-awake' : ''}`} viewBox="0 0 64 64" width={size} height={size} aria-hidden="true">
     <ellipse className="lumi-glow" cx="32" cy="42" rx="17" ry="15" fill="#f3d775" />
@@ -133,7 +137,9 @@ export default function Mentor({ title, challenge, expected, code, output, lesso
         <Icon name="PlugZap" size={15} />
         <span>{status.reason === 'modelo'
           ? <>O Ollama está ligado, mas falta o modelo <code>{MENTOR_MODEL}</code>. No terminal: <code>ollama pull {MENTOR_MODEL}</code>.</>
-          : <>A IA local está desligada. Abra o aplicativo <strong>Ollama</strong> para conversar comigo; sem ele, as dicas acima continuam valendo.</>}</span>
+          : remoto
+            ? <>Aqui no site eu não converso: a IA roda no <strong>seu computador</strong>, e esta página não alcança ela. As dicas acima são escritas e continuam valendo em qualquer aparelho.</>
+            : <>A IA local está desligada. Abra o aplicativo <strong>Ollama</strong> para conversar comigo; sem ele, as dicas acima continuam valendo.</>}</span>
       </p>}
       {failed && <p className="mentor-offline"><Icon name="TriangleAlert" size={15} /> <span>Não consegui responder agora ({reply.replace('__falhou__', '')}). As dicas acima continuam valendo.</span></p>}
       {reply && !failed && <div className="mentor-reply"><Rich text={reply} /></div>}

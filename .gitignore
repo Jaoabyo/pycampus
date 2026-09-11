@@ -8,3 +8,4 @@ dist/
 # capturas de verificação ficam só na máquina
 *.png
 !public/*.png
+.obsidian/

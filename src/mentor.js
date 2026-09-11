@@ -5,7 +5,26 @@ import { lessons } from './curriculum.js';
 // A ajuda sobe em quatro degraus e só avança quando o estudante pede. Os dois primeiros
 // degraus nunca mostram código — essa regra é garantida aqui no código, em sanitizeReply,
 // e não confiada ao modelo, que pode desobedecer.
-export const OLLAMA_URL = 'http://127.0.0.1:11434';
+// O endereço da IA precisa ser configurável: no computador ela vive em 127.0.0.1, mas no
+// celular abrindo o site publicado é preciso apontar para outro lugar — a máquina na rede
+// local ou um túnel https. A escolha fica no aparelho, não no código.
+export const OLLAMA_PADRAO = 'http://127.0.0.1:11434';
+const CHAVE = 'pycampus.ia';
+const semBarraFinal = texto => {
+  let limpo = String(texto || '').trim();
+  while (limpo.endsWith('/')) limpo = limpo.slice(0, -1);
+  return limpo;
+};
+export function ollamaUrl() {
+  try { return semBarraFinal(localStorage.getItem(CHAVE) || OLLAMA_PADRAO); } catch { return OLLAMA_PADRAO; }
+}
+export function definirOllamaUrl(valor) {
+  try {
+    const limpo = semBarraFinal(valor);
+    if (limpo) localStorage.setItem(CHAVE, limpo); else localStorage.removeItem(CHAVE);
+  } catch { /* navegador sem armazenamento: segue com o padrão */ }
+  return ollamaUrl();
+}
 export const MENTOR_MODEL = 'qwen2.5-coder:14b';
 
 export const mentorSteps = [
@@ -78,7 +97,7 @@ export function sanitizeReply(text, level) {
 
 export async function mentorAvailable(signal) {
   try {
-    const response = await fetch(`${OLLAMA_URL}/api/tags`, { signal });
+    const response = await fetch(`${ollamaUrl()}/api/tags`, { signal });
     if (!response.ok) return { ok: false, reason: 'erro' };
     const data = await response.json();
     const models = (data.models || []).map(model => model.name);
@@ -93,7 +112,7 @@ export async function mentorAvailable(signal) {
 // Levar 9,5 GB para a GPU passa de um minuto na primeira vez. Aquecer quando o estudante
 // abre a atividade evita que ele espere isso justo no momento em que travou num erro.
 export function warmMentor(signal) {
-  return fetch(`${OLLAMA_URL}/api/chat`, {
+  return fetch(`${ollamaUrl()}/api/chat`, {
     method: 'POST', signal,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: MENTOR_MODEL, stream: false, keep_alive: '30m', messages: [{ role: 'user', content: 'oi' }], options: { num_predict: 1 } })
@@ -104,7 +123,7 @@ export function warmMentor(signal) {
 // demora alguns segundos, e esperar em silêncio parece travamento.
 export async function askMentor({ context, level, question = '', onToken, signal }) {
   const { system, user } = mentorPrompt(context, level, question);
-  const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+  const response = await fetch(`${ollamaUrl()}/api/chat`, {
     method: 'POST', signal,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

@@ -1,6 +1,6 @@
 import { lessons } from './curriculum.js';
 import { simpleExplanations, beginnerNotes } from './simple-explanations.js';
-import { MENTOR_MODEL, OLLAMA_URL } from './mentor.js';
+import { MENTOR_MODEL, ollamaUrl } from './mentor.js';
 
 // Uma lição escrita por um modelo pode ensinar errado, e errado é pior do que nada. Por isso
 // nada chega à tela sem passar por três filtros: formato, vocabulário já ensinado e — o que
@@ -104,7 +104,7 @@ export async function requestCustomLesson({ weakness, evidence, lessonId, signal
   const index = lessons.findIndex(lesson => lesson.id === lessonId);
   const taughtTitles = (index < 0 ? lessons : lessons.slice(0, index + 1)).map(lesson => lesson.title);
   const { system, user } = customLessonPrompt({ weakness, evidence, taughtTitles });
-  const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+  const response = await fetch(`${ollamaUrl()}/api/chat`, {
     method: 'POST', signal,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

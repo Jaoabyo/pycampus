@@ -1,5 +1,5 @@
 import { parseRepo } from './project-steps.js';
-import { MENTOR_MODEL, OLLAMA_URL } from './mentor.js';
+import { MENTOR_MODEL, ollamaUrl } from './mentor.js';
 
 // A nota vale 7. Abaixo disso o projeto volta para revisão, com o motivo escrito.
 export const PASSING = 7;
@@ -119,7 +119,7 @@ export function parseGrade(raw, project) {
 
 export async function gradeProject({ project, files, signal }) {
   const { system, user } = gradingPrompt(project, files);
-  const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+  const response = await fetch(`${ollamaUrl()}/api/chat`, {
     method: 'POST', signal,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

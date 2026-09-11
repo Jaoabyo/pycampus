@@ -1,10 +1,21 @@
-# PyCampus
+<p align="center">
+  <img src="public/icone-512.png" alt="PyCampus" width="120" height="120">
+</p>
 
-**Estude online: https://jaoabyo.github.io/pycampus/** — abre no celular e no computador, sem instalar nada.
+<h1 align="center">PyCampus</h1>
+
+<p align="center">
+  Aprenda Python em português, com Python de verdade rodando no navegador.<br>
+  <strong><a href="https://jaoabyo.github.io/pycampus/">Abrir o campus</a></strong>
+</p>
+
+---
+
+Abre no celular e no computador, sem instalar nada. Dá para **adicionar à tela de início** e usar como aplicativo, inclusive sem internet depois do primeiro acesso.
 
 O que muda no site publicado, em relação ao PyCampus aberto no seu computador:
 
-- **O Lumi fica mudo.** A IA roda no seu computador, em localhost, e o celular não alcança esse endereço. As dicas escritas de cada degrau continuam funcionando normalmente, e a tela avisa.
+- **O Lumi conversa se você apontar onde a IA está.** O modelo roda no seu computador; em Configurações há o campo do endereço, com teste de conexão e instruções para alcançá-lo do celular. Sem isso, as dicas escritas dos quatro degraus continuam funcionando em qualquer aparelho.
 - **As respostas de `input()` precisam ser preenchidas antes de executar**, no campo "Entradas para input()". Responder durante a execução exige cabeçalhos que o GitHub Pages não envia. No computador funciona dos dois jeitos.
 - **O progresso é de cada aparelho.** O que você faz no celular não aparece no computador. Use a exportação de backup em Configurações para levar de um para o outro.
 
