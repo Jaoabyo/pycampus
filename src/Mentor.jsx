@@ -138,7 +138,7 @@ export default function Mentor({ title, challenge, expected, code, output, lesso
         <span>{status.reason === 'modelo'
           ? <>O Ollama está ligado, mas falta o modelo <code>{MENTOR_MODEL}</code>. No terminal: <code>ollama pull {MENTOR_MODEL}</code>.</>
           : remoto
-            ? <>Aqui no site eu não converso: a IA roda no <strong>seu computador</strong>, e esta página não alcança ela. As dicas acima são escritas e continuam valendo em qualquer aparelho.</>
+            ? <>Aqui eu não converso: a conversa usa uma IA que roda no computador de quem estuda, e esta página não alcança nenhuma. <strong>Tudo acima é escrito e funciona em qualquer aparelho</strong> — é o que costuma bastar para destravar um erro. Quem tiver a IA própria pode ligá-la em Configurações.</>
             : <>A IA local está desligada. Abra o aplicativo <strong>Ollama</strong> para conversar comigo; sem ele, as dicas acima continuam valendo.</>}</span>
       </p>}
       {failed && <p className="mentor-offline"><Icon name="TriangleAlert" size={15} /> <span>Não consegui responder agora ({reply.replace('__falhou__', '')}). As dicas acima continuam valendo.</span></p>}

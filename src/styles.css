@@ -11,3 +11,7 @@
 @keyframes run-glow-fade{0%{box-shadow:inset 0 0 0 3px #3aa17f8c,inset 0 0 46px 10px #3aa17f38}100%{box-shadow:inset 0 0 0 3px #3aa17f00,inset 0 0 46px 10px #3aa17f00}}
 .run-check{display:inline-flex;align-items:center;gap:5px;background:#173226;color:#6fd6ab;border:1px solid #2f5943;border-radius:20px;padding:3px 10px 3px 8px;font-size:9px;font-weight:700;animation:run-check-pop 1.4s ease forwards}
 @keyframes run-check-pop{0%{opacity:0;transform:translateY(3px) scale(.9)}10%{opacity:1;transform:translateY(0) scale(1)}80%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-2px) scale(.97)}}
+
+.import-substituir{margin-top:16px}
+.import-substituir>summary{cursor:pointer;font-size:12.5px;color:#8a7da3}
+.import-substituir>p{font-size:12px}
