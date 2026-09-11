@@ -7,11 +7,16 @@ O que está reconhecido e ainda não resolvido.
 > `tests/project-levelling.test.js`, e a lista de dívida dele está vazia. O plano por sprints fica em `ROADMAP.md`,
 na raiz do projeto.
 
-## Auditoria incompleta
+## Auditoria: o que ficou em aberto
 
-Das seis frentes, só "projetos" foi verificada até o fim. Miniprojetos, aulas, gating,
-pesquisa e visual pararam por limite de sessão: seguem como achados brutos, **nem confirmados
-nem descartados**.
+As seis frentes foram verificadas. O que sobrou não é dúvida, é trabalho nomeado:
+
+- **Distância entre exemplo e desafio em algumas aulas.** O `while` conta para baixo no
+  exemplo e para cima no desafio; `complexidade` mostra busca com `return` e pede contador
+  acumulado; `validacao` só lança a exceção e o desafio pede lançar e capturar. A regra da
+  explicação visível está cumprida — isto é sobre a ponte entre ler e escrever.
+- **As pontes de função não têm etapa de previsão** antes de rodar, nem auto-explicação
+  escrita, e o estudante não testa o retorno da própria função com `assert` antes do módulo 07.
 
 ## Progresso preso ao aparelho
 
