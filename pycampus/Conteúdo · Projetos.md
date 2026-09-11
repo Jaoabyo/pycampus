@@ -25,10 +25,10 @@ A técnica: **a tarefa aparece primeiro; a sintaxe só depois de pedir uma pista
 
 ## Passos com número de passos por projeto
 
-`calculadora` 7 · `quiz` 11 · `tarefas` 10 · `banco` 5 · `estoque` 5 · `api` 5 ·
-`qualidade-projeto` 5 · `final` 5.
+`calculadora` 7 · `quiz` 11 · `tarefas` 10 · `banco` 10 · `estoque` 9 · `api` 7 ·
+`qualidade-projeto` 7 · `final` 9. Total: 70.
 
-Os cinco com apenas 5 passos são os que ainda não foram nivelados — ver [[Dívidas conhecidas]].
+Todos passaram pelo nivelamento: nenhum passo exige sintaxe que não tenha sido ensinada antes.
 
 ## Modos de passo
 

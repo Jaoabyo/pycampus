@@ -1,16 +1,11 @@
 # Dívidas conhecidas
 
-O que está reconhecido e ainda não resolvido. O plano por sprints fica em `ROADMAP.md`,
+O que está reconhecido e ainda não resolvido.
+
+> [!done] Nivelamento dos projetos: pago
+> Os 21 saltos confirmados pela auditoria foram corrigidos. Os oito projetos passam por
+> `tests/project-levelling.test.js`, e a lista de dívida dele está vazia. O plano por sprints fica em `ROADMAP.md`,
 na raiz do projeto.
-
-## Cinco projetos com salto de dificuldade
-
-`banco`, `estoque`, `api`, `qualidade-projeto` e `final` ainda pedem sintaxe nunca ensinada —
-21 achados confirmados por auditoria, 14 graves. A lista está no próprio
-`tests/project-levelling.test.js`, que **impede que piorem**.
-
-Exemplos: `raise ValueError` nunca digitado antes; `commit()` e `fetchall()` sem nenhuma
-ocorrência em código executado; funções `test_` inexistentes em qualquer arquivo.
 
 ## Auditoria incompleta
 

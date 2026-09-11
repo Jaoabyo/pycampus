@@ -334,6 +334,90 @@ coachedProjects.estoque = [
     'Crie um produto, feche a conexão, reabra o mesmo arquivo e confira o produto. No computador, teste também encerrar e reabrir o programa. Não espere persistência do banco ao fechar a plataforma.')
 ];
 
+// O salto apontado aqui estava no terceiro passo: ele trocava a lista por um banco, e no
+// mesmo fôlego pedia editar e remover — sendo que DELETE não aparece em aula nenhuma.
+// Agora a troca do armazenamento, a edição e a remoção são três degraus.
+coachedProjects.api = [
+  ...coachedProjects.api.slice(0, 2),
+  coachStep('api-tabela', 'Trocar a lista por uma tabela',
+    'Guarde os hábitos numa tabela SQLite em vez de numa lista, mantendo criar e buscar funcionando exatamente como antes.',
+    'O que mudou por dentro das suas funções, e o que continuou igual para quem as chama?',
+    ['Diga em português o que cada função fazia com a lista e o que ela fará com a tabela.',
+      'Crie a tabela habitos com id e nome. Dentro de criar_habito, troque o append por um INSERT com parâmetros; dentro de buscar_habito, troque a busca no for por um SELECT com WHERE id = ?.'],
+    'Criar e buscar precisam responder a mesma coisa de antes. É o sinal de que você trocou o armazenamento sem quebrar o serviço.'),
+  coachStep('api-editar', 'Editar um hábito',
+    'Acrescente a função de editar o nome de um hábito pelo id, e prove que os outros hábitos não mudaram.',
+    'Como você tem certeza de que a edição pegou só o hábito certo?',
+    ['Antes de escrever, diga qual parte identifica o hábito e qual parte é o valor novo.',
+      'UPDATE habitos SET nome = ? WHERE id = ?, com os dois valores como parâmetros, como na aula de CRUD. Sem o WHERE, o banco altera todas as linhas.'],
+    'Com três hábitos, edite o do meio e liste os três: só um pode ter mudado.'),
+  coachStep('construcao-3', 'Guardar no banco',
+    'Acrescente a remoção de um hábito pelo id e confira que ela some do banco, sem levar os outros junto.',
+    'Como você confirma que atualizar ou remover um hábito não alterou os outros?',
+    ['Diga o que precisa acontecer com o id removido e com os ids que ficaram.',
+      'DELETE FROM habitos WHERE id = ? apaga a linha daquele id. É o mesmo cuidado do UPDATE: sem o WHERE, o comando apaga a tabela inteira.',
+      'Teste as quatro funções — criar, buscar, editar e remover — antes de pensar nas rotas.'],
+    'Remova um hábito e liste os restantes. Tente remover um id que não existe e confira que nada quebra nem some.'),
+  ...coachedProjects.api.slice(3)
+];
+
+// Dois saltos aqui: extrair uma regra do próprio código nunca tinha sido praticado, e as
+// funções test_ não existem em arquivo nenhum do curso. Cada um ganhou um degrau de ensaio.
+coachedProjects['qualidade-projeto'] = [
+  coachStep('qualidade-extrair-exemplo', 'Extrair uma regra, num exemplo pronto',
+    'Pegue este programa curto e mova a regra do desconto para uma função que recebe os valores e devolve o resultado: preco = 200; desconto = 0.1; final = preco - preco * desconto; e o print do final.',
+    'O que a função precisa receber para funcionar sem depender de nada de fora dela?',
+    ['Diga quais valores entram e qual valor sai. A função mostra algo ou devolve algo?',
+      'Escreva def preco_final(preco, desconto): com o cálculo dentro e return do resultado. O print fica fora, em quem chamou a função.'],
+    'O programa precisa imprimir o mesmo 180.0 de antes. Chame a função com outros valores e confira que ela responde sem nenhum print dentro.'),
+  coachedProjects['qualidade-projeto'][0],
+  coachedProjects['qualidade-projeto'][1],
+  coachedProjects['qualidade-projeto'][2],
+  coachStep('qualidade-nomear-testes', 'Um teste com nome',
+    'Pegue dois dos seus asserts e coloque cada um dentro de uma função com nome que comece por test_. Chame as duas no fim do arquivo.',
+    'O que você ganha ao dar nome a um teste, em vez de deixar o assert solto?',
+    ['Diga em voz alta o que cada assert está conferindo. Esse é o nome da função.',
+      'Por exemplo: def test_caso_comum(): com o assert dentro, e depois test_caso_comum() no fim do arquivo para executá-la. O nome começando por test_ é convenção: ferramentas de teste procuram por ele.'],
+    'Execute: sem erro, os dois testes passaram. Estrague um dos valores esperados de propósito e confira que o erro aponta o nome da função que falhou.'),
+  coachedProjects['qualidade-projeto'][3],
+  coachedProjects['qualidade-projeto'][4]
+];
+
+// Três saltos: o fluxo completo vinha de uma vez sobre um problema que o estudante acabou de
+// inventar; modelar a tabela e migrar os dados eram o mesmo passo; e separar funções, testar
+// e tratar falhas também. Os degraus novos praticam cada parte num pedaço pequeno do projeto.
+coachedProjects.final = [
+  coachedProjects.final[0],
+  coachStep('final-uma-entrada', 'A menor entrada do seu sistema',
+    'Do que você planejou, escolha UMA informação que o sistema precisa receber. Receba só ela e mostre de volta o que chegou.',
+    'Essa informação chega como texto? Precisa virar número em algum momento?',
+    ['Diga qual é a informação mais simples do seu plano. Se tiver dúvida, escolha a que tem menos regras.',
+      'Uma linha para receber com input e outra para mostrar. Se for número, converta em uma terceira linha, separada.'],
+    'Execute e responda um valor. O que aparece precisa ser exatamente o que você digitou.'),
+  coachStep('final-uma-regra', 'A primeira regra',
+    'Acrescente uma regra que aceite ou recuse essa informação, mostrando uma mensagem diferente em cada caso.',
+    'O que exatamente torna um valor inválido no seu problema?',
+    ['Escreva a regra em uma frase, em português, antes de escrever o if.',
+      'Um if com a condição da recusa e um else para o caminho normal. Mensagens diferentes nos dois lados, para você ver qual caminho rodou.'],
+    'Teste com um valor válido e um inválido. As duas mensagens precisam aparecer, cada uma na sua vez.'),
+  coachedProjects.final[1],
+  coachStep('final-modelar-tabela', 'Desenhar a tabela antes de usá-la',
+    'Liste quais colunas a sua tabela precisa ter, com o tipo de cada uma, e crie a tabela vazia. Não grave nada ainda.',
+    'Que informação do seu fluxo precisa sobreviver ao fim do programa, e qual é descartável?',
+    ['Escreva as colunas numa lista em português primeiro: nome da coluna e que tipo de valor guarda.',
+      'CREATE TABLE IF NOT EXISTS com as colunas que você listou, como nos projetos de estoque e de API. Um id inteiro costuma ser a primeira coluna.'],
+    'Execute duas vezes e confira que a tabela existe e continua vazia. Uma consulta de contagem deve devolver zero registros.'),
+  coachedProjects.final[2],
+  coachStep('final-funcao-testada', 'Uma função sua, com um teste',
+    'Separe uma regra do seu fluxo numa função que recebe valores e devolve o resultado, e escreva um assert que confira um caso conhecido.',
+    'O que essa função precisa devolver para que um teste consiga julgá-la?',
+    ['Escolha a regra mais simples que você já escreveu. Ela usa input por dentro? Então tire o input de lá.',
+      'A função recebe os valores como parâmetros e termina com return. O teste é uma linha: assert sua_funcao(valores) == resultado_esperado.'],
+    'Rode com o valor certo e sem erro. Depois troque o esperado de propósito, veja o assert falhar e volte ao certo.'),
+  coachedProjects.final[3],
+  coachedProjects.final[4]
+];
+
 export const calculatorCoaching = {
   valores: ['Guarde uma renda de 3000.0 e três despesas: 1200.0, 450.0 e 300.0. Mostre só a renda.', 'Se você tirar o print, a renda deixa de ser guardada ou apenas deixa de aparecer?', ['Cada informação precisa de um nome. Use uma linha para cada valor.', 'Lembre de outra situação: idade = 18 guarda um número; print(idade) mostra esse número. Use essa ideia com a renda.']],
   total: ['Some as três despesas e mostre quanto foi gasto ao todo.', 'Se a terceira despesa aumentar 100, o que deve acontecer com o total?', ['Mantenha as variáveis do passo anterior. Qual símbolo soma?', 'Guarde a soma em total_despesas. Mostre só essa variável para conferir o passo.']],

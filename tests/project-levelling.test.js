@@ -32,14 +32,10 @@ const taughtForProject = project => lessons
   .map(lesson => `${visibleText(lesson.id)} ${lesson.example} ${lesson.starter} ${lesson.challenge}`)
   .join('\n');
 
-// Dívida herdada, achado por achado, da auditoria de 2026-09-11. Esta lista só pode encolher.
-// Cada id aqui é um passo que pede algo nunca mostrado; some da lista quando o projeto ganhar
-// o passo intermediário que faltava.
-const DEBT = new Set([
-  'api/construcao-1', 'api/construcao-2', 'api/construcao-3', 'api/construcao-4', 'api/construcao-5',
-  'qualidade-projeto/construcao-1', 'qualidade-projeto/construcao-2', 'qualidade-projeto/construcao-3', 'qualidade-projeto/construcao-4', 'qualidade-projeto/construcao-5',
-  'final/construcao-1', 'final/construcao-2', 'final/construcao-3', 'final/construcao-4', 'final/construcao-5'
-]);
+// A dívida de nivelamento da auditoria de 2026-09-11 foi paga: os oito projetos passam pela
+// regra e a lista está vazia de propósito. Se um passo novo exigir algo nunca ensinado, o
+// caminho é criar o degrau que falta — não voltar a encher esta lista.
+const DEBT = new Set([]);
 
 // Nomes que o próprio passo manda o estudante criar. Não são sintaxe a aprender, são o
 // exercício em si — por isso não contam como salto.
@@ -48,6 +44,12 @@ const INVENTED = new Set(['perguntar', 'ler_cor', 'funcao', 'minha_funcao']);
 // Um projeto batiza as próprias funções: "crie o método pode_sacar" inventa um nome que não
 // existe em aula nenhuma, e usá-lo no passo seguinte é reaproveitar, não saltar.
 const batizados = text => [...text.matchAll(/(?:\bdef\s+|m[ée]todo\s+|fun[çc][ãa]o\s+)([a-z_][a-z0-9_]*)/gi)].map(match => match[1]);
+
+// Os nomes que o projeto cria vêm sempre em português com sublinhado — criar_habito,
+// pode_sacar, preco_final. O vocabulário de Python que precisa ser ensinado não tem essa
+// forma: print, len, append, fetchall, commit. Os dunder, como __init__, são de Python e
+// continuam sendo cobrados.
+const nomeDoProjeto = name => /^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$/.test(name);
 
 function gapsFor(project) {
   // Um projeto também ensina: o passo 4 pode se apoiar no que o passo 3 introduziu com sua
@@ -59,7 +61,7 @@ function gapsFor(project) {
     const text = `${step.instruction} ${step.hints.join(' ')} ${step.check}`;
     for (const nome of batizados(text)) proprios.add(nome);
     for (const name of callables(text)) {
-      if (INVENTED.has(name) || proprios.has(name)) continue;
+      if (INVENTED.has(name) || proprios.has(name) || nomeDoProjeto(name)) continue;
       if (!new RegExp(`\\b${name}\\b`).test(taught)) gaps.push(`${project.id}/${step.id}: ${name}()`);
     }
     taught += `\n${text}`;
@@ -82,7 +84,7 @@ test('the inherited debt list only shrinks, and never covers a project already l
     assert.ok(projectSteps[projectId], `dívida aponta para projeto inexistente: ${id}`);
     assert.ok(projectSteps[projectId].some(step => step.id === stepId), `dívida aponta para passo inexistente: ${id}`);
   }
-  for (const project of ['calculadora', 'quiz', 'tarefas', 'banco', 'estoque']) {
+  for (const project of ['calculadora', 'quiz', 'tarefas', 'banco', 'estoque', 'api', 'qualidade-projeto', 'final']) {
     assert.ok(![...DEBT].some(id => id.startsWith(`${project}/`)), `${project} já foi nivelado e não pode voltar para a dívida`);
   }
 });

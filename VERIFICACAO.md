@@ -327,3 +327,14 @@ Pedido do estudante depois do bug da previsão: procurar mais casos do mesmo tip
 - **A IA passou a funcionar no site publicado.** O endereço do Ollama deixou de ser fixo; três travas precisavam cair juntas, e cada uma foi diagnosticada por teste: página https não pode chamar http (resolvido por túnel https), o Ollama recusa origem não declarada (`OLLAMA_ORIGINS`) e recusa `Host` estranho (`--http-host-header`). Verificado de ponta a ponta: o Lumi respondeu no celular, no site, com o modelo rodando no computador.
 - Limite honesto: o endereço do túnel gratuito muda a cada início, e sem o computador ligado não há conversa — só as dicas escritas, que funcionam sempre.
 - **Degrau 1 do Lumi agora é garantido no código.** Instruído a responder só com uma pergunta, o modelo obedeceu em dois de três testes e no terceiro entregou a correção antes de perguntar. `onlyQuestion` descarta tudo antes da primeira pergunta; resposta sem pergunta não vai para a tela. Quatro execuções seguidas depois da mudança: nenhuma vazou. 124 testes.
+
+## Nivelamento concluído nos oito projetos (11/09/2026)
+
+- `banco` (5 → 10 passos): o construtor pedia três atributos de uma vez, o depósito exigia `raise ValueError` — ensinado só no módulo 05 —, a retirada juntava duas guardas sem ter praticado uma, e a transferência estreava "método que recebe outro objeto". Cada ideia ganhou seu degrau, e a guarda passou a usar `return False`, que é o que a aula de encapsulamento ensina.
+- `estoque` (5 → 9): saltava do banco em memória da aula para arquivo com `IF NOT EXISTS`, e cobrava `commit` e `fetchall`, ausentes de qualquer código executado em aula. Agora há um passo que repete a aula, um que descobre o `commit` pela ausência dele, e um só para `fetchall`.
+- `api` (5 → 7): trocar a lista por banco, editar e remover eram um passo só, com `DELETE` estreando ali. Viraram três.
+- `qualidade-projeto` (5 → 7): extrair uma regra do próprio código e nomear funções `test_` nunca tinham sido praticados; ganharam um ensaio cada, num exemplo pronto.
+- `final` (5 → 9): o fluxo completo, a modelagem da tabela com a migração e a tríade separar/testar/tratar falhas vinham cada uma num único passo.
+- Total: de 53 para 70 passos. Os ids originais continuam com o mesmo sentido e as anotações já salvas.
+- `tests/project-levelling.test.js` passa com a **lista de dívida vazia**. Ele também aprendeu que um projeto batiza as próprias funções: nomes em português com sublinhado (`criar_habito`, `pode_sacar`) são do exercício, enquanto `print`, `append`, `fetchall` e `commit` continuam sendo cobrados como vocabulário a ensinar.
+- 133 testes e a jornada do iniciante sem regressão.
