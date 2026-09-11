@@ -1,0 +1,69 @@
+.practice-work,.practice-quiz,.practice-method,.practice-score{padding:24px;margin:20px 0}
+.practice-score-head{display:flex;gap:15px;align-items:flex-start;margin-bottom:6px}
+.practice-score-head h2{font-size:19px;margin:0 0 4px}
+.practice-hero{margin-bottom:26px}
+.practice-art .practice-tile{flex-direction:column;gap:9px}
+.art-code{display:flex;flex-direction:column;gap:5px}
+.art-code i{display:block;height:4px;border-radius:3px;background:#f0e6ff8c;width:52px}
+.art-code i:nth-child(2){width:34px;margin-left:11px;background:#f4d7a4b0}
+.art-code i:nth-child(3){width:42px;margin-left:11px}
+.art-code i:nth-child(4){width:26px;background:#f0e6ff5c}
+.art-lens{position:absolute;right:-14px;bottom:-12px;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#7f63c0;border:1px solid #dcc2f77a;color:#f6ecff;box-shadow:0 7px 16px #33215a40}
+/* .python-tile svg força 97px para o logo do painel; a lupa desta arte precisa do próprio tamanho. */
+.practice-art .art-lens svg{width:22px;height:22px;filter:none}
+.practice-flow{list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;padding:0;margin:0 0 18px}
+.practice-flow li{position:relative;background:white;border:1px solid var(--border);border-radius:12px;padding:19px}
+.practice-flow .flow-number{position:absolute;right:15px;top:14px;font-family:var(--heading);font-size:19px;font-weight:800;color:#efedf5}
+.practice-flow strong{display:block;font-family:var(--heading);font-size:15px;color:#3f3550;margin:13px 0 6px}
+.practice-flow .flow-detail{display:block;font-size:11px;line-height:1.75;color:#847795}
+.practice-rule{display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.8;color:#7b6f8c;background:#faf8fe;border:1px solid #ece6f8;border-radius:10px;padding:13px 15px;margin:0 0 26px}
+.practice-rule>svg{flex-shrink:0;margin-top:2px;color:#a48ed4}
+.practice-card .project-content>h2{font-size:18px;margin:0 0 7px}
+.practice-card .project-content>p{font-size:12px;line-height:1.75;color:#7e8091;margin:0 0 9px}
+.practice-support{display:flex;align-items:center;gap:6px;font-size:10px;color:#a096b0;margin:0 0 13px}
+/* .project-visual>span:not(.visual-braces) posiciona à esquerda com especificidade (0,2,1);
+   este seletor precisa ser mais específico para o selo ir para a direita sem !important. */
+.practice-card .project-visual>span.visual-done{position:absolute;left:auto;right:14px;top:12px;display:flex;align-items:center;gap:4px;font-size:7px;letter-spacing:1.1px;text-transform:uppercase;background:#ffffffc9;border-radius:20px;padding:4px 9px;opacity:1}
+.practice-score .small,.practice-quiz .small{display:flex;align-items:center;gap:7px;font-size:12px;color:#8d81a0;margin:6px 0}
+.practice-work p,.practice-quiz p{font-size:14px;line-height:1.8;color:#625371}
+.practice-title{display:flex;gap:16px;align-items:flex-start}
+.practice-task{padding:0 0 4px;margin-bottom:18px}
+.practice-task h3{font-size:19px;margin:10px 0;line-height:1.5}
+.practice-field{display:block;font-size:14px;color:#51445f;margin:18px 0}
+.practice-field textarea{display:block;width:100%;box-sizing:border-box;margin-top:10px;border:1px solid #d9cbe9;border-radius:10px;padding:14px;min-height:90px;resize:vertical;background:#fff;color:#403549;font:inherit}
+.practice-field code{background:#f1ecfa;border-radius:5px;padding:2px 6px;font-family:Consolas,monospace;font-size:12px;color:#5c4585}
+.practice-question{font-family:var(--heading);font-size:16px;font-weight:700;color:#403549;margin:20px 0 12px;line-height:1.6}
+.practice-feedback{background:#faf8fe;border-left:3px solid var(--purple);border-radius:0 8px 8px 0;padding:12px 15px;margin-top:16px;font-size:13px}
+.practice-next{display:flex;align-items:center;gap:8px;color:#6f5b95;font-size:13px}
+.practice-tools{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:16px}
+.practice-tools .button.outline{gap:8px}
+.practice-work summary,.practice-method summary{cursor:pointer;color:#704ca3;display:flex;align-items:center;gap:8px}
+.practice-score.is-complete{border-color:#bfe3d8;background:#f4fbf9}
+.practice-checklist{list-style:none;padding:0;margin:16px 0 0;font-size:14px;color:#7b6f8c}
+.practice-checklist li{display:flex;align-items:center;gap:9px;padding:7px 0}
+.practice-checklist li>svg{color:#c9c1d6}
+.practice-checklist li.done{color:#2f8f70;font-weight:600}
+.practice-checklist li.done>svg{color:#3aa17f}
+.practice-work .tab-row,.practice-quiz .tab-row,.practice-intro .tab-row,.practice-stage-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.code-workspace.is-readonly .editor-body>textarea{color:#d9cfe8;cursor:default}
+@media(max-width:980px){
+  .practice-flow{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .practice-flow{grid-template-columns:1fr;gap:12px}
+  .practice-flow li{padding:16px}
+  .practice-work,.practice-quiz,.practice-score{padding:18px}
+  .practice-stage-tabs button{white-space:normal;text-align:left}
+  .practice-title,.practice-score-head{gap:12px}
+  .practice-task h3,.practice-question{font-size:15px}
+  .practice-hero .practice-art{display:none}
+}
+
+/* Etapa 1: previsão escrita ao lado da saída real. A comparação é o exercício — acertar não
+   é obrigatório, então o estado "diferente" é neutro e acolhedor, nunca vermelho de erro. */
+.prediction-compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.prediction-compare>div{border-radius:10px;padding:12px 14px;border:1px solid #e6e0f3;background:#faf8fe}
+.prediction-compare>div>span{display:block;font-size:9px;letter-spacing:1.3px;font-weight:750;color:#9c93ac;margin-bottom:7px}
+.prediction-compare>div>pre{margin:0;font-family:Consolas,monospace;font-size:12px;line-height:1.75;color:#4a3d63;white-space:pre-wrap;overflow-wrap:anywhere}
+.prediction-compare.is-certa>div{border-color:#cce9db;background:#f0faf5}
+@media(max-width:760px){.prediction-compare{grid-template-columns:1fr}}

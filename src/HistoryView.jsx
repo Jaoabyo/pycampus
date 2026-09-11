@@ -1,0 +1,23 @@
+import { useState } from 'react';
+import { historyStatuses, historyReport, reviewQuestions, HISTORY_LIMIT } from './history.js';
+export default function HistoryView({ state, update, download }) {
+  const [filter, setFilter] = useState('all');
+  const items = state.history || [];
+  const shown = [...items].reverse().filter(item => filter === 'all' || (filter === 'error' ? item.status !== 'success' : item.source === 'lesson'));
+  return <>
+    <div className="page-heading"><div><div className="eyebrow">APRENDER É TENTAR, ENTENDER E REVISAR</div><h1>Diário de aprendizagem</h1><p>Suas tentativas e descobertas, para acompanhar sua evolução com calma.</p></div><button className="button primary" disabled={!items.length} onClick={() => download(historyReport(state), `pycampus-aprendizado-${new Date().toISOString().slice(0, 10)}.md`, 'text/markdown;charset=utf-8')}>Compartilhar com Astra ↓</button></div>
+    <section className="card history-intro"><h2>Uma conversa baseada no que você praticou</h2><p>Ao executar código em uma aula ou no laboratório, guardamos uma cópia do código, entradas, saída e erros. Use suas reflexões para registrar o que entendeu e onde precisou de ajuda.</p><p><strong>Compartilhar com Astra</strong> baixa um relatório. Anexe esse arquivo à nossa conversa e peça uma revisão. Não há envio automático nem acompanhamento em segundo plano.</p><p className="small muted">O histórico começa a partir desta atualização e mantém até {HISTORY_LIMIT} tentativas recentes, com limite de espaço. Registros muito grandes são abreviados. Exporte regularmente para guardar tentativas antigas. O backup das configurações também inclui o diário.</p></section>
+    <div className="project-summary"><span>{items.length} tentativas registradas</span><span>{items.filter(i => i.status === 'success').length} executaram sem erro</span><span>{items.filter(i => i.status === 'error').length} erros de código</span></div>
+    <div className="tab-row">{[['all', 'Todas as tentativas'], ['error', 'Erros e interrupções'], ['lesson', 'Exercícios das aulas']].map(([value, label]) => <button key={value} className={filter === value ? 'active' : ''} onClick={() => setFilter(value)}>{label}</button>)}</div>
+    {!shown.length && <section className="card empty"><h3>{items.length ? 'Nenhuma tentativa neste filtro' : 'Seu próximo teste já pode entrar no diário'}</h3><p>Execute um programa no laboratório ou em uma aula. Ele aparecerá aqui quando terminar ou for interrompido.</p></section>}
+    <div className="history-list">{shown.map(item => <details key={item.id} className="card history-entry"><summary><div><strong>{item.title || 'Laboratório livre'}</strong><small>{new Date(item.startedAt).toLocaleString('pt-BR')} · {item.source === 'lesson' ? 'Exercício de aula' : 'Prática livre'}</small></div><span className={`pill ${item.status === 'success' ? 'teal' : 'orange'}`}>{historyStatuses[item.status]}</span></summary><div className="history-detail">
+      {item.matched !== null && <p className={item.matched ? 'success-text' : 'muted'}>{item.matched ? 'A saída correspondeu ao desafio.' : 'Executou, mas a saída não correspondeu ao desafio.'} Isso não avalia sozinho sua compreensão.</p>}
+      {item.truncated && <p className="hint">Registro abreviado por limite de tamanho.</p>}
+      <h3>Código executado</h3><pre className="example-code">{item.code}</pre>
+      {item.stdin && <><h3>Entradas usadas</h3><pre className="example-code">{item.stdin}</pre></>}
+      <h3>Saída ou mensagem de erro</h3><pre className="example-code">{item.output || '(Sem saída)'}</pre>
+      <section className="history-questions"><h3>Perguntas para revisar</h3><p className="small muted">Sugestões automáticas com base no código, para orientar a conversa. Não são uma avaliação de domínio.</p><ul>{reviewQuestions(item).map(question => <li key={question}>{question}</li>)}</ul></section>
+      <label className="form-label">Minha reflexão — o que entendi? Usei alguma dica?<textarea aria-label={`Reflexão sobre ${item.id}`} maxLength={1500} placeholder="Ex.: O primeiro if verdadeiro encerra a escolha. Testei 11, 12 e 18. Ainda quero praticar sem olhar o exemplo." value={item.reflection || ''} onChange={event => { const reflection = event.target.value; update(s => ({ ...s, history: (s.history || []).map(entry => entry.id === item.id ? { ...entry, reflection } : entry) })); }} /></label><span className="small muted">A reflexão é salva junto ao seu progresso.</span>
+    </div></details>)}</div>
+  </>;
+}

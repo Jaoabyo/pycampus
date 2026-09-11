@@ -1,0 +1,36 @@
+.targeted-intro{display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.8;color:#7b6f8c;background:#faf8fe;border:1px solid #ece6f8;border-radius:10px;padding:14px 16px;margin:0 0 22px}
+.targeted-intro>svg{flex-shrink:0;margin-top:2px;color:#a48ed4}
+.targeted-empty{font-size:13px;color:#7e8091}
+.targeted-list{display:flex;flex-direction:column;gap:20px}
+.targeted-card{padding:24px}
+.targeted-card.is-quiet{background:#fcfbfe}
+.targeted-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:12px}
+.targeted-head h2{font-size:19px;margin:6px 0 0}
+.targeted-tags{display:flex;gap:6px;flex-wrap:wrap}
+.targeted-tags .pill{gap:4px}
+.targeted-card>p{font-size:13px;line-height:1.85;color:#6f6382;margin:0 0 14px}
+.targeted-evidence{border:1px solid #f0d4d8;background:#fdf6f7;border-radius:9px;padding:12px 14px;margin-bottom:16px}
+.targeted-evidence>span{font-size:8px;letter-spacing:1.2px;font-weight:750;color:#b98b93}
+.targeted-evidence>pre{margin:8px 0 0;font-family:Consolas,monospace;font-size:12px;color:#8d4f59;white-space:pre-wrap;overflow-wrap:anywhere}
+.targeted-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.targeted-actions .button.outline,.targeted-actions .text-button{gap:8px}
+@media(max-width:760px){
+  .targeted-card{padding:18px}
+  .targeted-head{gap:11px}
+  .targeted-head h2{font-size:16px}
+}
+.targeted-card.is-mastered{border-color:#bfe3d8;background:#f6fcfa}
+.targeted-review-note{display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.8;color:#6b5a8c;background:#f4eefd;border:1px solid #e0d2f6;border-radius:10px;padding:13px 15px;margin:0 0 22px}
+.targeted-review-note>svg{flex-shrink:0;margin-top:2px;color:#8f6fd4}
+.level-ladder{margin:20px 0 0}
+.level-body{border-top:1px solid #f1eef8;margin-top:18px;padding-top:18px}
+.level-instruction{font-family:var(--heading);font-size:15px;font-weight:700;color:#3f3550;line-height:1.65;margin:0 0 14px}
+.level-body .example-code{margin-bottom:14px}
+.level-body .expected{margin-bottom:14px}
+.level-body .small,.mastery-panel .small{display:block;font-size:11px;color:#948aa4;line-height:1.75;margin:10px 0 0}
+.level-body .small .step-check{color:#3aa17f;margin-right:5px}
+.mastery-panel{border-top:1px solid #f1eef8;margin-top:20px;padding-top:18px}
+.mastery-panel h3{display:flex;align-items:center;gap:8px;font-size:15px;margin:0 0 4px}
+.mastery-panel h3>svg{color:#c99a4e}
+.mastery-panel .practice-checklist{font-size:13px;margin:12px 0 4px}
+.mastery-panel .tab-row{margin-top:14px}

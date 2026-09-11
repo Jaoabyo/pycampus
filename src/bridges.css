@@ -1,0 +1,24 @@
+.bridges-panel{padding:24px;margin:20px 0}
+.bridges-panel>p{font-size:13px;line-height:1.85;color:#6f6382;margin:0 0 6px}
+.bridges-panel .step-head>.pill{margin-left:auto;gap:4px}
+.bridges-locked{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:#7b6f8c;background:#faf8fe;border:1px solid #ece6f8;border-radius:9px;padding:11px 13px;margin:14px 0 0}
+.bridges-locked>svg{color:#a48ed4;flex-shrink:0}
+.bridges-list{list-style:none;padding:0;margin:16px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.bridges-list>li>button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--border);border-radius:10px;background:#fff;padding:13px 15px;transition:border-color .15s,background .15s}
+.bridges-list>li>button:hover:not(:disabled){border-color:#bba6ed;background:#fcfaff}
+.bridge-number{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:#f1ecfa;color:#7554c9;font-family:var(--heading);font-size:11px;font-weight:750;display:flex;align-items:center;justify-content:center}
+.bridge-number.done{background:#e6f5ef;color:#2f8f70}
+.bridge-name{flex:1;font-family:var(--heading);font-size:13.5px;font-weight:700;color:#3f3550;line-height:1.4}
+.bridge-name small{display:block;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:400;color:#8b8197;margin-top:4px;line-height:1.6}
+.bridges-list>li>button>svg:last-child{color:#c3b8d4;flex-shrink:0}
+.bridge-work,.bridge-quiz{padding:24px;margin:20px 0}
+.bridge-concept{font-size:14px;line-height:1.9;color:#544a63;background:#faf8fe;border-left:3px solid var(--purple);border-radius:0 9px 9px 0;padding:14px 16px;margin:0 0 18px}
+.bridge-challenge{font-family:var(--heading);font-size:15px;font-weight:700;color:#3f3550;line-height:1.65;margin:0 0 14px}
+.bridge-work .small,.bridge-work .expected{margin-bottom:14px}
+.bridge-work .small{display:block;font-size:11px;color:#948aa4}
+.bridge-work .example-code{margin-bottom:20px}
+.bridge-quiz .practice-checklist{font-size:13px;margin-top:16px}
+@media(max-width:760px){
+  .bridges-panel,.bridge-work,.bridge-quiz{padding:18px}
+  .bridges-list{grid-template-columns:1fr}
+}

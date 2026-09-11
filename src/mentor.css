@@ -1,0 +1,69 @@
+/* O Lumi vive junto do erro, dentro do fluxo da atividade, e não numa bolha flutuante:
+   a ajuda precisa estar onde o estudante já está olhando. */
+.lumi-call{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:16px;padding:12px 15px;border:1px solid #e6dcf8;border-radius:11px;background:linear-gradient(100deg,#faf7ff,#f5efff);transition:border-color .15s,transform .15s}
+.lumi-call:hover{border-color:#c4aef0;transform:translateY(-1px)}
+.lumi-call strong{display:block;font-size:13px;color:#4a3d63}
+.lumi-call small{font-size:11px;color:#8a7da3}
+
+.mentor{margin-top:16px;border:1px solid #e6dcf8;border-radius:12px;background:#faf8ff;overflow:hidden}
+.mentor-head{display:flex;align-items:center;gap:12px;padding:14px 16px;background:linear-gradient(100deg,#f3ecff,#ede4fe);border-bottom:1px solid #e6dcf8}
+.mentor-head h4{font-family:var(--heading);font-size:15px;margin:0;color:#40305f}
+.mentor-head p{margin:2px 0 0;font-size:11px;color:#7c6c99}
+.mentor-head>.icon-button{margin-left:auto;color:#8a7da3}
+
+.lumi-art .lumi-glow{opacity:.28;transform-origin:32px 42px}
+.lumi-art.is-awake .lumi-glow{animation:lumi-pulse 2.6s ease-in-out infinite}
+@keyframes lumi-pulse{0%,100%{opacity:.2;transform:scale(.92)}50%{opacity:.45;transform:scale(1.08)}}
+
+.mentor-ladder{display:flex;align-items:center;gap:6px;padding:12px 16px 0}
+.mentor-rung{width:26px;height:4px;border-radius:2px;background:#e2d8f4}
+.mentor-rung.past{background:#b79ceb}
+.mentor-rung.now{background:#6c50bb}
+.mentor-ladder small{margin-left:6px;font-size:10.5px;color:#8a7da3;line-height:1.5}
+
+.mentor-body{padding:12px 16px;font-size:13px;line-height:1.8;color:#544a68}
+.mentor-sure{margin:0 0 7px}
+.mentor-reply{margin-top:12px;padding:12px 14px;border-radius:10px;background:#fff;border:1px solid #ece4fb}
+.mentor-reply p{margin:0 0 8px}
+.mentor-reply p:last-child{margin-bottom:0}
+.mentor-reply code{font-family:Consolas,monospace;font-size:12px;background:#f4efff;border-radius:4px;padding:1px 5px;color:#5b4788}
+.mentor-code{margin:10px 0;padding:12px 13px;border-radius:8px;background:#262331;color:#e6dcf7;font-family:Consolas,monospace;font-size:12px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
+.mentor-offline{display:flex;align-items:flex-start;gap:8px;margin:12px 0 0;padding:10px 12px;border-radius:9px;background:#fffaf0;border:1px solid #f3e4c8;color:#8a7346;font-size:12px}
+.mentor-offline>svg{flex-shrink:0;margin-top:3px}
+.mentor-offline code{font-family:Consolas,monospace;background:#fff3dc;border-radius:4px;padding:1px 5px}
+
+.mentor-typing{display:flex;gap:5px;margin:12px 0 0}
+.mentor-typing>span{width:7px;height:7px;border-radius:50%;background:#c0aae6;animation:lumi-typing 1.2s ease-in-out infinite}
+.mentor-typing>span:nth-child(2){animation-delay:.18s}
+.mentor-typing>span:nth-child(3){animation-delay:.36s}
+@keyframes lumi-typing{0%,60%,100%{opacity:.35;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+
+.mentor-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:0 16px 16px}
+.mentor-final{display:flex;align-items:center;gap:8px;margin:0;font-size:12px;color:#2f8f70;font-weight:600}
+.mentor-ask{display:flex;align-items:center;gap:6px;flex:1;min-width:190px;background:#fff;border:1px solid #e6dcf8;border-radius:9px;padding:4px 6px 4px 12px}
+.mentor-ask input{flex:1;border:0;outline:0;background:none;font:inherit;font-size:12.5px;color:#4a3d63;min-width:0}
+.mentor-ask .icon-button{color:#6c50bb}
+
+@media(max-width:760px){
+  .mentor-body{padding:12px 14px;font-size:12px}
+  .mentor-actions{padding:0 14px 14px}
+  .mentor-actions>.button{width:100%;justify-content:center}
+  .mentor-ask{flex:1 0 100%}
+}
+@media(prefers-reduced-motion:reduce){
+  .lumi-art.is-awake .lumi-glow,.mentor-typing>span{animation:none}
+}
+
+/* O Lumi atravessando a tela: travessia longa e horizontal, com um sobe-e-desce independente,
+   para o caminho parecer orgânico em vez de uma linha reta. Nunca intercepta cliques. */
+.lumi-flight{position:fixed;left:-60px;bottom:16%;z-index:5;pointer-events:none;opacity:.75;animation:lumi-cross 54s linear infinite}
+.lumi-bob{animation:lumi-bob 7s ease-in-out infinite}
+.lumi-flight .lumi-art{filter:drop-shadow(0 0 7px rgba(243,215,117,.75))}
+@keyframes lumi-cross{
+  0%{transform:translateX(0);opacity:0}
+  6%{opacity:.75}
+  92%{opacity:.75}
+  100%{transform:translateX(calc(100vw + 120px));opacity:0}
+}
+@keyframes lumi-bob{0%,100%{transform:translateY(0) rotate(-4deg)}25%{transform:translateY(-38px) rotate(5deg)}50%{transform:translateY(10px) rotate(-2deg)}75%{transform:translateY(-22px) rotate(6deg)}}
+@media(prefers-reduced-motion:reduce){.lumi-flight{display:none}}

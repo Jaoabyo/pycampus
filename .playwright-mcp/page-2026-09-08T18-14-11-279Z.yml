@@ -1,0 +1,209 @@
+- generic [ref=f1e3]:
+  - link "Pular para o conteúdo" [ref=f1e4] [cursor=pointer]:
+    - /url: "#main"
+  - complementary [ref=f1e5]:
+    - link "PyCampus APRENDA. CRIE. EVOLUA." [ref=f1e6] [cursor=pointer]:
+      - /url: "#"
+      - generic [ref=f1e12]:
+        - text: PyCampus
+        - generic [ref=f1e13]: APRENDA. CRIE. EVOLUA.
+    - generic [ref=f1e14]: MEU APRENDIZADO
+    - navigation "Navegação principal" [ref=f1e15]:
+      - button "Visão geral" [ref=f1e16] [cursor=pointer]
+      - button "Minha formação 8" [ref=f1e22] [cursor=pointer]:
+        - text: Minha formação
+        - generic [ref=f1e26]: "8"
+      - button "Projetos" [ref=f1e27] [cursor=pointer]
+      - button "Laboratório Python" [ref=f1e32] [cursor=pointer]
+      - button "Meu calendário" [ref=f1e36] [cursor=pointer]
+      - button "Conquistas ✦" [ref=f1e39] [cursor=pointer]:
+        - text: Conquistas
+        - generic: ✦
+    - generic [ref=f1e44]: MEU ESPAÇO
+    - navigation "Perfil e preferências" [ref=f1e45]:
+      - button "Meu perfil" [ref=f1e46] [cursor=pointer]
+      - button "Configurações" [ref=f1e50] [cursor=pointer]
+    - generic [ref=f1e54]:
+      - generic [ref=f1e55]:
+        - generic [ref=f1e62]:
+          - text: Seu próximo nível
+          - strong [ref=f1e63]: Nível 1 → Nível 2
+        - progressbar [ref=f1e64]
+        - paragraph [ref=f1e65]:
+          - text: "0"
+          - generic [ref=f1e66]: / 500 XP
+      - button "🚀 Estudante Explorador de Python" [ref=f1e69] [cursor=pointer]:
+        - generic [ref=f1e70]: 🚀
+        - generic [ref=f1e71]:
+          - strong [ref=f1e72]: Estudante
+          - generic [ref=f1e73]: Explorador de Python
+      - generic [ref=f1e77]: Feito para o seu próximo capítulo ✦
+  - generic [ref=f1e78]:
+    - banner [ref=f1e79]:
+      - generic [ref=f1e80]: Visão geral
+      - generic [ref=f1e87]:
+        - button "O que vamos aprender? Ctrl K" [ref=f1e88] [cursor=pointer]:
+          - generic [ref=f1e92]: O que vamos aprender?
+          - generic [ref=f1e93]: Ctrl K
+        - button "0 dias" [ref=f1e94] [cursor=pointer]:
+          - text: "0"
+          - generic [ref=f1e97]: dias
+        - button "Abrir meu perfil" [ref=f1e98] [cursor=pointer]: 🚀
+    - main [ref=f1e99]:
+      - generic [ref=f1e100]:
+        - generic [ref=f1e101]:
+          - generic [ref=f1e102]: SEU CAMPUS, SEU RITMO
+          - heading "Olá, Estudante ✌️" [level=1] [ref=f1e103]:
+            - text: Olá, Estudante
+            - generic [ref=f1e104]: ✌️
+          - paragraph [ref=f1e105]: Um pouquinho todos os dias. Um futuro cheio de possibilidades.
+        - generic [ref=f1e106]: 8 de setembro de 2026
+      - generic [ref=f1e109]:
+        - generic [ref=f1e110]:
+          - generic [ref=f1e111]: SUA JORNADA EM PYTHON
+          - heading [level=2] [ref=f1e113]:
+            - text: Grandes ideias começamcom pequenos
+            - emphasis [ref=f1e114]: códigos.
+          - paragraph [ref=f1e115]: Do seu primeiro “Olá, mundo!” ao seu próprio sistema. Você tem um caminho. Agora, dê o próximo passo.
+          - button "Começar minha jornada" [ref=f1e116] [cursor=pointer]
+          - generic [ref=f1e121]:
+            - text: 8 etapas
+            - generic [ref=f1e124]: ·
+            - text: 48 aulas
+            - generic [ref=f1e125]: ·
+            - text: 8 projetos práticos
+        - generic [aria-hidden] [ref=f1e126]:
+          - generic [ref=f1e129]: ✦
+          - generic [ref=f1e130]: ✧
+          - generic [ref=f1e132]: </>
+          - generic [ref=f1e133]: "{ }"
+          - generic [ref=f1e140]: Seu futuro começa com um print()
+      - generic [ref=f1e142]:
+        - generic [ref=f1e143]:
+          - generic [ref=f1e147]: Sequência de estudos
+          - generic [ref=f1e148]: 0 dias
+          - paragraph [ref=f1e149]: Sua chama começa na primeira atividade
+        - generic [ref=f1e150]:
+          - generic [ref=f1e154]: Experiência total
+          - generic [ref=f1e155]: 0 XP
+          - paragraph [ref=f1e156]: 500 XP para o próximo nível
+        - generic [ref=f1e157]:
+          - generic [ref=f1e162]: Aulas concluídas
+          - generic [ref=f1e163]: 0 / 48
+          - paragraph [ref=f1e164]: 0% da sua formação
+        - generic [ref=f1e165]:
+          - generic [ref=f1e170]: Emblemas conquistados
+          - generic [ref=f1e171]: 0 / 8
+          - paragraph [ref=f1e172]: Cada conquista conta uma história
+      - generic [ref=f1e173]:
+        - generic [ref=f1e174]:
+          - generic [ref=f1e175]:
+            - generic [ref=f1e176]:
+              - heading "Seu próximo passo" [level=2] [ref=f1e177]
+              - button "Ver formação" [ref=f1e180] [cursor=pointer]
+            - generic [ref=f1e183]:
+              - generic [ref=f1e184]:
+                - text: ">_"
+                - generic [ref=f1e185]: PYTHON ESSENTIALS
+              - generic [ref=f1e190]:
+                - generic [ref=f1e191]: ETAPA 01 · FUNDAMENTOS E PRÁTICA
+                - heading "Olá, mundo!" [level=3] [ref=f1e192]
+                - paragraph [ref=f1e193]: Primeiros passos com Python
+                - generic [ref=f1e194]:
+                  - generic [ref=f1e195]: 15 min
+                  - generic [ref=f1e199]: +100 XP
+                  - generic [ref=f1e202]: Pronto para começar
+                - progressbar [ref=f1e203]
+              - button "Abrir aula Olá, mundo!" [ref=f1e204] [cursor=pointer]
+          - generic [ref=f1e207]:
+            - generic [ref=f1e208]:
+              - heading "Sua formação, passo a passo" [level=2] [ref=f1e209]
+              - generic [ref=f1e210]: Do zero ao avançado
+            - generic [ref=f1e211]:
+              - button "01 Fundamentos Primeiros passos com Python 0 / 6 aulas Explorar 0" [ref=f1e212] [cursor=pointer]:
+                - generic [ref=f1e213]: "01"
+                - text: Fundamentos
+                - heading "Primeiros passos com Python" [level=3] [ref=f1e218]
+                - generic [ref=f1e219]:
+                  - generic [ref=f1e220]: 0 / 6 aulas
+                  - generic [ref=f1e221]: Explorar
+                - progressbar [ref=f1e225]
+              - button "02 Lógica Lógica & resolução de problemas 0 / 6 aulas Explorar 0" [ref=f1e226] [cursor=pointer]:
+                - generic [ref=f1e227]: "02"
+                - text: Lógica
+                - heading "Lógica & resolução de problemas" [level=3] [ref=f1e234]
+                - generic [ref=f1e235]:
+                  - generic [ref=f1e236]: 0 / 6 aulas
+                  - generic [ref=f1e237]: Explorar
+                - progressbar [ref=f1e241]
+              - button "03 Intermediário Estruturas de dados 0 / 6 aulas Explorar 0" [ref=f1e242] [cursor=pointer]:
+                - generic [ref=f1e243]: "03"
+                - text: Intermediário
+                - heading "Estruturas de dados" [level=3] [ref=f1e250]
+                - generic [ref=f1e251]:
+                  - generic [ref=f1e252]: 0 / 6 aulas
+                  - generic [ref=f1e253]: Explorar
+                - progressbar [ref=f1e257]
+              - button "04 Intermediário Orientação a objetos 0 / 6 aulas Explorar 0" [ref=f1e258] [cursor=pointer]:
+                - generic [ref=f1e259]: "04"
+                - text: Intermediário
+                - heading "Orientação a objetos" [level=3] [ref=f1e272]
+                - generic [ref=f1e273]:
+                  - generic [ref=f1e274]: 0 / 6 aulas
+                  - generic [ref=f1e275]: Explorar
+                - progressbar [ref=f1e279]
+            - button "Explorar as 8 etapas da formação" [ref=f1e280] [cursor=pointer]
+          - generic [ref=f1e283]:
+            - generic [ref=f1e287]:
+              - text: DESCOMPLICA PYTHON
+              - heading "If, elif ou else? Vamos praticar." [level=3] [ref=f1e288]
+              - paragraph [ref=f1e289]: Mude a nota e veja qual caminho o programa escolhe.
+            - button "Entender na prática" [ref=f1e290] [cursor=pointer]
+        - complementary [ref=f1e293]:
+          - generic [ref=f1e294]:
+            - generic [ref=f1e295]:
+              - heading "Meta diária" [level=2] [ref=f1e296]
+              - button "Editar metas" [ref=f1e301] [cursor=pointer]
+            - generic [ref=f1e304]:
+              - strong [ref=f1e308]:
+                - text: "0"
+                - generic [ref=f1e309]: /1
+              - generic [ref=f1e310]: aula hoje
+            - heading "Reserve um tempo para você." [level=3] [ref=f1e311]
+            - paragraph [ref=f1e312]: "Sua meta: 1 aula por dia. Você consegue!"
+            - generic [ref=f1e313]:
+              - generic [ref=f1e314]:
+                - generic [ref=f1e315]: S
+                - generic "7 de setembro" [ref=f1e316]: "7"
+              - generic [ref=f1e317]:
+                - generic [ref=f1e318]: T
+                - generic "8 de setembro" [ref=f1e319]: "8"
+              - generic [ref=f1e320]:
+                - generic [ref=f1e321]: Q
+                - generic "9 de setembro" [ref=f1e322]: "9"
+              - generic [ref=f1e323]:
+                - generic [ref=f1e324]: Q
+                - generic "10 de setembro" [ref=f1e325]: "10"
+              - generic [ref=f1e326]:
+                - generic [ref=f1e327]: S
+                - generic "11 de setembro" [ref=f1e328]: "11"
+              - generic [ref=f1e329]:
+                - generic [ref=f1e330]: S
+                - generic "12 de setembro" [ref=f1e331]: "12"
+              - generic [ref=f1e332]:
+                - generic [ref=f1e333]: D
+                - generic "13 de setembro" [ref=f1e334]: "13"
+            - generic [ref=f1e335]:
+              - generic [ref=f1e336]: 0 de 5 dias na semana
+              - generic [ref=f1e337]: Continue firme
+          - generic [ref=f1e340]:
+            - heading "Próxima conquista" [level=2] [ref=f1e342]
+            - heading "Primeiro passo" [level=3] [ref=f1e349]
+            - paragraph [ref=f1e350]: Conclua sua primeira aula.
+            - button "Ver todas as conquistas" [ref=f1e351] [cursor=pointer]
+          - paragraph [ref=f1e359]:
+            - text: Você não precisa saber tudo.
+            - strong [ref=f1e360]: Só precisa continuar aprendendo.
+      - generic [ref=f1e361]:
+        - generic [ref=f1e362]: PyCampus · Seu futuro, linha por linha.
+        - generic [ref=f1e363]: Progresso salvo neste navegador

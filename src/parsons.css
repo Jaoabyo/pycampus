@@ -1,0 +1,44 @@
+/* O quebra-cabeça aparece tanto na largura cheia da oficina quanto na coluna estreita da aula,
+   por isso o tabuleiro decide empilhar pelo espaço que ele tem, e não pela largura da tela. */
+.parsons{border:1px solid #ece6f8;border-radius:12px;background:#fbfaff;padding:20px;margin-top:18px;container-type:inline-size}
+.parsons-head{display:flex;gap:14px;align-items:flex-start}
+.parsons-head h3{font-size:17px;margin:0 0 4px}
+.parsons-head p{font-size:12px;line-height:1.7;color:#7f7392;margin:0}
+.parsons-prefix{margin-top:16px;border:1px solid #e3ddf1;border-radius:9px;background:#fff;padding:12px 14px}
+.parsons-prefix>span{font-size:9px;letter-spacing:1.3px;font-weight:750;color:#a291b3}
+.parsons-prefix>pre{margin:8px 0 0;font-family:Consolas,monospace;font-size:11px;line-height:1.7;color:#5b5170;white-space:pre-wrap}
+.parsons-board{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:16px;margin-top:18px}
+.parsons-label{display:block;font-size:9px;letter-spacing:1.3px;font-weight:750;color:#9c93ac;text-transform:uppercase;margin-bottom:10px}
+.parsons-pool{background:#fff;border:1px dashed #d8cdee;border-radius:10px;padding:14px}
+.parsons-piece{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:#f6f2fe;border:1px solid #e2d8f6;border-radius:8px;padding:9px 11px;margin-bottom:8px;transition:border-color .15s,background .15s}
+.parsons-piece:hover{border-color:#b79ceb;background:#f0e9fd}
+.parsons-piece>svg{color:#a58fd4;flex-shrink:0}
+.parsons-piece>code,.parsons-program code{font-family:Consolas,monospace;font-size:12px;color:#3f3550;white-space:pre-wrap;overflow-wrap:anywhere}
+.parsons-program{background:#262331;border:1px solid #393242;border-radius:10px;padding:14px}
+.parsons-program .parsons-label{color:#8d81a8}
+.parsons-program>ol{list-style:none;counter-reset:line;margin:0;padding:0}
+.parsons-program>ol>li{counter-increment:line;display:flex;align-items:center;gap:10px;border:1px solid #3c3450;border-radius:7px;background:#2e2939;padding:8px 10px;margin-bottom:7px}
+.parsons-program>ol>li::before{content:counter(line);font-family:Consolas,monospace;font-size:10px;color:#7b6f95;min-width:12px}
+.parsons-program>ol>li>code{flex:1;color:#e6dcf7}
+.parsons-program>ol>li.is-ok{border-color:#3d7a63;background:#26302c}
+.parsons-program>ol>li.is-indent{border-color:#8a7434;background:#302c22}
+.parsons-program>ol>li.is-order{border-color:#8a4650;background:#302329}
+.parsons-controls{display:flex;gap:2px;flex-shrink:0}
+.parsons-controls>button{color:#a396bb;border-radius:5px;padding:3px}
+.parsons-controls>button:hover:not(:disabled){background:#3b3350;color:#e2d6f7}
+.parsons-empty{font-size:12px;color:#8d81a0;margin:0}
+.parsons-program .parsons-empty{color:#8d81a8}
+.parsons-actions{display:flex;align-items:center;gap:14px;margin-top:16px;flex-wrap:wrap}
+.parsons-result{display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.7;color:#7a6f8c;margin:14px 0 0}
+.parsons-result>svg{flex-shrink:0;margin-top:2px}
+.parsons-result.is-solved{color:#2f8f70;font-weight:600}
+@container (max-width:520px){
+  .parsons-board{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .parsons{padding:15px}
+  .parsons-controls>button{padding:5px}
+  .parsons-program>ol>li{flex-wrap:wrap;row-gap:6px}
+  .parsons-program>ol>li>code{flex:1 0 calc(100% - 24px)}
+  .parsons-controls{margin-left:auto}
+}

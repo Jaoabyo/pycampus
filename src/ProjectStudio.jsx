@@ -1,0 +1,148 @@
+import { useState } from 'react';
+import { Icon } from './ui.jsx';
+import { lessons } from './curriculum.js';
+import { stepsFor, fileNameFor } from './project-steps.js';
+import { pendingStageWork } from './progression.js';
+import { usePython } from './useTrackedPython.js';
+import { appendAttempt } from './history.js';
+import CodeEditor from './CodeEditor.jsx';
+import { ErrorHelp, OutputCompare } from './RunFeedback.jsx';
+import { ProjectPreparation } from './LessonGuidance.jsx';
+import ProjectDelivery from './ProjectDelivery.jsx';
+import Mentor from './Mentor.jsx';
+import ExplainReview from './ExplainReview.jsx';
+import './project-studio.css';
+
+// Um projeto não pertence a uma aula, e sim a uma etapa inteira: o Lumi pode se apoiar em
+// tudo que foi ensinado até o fim do módulo dele.
+const lastLessonOfModule = index => lessons.filter(lesson => Number(lesson.moduleNumber) <= index + 1).at(-1)?.id || '';
+
+export default function ProjectStudio({ project, state, update, back, openLesson, download, navigate, openProject }) {
+  const steps = stepsFor(project.id);
+  const [phase, setPhase] = useState('build');
+  const [current, setCurrent] = useState(() => {
+    const saved = steps.findIndex(s => s.id === state.projectPositions?.[project.id]);
+    if (saved >= 0) return saved;
+    const next = steps.findIndex(s => !state.projectStepsDone?.[project.id]?.includes(s.id));
+    return next < 0 ? steps.length - 1 : next;
+  });
+  const [feedback, setFeedback] = useState(''), [mismatch, setMismatch] = useState(null), [hints, setHints] = useState(0), [fails, setFails] = useState(0), [checkedRun, setCheckedRun] = useState(false), [manualCheck, setManualCheck] = useState(false), [celebrate, setCelebrate] = useState(0);
+  const step = steps[current], done = state.projectStepsDone?.[project.id] || [];
+  const file = fileNameFor(project.id);
+  const code = state.projectCodes?.[project.id] ?? `# ${project.title}\n# Escreva uma instrução de cada vez.\n`;
+  const note = state.projectNotes?.[project.id]?.[step.id]?.answer || '';
+  const exact = typeof step.expected === 'string';
+  const inBrowser = step.mode === 'browser';
+  const python = usePython({ source: 'playground', title: `Projeto: ${project.title} · ${step.title}`, expected: exact ? step.expected : undefined, onRecord: attempt => update(s => appendAttempt(s, attempt)) });
+  const setCode = value => { update(s => ({ ...s, projectCodes: { ...s.projectCodes, [project.id]: value } })); setFeedback(''); setMismatch(null); setCheckedRun(false); setManualCheck(false); };
+  const saveNote = answer => update(s => ({ ...s, projectNotes: { ...s.projectNotes, [project.id]: { ...s.projectNotes?.[project.id], [step.id]: { answer } } } }));
+  const go = index => { setCurrent(index); setHints(0); setFeedback(''); setMismatch(null); setCheckedRun(false); setManualCheck(false); python.reset(); update(s => ({ ...s, projectPositions: { ...s.projectPositions, [project.id]: steps[index].id } })); };
+  const run = () => { setFeedback(''); setCheckedRun(false); setMismatch(null); python.run(code, '', result => {
+    const match = result.ok && (!exact || result.output.trim() === step.expected.trim());
+    setCheckedRun(match);
+    setFails(n => match ? 0 : n + 1);
+    setMismatch(result.ok && exact && !match ? result.output : null);
+    setFeedback(!result.ok ? 'Vamos olhar o erro. A ajuda abaixo indica por onde começar.' : match ? exact ? 'A saída corresponde a este caso. Agora me conte como você chegou nela.' : 'O código executou. Faça a conferência indicada abaixo antes de registrar o passo.' : 'A saída ficou diferente. Confira os valores e tente uma mudança por vez.');
+    if (match) setCelebrate(n => n + 1);
+  }); };
+  const register = () => {
+    if (!note.trim() || !manualCheck || inBrowser && !checkedRun || python.busy) return;
+    update(s => ({ ...s, projectStepsDone: { ...s.projectStepsDone, [project.id]: [...new Set([...(s.projectStepsDone?.[project.id] || []), step.id])] } }));
+    setFeedback('Passo registrado com sua explicação e sua conferência. Você pode revisar quando quiser.');
+  };
+  return <><button className="text-button back" disabled={python.busy} onClick={back}><Icon name="ArrowLeft" size={16} /> Voltar para os projetos</button><div className="page-heading"><div><div className="eyebrow">CONSTRUA COM ORIENTAÇÃO</div><h1>{project.title}</h1><p>{done.length} de {steps.length} passos registrados · seu código e suas respostas ficam salvos</p></div></div>
+    {/* Construir e entregar eram a mesma tela rolável, e isso confundia. Agora são duas. */}
+    <div className="tab-row studio-phases" aria-label="Fases do projeto">
+      <button aria-pressed={phase === 'build'} className={phase === 'build' ? 'active' : ''} onClick={() => setPhase('build')}><Icon name="Hammer" size={15} /> 1 · Construir<span className="phase-count">{done.length}/{steps.length}</span></button>
+      <button aria-pressed={phase === 'deliver'} className={phase === 'deliver' ? 'active' : ''} onClick={() => setPhase('deliver')}><Icon name="Rocket" size={15} /> 2 · Entregar e receber a nota</button>
+    </div>
+    {phase === 'build' && <>
+    <div className="studio-steps tab-row" aria-label="Passos do projeto">{steps.map((s, i) => <button key={s.id} disabled={python.busy} aria-pressed={i === current} className={i === current ? 'active' : ''} onClick={() => go(i)}>{done.includes(s.id) ? '✓ ' : ''}{i + 1} · {s.title}</button>)}</div>
+    <details className="card studio-brief"><summary>O que vamos construir e quais aulas ajudam</summary><p>{project.brief}</p><ProjectPreparation project={project} lessons={lessons} openLesson={openLesson} /></details>
+    <section className="card studio-work"><div className="eyebrow">PASSO {current + 1} DE {steps.length} · {inBrowser ? 'PRÁTICA NO NAVEGADOR' : step.mode === 'plan' ? 'PLANEJAMENTO' : 'SERVIDOR NO COMPUTADOR'}</div><h2>{step.title}</h2><p className="coach-task">{step.instruction}</p><p>Faça só esta parte agora. Se já começou o projeto, continue no seu código abaixo.</p>
+      {step.mode === 'local' && <LocalServerGuide file={file} />}
+      <button className="button outline" disabled={hints >= step.hints.length} onClick={() => setHints(n => n + 1)}>{hints ? 'Preciso de mais uma pista' : 'Me dê uma pista'}</button>
+      {step.hints.slice(0, hints).map((hint, index) => <p className="hint" key={index}><strong>Pista {index + 1}:</strong> {hint}</p>)}
+      {exact && <details className="coach-expected"><summary>Conferir a saída deste teste</summary><pre className="example-code">{step.expected}</pre></details>}
+      {(step.stdin || ['pergunta', 'conversao'].includes(step.id)) && <p className="hint">Neste teste, responda {step.stdin ? step.stdin.split('\n').join(', ') : '1200'} quando o programa perguntar. Use ponto para centavos.</p>}
+      <CodeEditor code={code} onChange={setCode} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} filename={file} runDisabled={!inBrowser} runLabel={inBrowser ? 'Testar o que escrevi' : 'Este passo é conferido fora do executor'} emptyOutput="Seu resultado aparece aqui depois de executar." />
+      {feedback && <p role="status" className="practice-feedback">{feedback}</p>}{python.success === false && <ErrorHelp output={python.output} />}{mismatch !== null && <OutputCompare actual={mismatch} expected={step.expected} />}
+      {fails > 0 && <Mentor attempts={fails} title={`${project.title} · ${step.title}`} challenge={step.instruction} expected={step.expected} code={code} output={python.output} lessonId={lastLessonOfModule(project.module)} />}
+      <section className="coach-check"><h3>Vamos conferir juntos</h3><p>{step.check}</p><label className="practice-field">{step.question}<textarea aria-label="Minha explicação do passo" maxLength={2000} value={note} onChange={e => saveNote(e.target.value)} placeholder="Eu pensei assim…" /></label><ExplainReview subject={`${step.title} — ${step.question}`} reference={code} explanation={note} /><label className="coach-confirm"><input type="checkbox" checked={manualCheck} onChange={e => setManualCheck(e.target.checked)} /> Fiz a conferência indicada e registrei o que entendi.</label><p className="small">Sua explicação fica guardada para avaliação posterior. A plataforma não julga automaticamente se o texto demonstra domínio.</p><button className="button primary" disabled={python.busy || !note.trim() || !manualCheck || inBrowser && !checkedRun} onClick={register}>Registrar este passo</button></section>
+      <div className="button-row"><button className="button outline" disabled={current === 0 || python.busy} onClick={() => go(current - 1)}>← Passo anterior</button>{current < steps.length - 1 ? <button className="button primary" disabled={python.busy} onClick={() => go(current + 1)}>Próximo passo →</button> : <button className="button primary" disabled={python.busy} onClick={() => setPhase('deliver')}>Ir para a entrega →</button>}</div><p className="small">As marcações registram sua prática. Os requisitos finais continuam na autoavaliação; passar por uma tela não concede pontos por si só.</p>
+    </section>
+    </>}
+    {phase === 'deliver' && <>
+      <ProjectCompletion project={project} state={state} update={update} steps={steps} done={done} onBuild={() => setPhase('build')} />
+      <ProjectDelivery project={project} state={state} update={update} download={download} code={code} />
+      <NextStep project={project} state={state} steps={steps} done={done} navigate={navigate} openLesson={openLesson} openProject={openProject} />
+    </>}
+  </>;
+}
+
+// O que libera a próxima etapa ficava dentro de um details recolhido: o estudante entregava o
+// link e continuava travado sem nenhuma pista do motivo. Agora o que falta fica sempre à vista.
+// Depois de concluir, o estudante ficava sem saída: nenhuma tela dizia para onde ir.
+function NextStep({ project, state, steps, done, navigate, openLesson, openProject }) {
+  const complete = done.length === steps.length && (state.projectGrades?.[project.id]?.aprovado === true
+    || state.projectChecks?.[project.id]?.length === project.requirements.length);
+  if (!complete) return null;
+  const work = pendingStageWork(state);
+  const go = () => {
+    if (work.kind === 'lesson') openLesson(work.id);
+    else if (work.kind === 'practice') navigate('practice');
+    else if (work.kind === 'project') openProject(work.id);
+    else navigate('badges');
+  };
+  return <section className="card studio-next">
+    <div className="step-head">
+      <span className="icon-tile purple"><Icon name="Rocket" size={21} /></span>
+      <div><div className="eyebrow">PROJETO CONCLUÍDO · PARA ONDE AGORA</div><h3>{work.label}</h3></div>
+    </div>
+    <div className="button-row">
+      <button className="button primary" onClick={go}>{work.label} <Icon name="ArrowRight" size={16} /></button>
+      <button className="text-button" onClick={() => navigate('projects')}>Ver todos os projetos</button>
+    </div>
+  </section>;
+}
+
+function ProjectCompletion({ project, state, update, steps, done, onBuild }) {
+  const checks = state.projectChecks?.[project.id] || [];
+  const grade = state.projectGrades?.[project.id];
+  const stepsLeft = steps.length - done.length;
+  const approved = grade?.aprovado === true;
+  const selfDone = checks.length === project.requirements.length;
+  const complete = stepsLeft === 0 && (approved || selfDone);
+
+  return <section className={`card studio-requirements ${complete ? 'is-complete' : ''}`}>
+    <div className="step-head">
+      <span className={`icon-tile ${complete ? 'teal' : 'orange'}`}><Icon name={complete ? 'CheckCircle2' : 'Target'} size={21} /></span>
+      <div><div className="eyebrow">PARA CONCLUIR ESTE PROJETO · +250 XP</div><h3>{complete ? 'Projeto concluído. A próxima etapa está liberada.' : 'O que ainda falta'}</h3></div>
+    </div>
+    <ul className="complete-checklist">
+      <li className={stepsLeft === 0 ? 'done' : ''}>
+        <Icon name={stepsLeft === 0 ? 'CheckCircle2' : 'Circle'} size={16} />
+        {stepsLeft === 0 ? `Os ${steps.length} passos da construção estão registrados` : `Registrar ${stepsLeft} ${stepsLeft === 1 ? 'passo' : 'passos'} da construção — ${done.length} de ${steps.length} feitos`}
+        {stepsLeft > 0 && <button className="text-button" onClick={onBuild}>voltar para a construção</button>}
+      </li>
+      <li className={approved || selfDone ? 'done' : ''}>
+        <Icon name={approved || selfDone ? 'CheckCircle2' : 'Circle'} size={16} />
+        {approved ? `Aprovado pelo Lumi com nota ${grade.nota.toFixed(1)}` : selfDone ? 'Autoavaliação completa' : `Ser aprovado pelo Lumi na entrega, ou marcar os ${project.requirements.length} itens abaixo`}
+      </li>
+    </ul>
+    {!complete && stepsLeft === 0 && !approved && <p className="small">Publicou no GitHub e salvou o link? Peça a avaliação do Lumi na entrega, abaixo — ele lê seu código e dá a nota. Se preferir avaliar você mesmo, marque os itens aqui.</p>}
+    <details className="studio-self">
+      <summary>Autoavaliação · marque apenas o que você construiu e conferiu</summary>
+      <div className="requirements">{project.requirements.map((requirement, index) => <label key={requirement}>
+        <input type="checkbox" checked={checks.includes(index)} onChange={() => update(s => {
+          const previous = s.projectChecks[project.id] || [];
+          return { ...s, projectChecks: { ...s.projectChecks, [project.id]: previous.includes(index) ? previous.filter(i => i !== index) : [...previous, index] } };
+        })} />{requirement}
+      </label>)}</div>
+    </details>
+  </section>;
+}
+
+function LocalServerGuide({ file }) {
+  return <details className="guided-example"><summary>Como passar do código para um servidor local</summary><p>As funções e o SQLite podem ser treinados aqui. O navegador não abre um servidor HTTP. Escreva e baixe o arquivo; siga estes passos no computador.</p><ol className="guided-actions"><li>Crie uma pasta e salve {file} nela. Abra essa pasta no terminal.</li><li>Crie um ambiente separado: <code>python -m venv .venv</code>.</li><li>No Windows, instale os pacotes com <code>.\.venv\Scripts\python -m pip install fastapi uvicorn</code>.</li><li>O aplicativo começa com <code>from fastapi import FastAPI</code> e depois <code>app = FastAPI()</code>. Essas duas linhas importam a ferramenta e criam o aplicativo.</li><li><code>@app.get("/caminho")</code> antes de uma função liga um pedido GET à função. O return da função vira a resposta. Crie primeiro uma rota simples sua e só depois conecte as funções de hábitos.</li><li>Execute <code>.\.venv\Scripts\python -m uvicorn api:app --reload</code>. api é o arquivo api.py; app é o aplicativo que você criou.</li><li>Abra <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer">http://127.0.0.1:8000/docs</a>. Use Try it out e Execute para testar cada rota.</li><li>Para receber dados, estude Request Body; para status de erro, Handling Errors, no tutorial abaixo. Compare o código recebido, como 200 ou 404, e o corpo da resposta.</li></ol><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">Tutorial oficial com cada parte da sintaxe</a><p>Confira os pedidos manualmente e descreva o resultado. A plataforma não executa nem verifica o servidor do seu computador.</p></details>;
+}

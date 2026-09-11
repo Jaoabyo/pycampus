@@ -1,0 +1,48 @@
+.studio-steps{margin:0 0 22px}
+.studio-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:24px;align-items:start}
+.studio-brief,.studio-requirements,.studio-work,.studio-publish{padding:24px;margin-bottom:20px}
+.studio-brief p,.studio-work p,.studio-publish p{font-size:13px;line-height:1.8;color:#6f6382}
+.studio-work .expected{margin-bottom:16px}
+.studio-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:16px}
+/* Parágrafo com <code> e <strong> dentro não pode ser flex: cada trecho viraria uma coluna. */
+.studio-tools .small,.studio-work .small,.studio-publish .small{font-size:11px;color:#948aa4;line-height:1.75}
+.studio-publish .small>svg{margin-right:6px;color:#a48ed4}
+.studio-publish .small code{font-family:Consolas,monospace;background:#f4f0fb;border-radius:4px;padding:1px 5px;color:#6b529c}
+.studio-requirements .requirements{margin:14px 0 16px}
+.git-guide{counter-reset:git;list-style:none;padding:0;margin:18px 0}
+.git-guide>li{counter-increment:git;position:relative;padding:14px 0 14px 34px;border-top:1px solid #f1eef8}
+.git-guide>li:first-child{border-top:0}
+.git-guide>li::before{content:counter(git);position:absolute;left:0;top:15px;width:22px;height:22px;border-radius:50%;background:#f1ecfa;color:#7554c9;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.git-command{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#262331;border:1px solid #393242;border-radius:8px;padding:10px 12px}
+.git-command>code{font-family:Consolas,monospace;font-size:11.5px;color:#e6dcf7;overflow-wrap:anywhere}
+.git-command .text-button{color:#c3b2e6;flex-shrink:0;gap:6px}
+.git-guide>li>p{font-size:11.5px;line-height:1.75;color:#7e7391;margin:9px 0 0}
+.studio-link{margin-top:18px}
+.studio-link .button-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+@media(max-width:980px){
+  .studio-layout{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .studio-brief,.studio-requirements,.studio-work,.studio-publish{padding:18px}
+  .studio-steps{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
+  .studio-steps>button{flex-shrink:0}
+  .git-command{flex-direction:column;align-items:flex-start}
+}
+.guided-actions{padding-left:24px}.guided-actions li{padding:8px 0;color:#51445f;font-size:14px;line-height:1.85}.guided-example{margin:18px 0;border:1px solid #ddcfee;border-radius:10px;padding:16px}.guided-example summary{cursor:pointer;color:#694698;font-weight:600}.guided-example pre{white-space:pre-wrap;overflow-wrap:anywhere}.guided-roadmap{padding:20px;margin:20px 0}.guided-roadmap .tab-row{flex-wrap:wrap}.guided-roadmap p{line-height:1.9}.input-question{padding:22px;background:#f5edff;color:#49375f;border-top:3px solid #a277d6}.input-question label{display:block}.input-question strong{display:block;margin:8px 0}.input-question input{display:block;width:100%;padding:12px;border:1px solid #b99bd8;border-radius:7px;margin:12px 0;color:#30263c;background:#fff;font:inherit}.input-question p{font-size:12px;line-height:1.7}.studio-layout{grid-template-columns:minmax(0,1fr)!important}.studio-layout>div:first-child{display:grid;grid-template-columns:1fr 1fr;gap:20px}.studio-work{max-width:960px}.studio-publish{max-width:960px}@media(max-width:700px){.studio-layout>div:first-child{display:block}.studio-steps{flex-wrap:wrap}.practice-work .button-row{flex-wrap:wrap}}
+.coach-task{font-size:18px!important;line-height:1.8!important;color:#42304f!important}.coach-expected{margin:20px 0}.coach-expected summary{cursor:pointer;color:#7752a0}.coach-check{padding:20px;background:#faf6ff;border:1px solid #e6d9f2;border-radius:12px;margin:22px 0}.coach-confirm{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.7}.coach-confirm input{margin-top:5px}.studio-work h2{font-size:23px;margin:12px 0}.studio-publish .tab-row{display:flex;flex-wrap:wrap;gap:8px}.studio-publish .tab-row button[aria-pressed=true]{background:#e9dcf7;color:#63418a}.studio-publish .example-code{white-space:pre-wrap;overflow-wrap:anywhere}.studio-work .button-row{margin-top:20px;flex-wrap:wrap}.studio-steps{display:flex;flex-wrap:wrap;gap:8px}.studio-steps button{white-space:normal;text-align:left}.studio-brief summary,.studio-requirements summary{cursor:pointer;color:#63418a}@media(max-width:600px){.coach-check{padding:14px}.coach-task{font-size:16px!important}.studio-publish .tab-row button{font-size:12px;padding:10px}.studio-work .button-row a{white-space:normal}.run-bar .button{white-space:normal;text-align:left}}
+
+/* Construir e entregar viraram duas fases: a tela única misturava editor, conferência,
+   README, publicação e nota, e o estudante não sabia onde estava. */
+.studio-phases{margin-bottom:14px}
+.studio-phases>button{display:flex;align-items:center;gap:8px}
+.phase-count{font-size:10.5px;font-weight:700;color:#8a7da3;background:#f1ecfb;border-radius:20px;padding:2px 8px}
+.studio-phases>button.active .phase-count{background:#e5d9fa;color:#5b4788}
+.studio-next{margin-top:16px;background:linear-gradient(120deg,#f7f3ff,#f2ecfe);border:1px solid #e0d4f8}
+.studio-next .button-row{margin-top:14px}
+.studio-requirements .complete-checklist>li>.text-button{margin-left:8px;font-size:12px}
+@media(max-width:760px){
+  /* .tab-row não quebra linha: sem isto, dois botões de 100% ficam lado a lado e empurram a página. */
+  .studio-phases{flex-wrap:wrap}
+  .studio-phases>button{flex:1 0 100%;justify-content:center}
+  .studio-next .button-row>.button{width:100%;justify-content:center}
+}
