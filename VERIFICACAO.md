@@ -359,3 +359,22 @@ Pedido do estudante depois do bug da previsão: procurar mais casos do mesmo tip
 - Três minutos por questão é referência, não limite: passar disso entra no relatório e não reprova.
 - Registros de prova passam por `normalizeProvas`: data inválida, acertos maiores que o total e aulas inexistentes são descartados, como em todo o resto do estado.
 - 140 testes, jornada do iniciante sem regressão.
+
+## Auditoria: as cinco frentes que faltavam (11/09/2026)
+
+A verificação anterior falhou por limite de sessão, deixando 85 achados brutos sem veredito. Desta vez os achados foram extraídos dos transcripts dos agentes e conferidos contra o código atual, um a um, sem disparar novos agentes.
+
+**Gating — 14 achados, todos já corrigidos.** A frente acusava que as pontes de função travavam a formação para sempre, que `normalizeState` apagava `functionBridges`, que cartão travado era só cosmético e que `practiceIsOpen` era importado e nunca usado. Dez verificações mecânicas mostram que tudo isso foi resolvido quando o gating foi ligado de fato. O achado de que `is-locked` não existia em CSS nenhum também está vencido: existe em `lesson.css` — minha primeira checagem olhou só `styles.css` e teria dado falso positivo.
+
+**Visual — 16 achados, 2 confirmados e corrigidos agora.** O Diário de aprendizagem não tinha um único ícone na tela inteira e o bloco de entrega do projeto tinha um `h2` solto. Os dois ganharam o cabeçalho com tile colorido do padrão. O achado sobre Configurações sem tile é verdade, mas a tela inteira usa esse padrão: mudar só os cartões novos deixaria a tela inconsistente. Os demais foram resolvidos no caminho.
+
+**Miniprojetos — 2 confirmados e corrigidos, ambos sérios.**
+- `estoquezinho` tinha a etapa "Crie" esperando **a mesma saída** da etapa "Mude". Dava para concluir o miniprojeto e ganhar os 40 XP colando o código anterior, sem escrever a subtração pedida. A tarefa passou a usar estoque 12 e o teste novo impede que isso volte a acontecer em qualquer miniprojeto.
+- `cofre` manda "reaproveitar a classe do exemplo" na etapa "Crie", mas o exemplo sai da tela nessa etapa. Agora ele fica consultável ali, recolhido.
+- Conferido no Python real: **as 24 soluções produzem a saída esperada**.
+
+**Aulas — 16 achados, verificados e em aberto.** A regra da explicação visível está cumprida (o teste passa). Os achados são sobre distância entre exemplo e desafio — o `while` conta para baixo no exemplo e para cima no desafio; `complexidade` mostra busca com `return` e pede contador acumulado; `validacao` só lança a exceção e o desafio pede lançar e capturar. São observações pedagógicas legítimas que exigem reescrever conteúdo, e ficam registradas para a próxima rodada.
+
+**Pesquisa — 13 achados, parcialmente vencidos pelo trabalho posterior.** "Parsons não é usado como degrau nas funções" caiu quando o quebra-cabeça passou a existir em toda atividade. "Não existe tabela de rastreio de parâmetro e retorno" foi endereçado pelo visualizador de execução. Seguem em aberto: as pontes de função não têm etapa de previsão antes de rodar, nem auto-explicação escrita, e o estudante não testa o retorno da própria função com `assert` antes do módulo 07.
+
+**Resumo honesto:** dos 85 achados sem veredito, a maioria estava vencida pelo trabalho feito desde então; 4 eram reais e foram corrigidos agora; os de conteúdo de aula e de sequência das pontes continuam abertos e nomeados, em vez de dados como resolvidos.

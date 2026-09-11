@@ -133,6 +133,9 @@ function Practice({ project: p, state, update, back, openLesson }) {
         <p>{stage === 'read' ? 'Leia o código de cima para baixo e escreva sua previsão. Não precisa acertar de primeira: prever e comparar é o que faz o aprendizado grudar.' : stage === 'investigate' ? 'Percorra o código linha por linha, com os valores concretos, e explique uma linha com suas palavras. A prova rápida sobre esse mecanismo vem na etapa 5, depois de você programar.' : stage === 'modify' ? 'Uma mudança pequena por vez. Rode e veja o efeito.' : 'Tente escrever uma parte por vez. Peça uma pista se precisar e explique o efeito de cada mudança.'}</p>
         {!reading && <div className="expected"><span>SAÍDA ESPERADA</span><pre>{expected}</pre></div>}
       </section>
+      {/* Na etapa Crie o exemplo sai da tela, mas alguns enunciados mandam reaproveitá-lo —
+          o do cofre pede a classe inteira. Deixar o exemplo consultável evita decorar. */}
+      {stage === 'create' && <details className="guided-example"><summary>Ver o exemplo de novo</summary><pre className="example-code">{p.example}</pre></details>}
       {stage === 'read' && <label className="practice-field">Minha previsão<textarea maxLength={1000} value={item.prediction || ''} onChange={e => save({ prediction: e.target.value })} placeholder="Acho que vai mostrar…" /></label>}
       {stage === 'investigate' && <label className="practice-field">Explique esta linha com suas palavras, sem consultar: <code>{p.investigate.line}</code><textarea maxLength={1500} value={item.notes || ''} onChange={e => save({ notes: e.target.value })} placeholder="Essa linha…" /></label>}
       {stage === 'investigate' && <ExplainReview subject={`Explicar a linha ${p.investigate.line} do miniprojeto ${p.title}`} reference={p.example} explanation={item.notes} />}

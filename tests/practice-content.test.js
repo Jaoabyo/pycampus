@@ -150,3 +150,13 @@ test('a prediction that misses anything is not treated as right', () => {
   assert.equal(predictionMatches('Pode entrar', ''), false, 'sem saída não há o que comparar');
   assert.equal(predictionMatches(undefined, 'Pode entrar'), false);
 });
+
+// Uma auditoria achou um miniprojeto cuja etapa "Crie" esperava a mesma saída da etapa
+// "Mude": dava para concluir e ganhar os 40 XP colando o código anterior, sem escrever nada
+// do que foi pedido. Cada etapa precisa exigir um resultado próprio.
+test('no stage can be passed by reusing the previous stage output', () => {
+  for (const p of practiceProjects) {
+    assert.notEqual(p.modified.trim(), p.expected.trim(), `${p.id}: "Crie" passa com o código de "Mude"`);
+    assert.notEqual(p.output.trim(), p.modified.trim(), `${p.id}: "Mude" passa sem editar o exemplo`);
+  }
+});
