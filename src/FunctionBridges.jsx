@@ -7,6 +7,8 @@ import { appendAttempt } from './history.js';
 import CodeEditor from './CodeEditor.jsx';
 import { ErrorHelp, OutputCompare } from './RunFeedback.jsx';
 import CodeReview from './CodeReview.jsx';
+import ExplainReview from './ExplainReview.jsx';
+import { predictionMatches } from './practice-content.js';
 import { requisitosFaltando } from './requisitos.js';
 import ParsonsPuzzle from './ParsonsPuzzle.jsx';
 import Mentor from './Mentor.jsx';
@@ -40,6 +42,11 @@ function Bridge({ bridge, state, update, back }) {
     setFails(n => cumpriu ? 0 : n + 1);
     if (cumpriu) { save({ passed: true, code }); setCelebrate(n => n + 1); }
   });
+  const [previsto, setPrevisto] = useState('');
+  const preverExemplo = () => python.run(bridge.example, bridge.exampleStdin || '', resultado => {
+    if (!resultado.ok) return setPrevisto('');
+    setPrevisto(predictionMatches(record.previsao, resultado.output) ? 'certa' : 'diferente');
+  });
   const answered = Number.isInteger(record.answered) ? record.answered : null;
   return <>
     <button className="text-button back" disabled={python.busy} onClick={back}><Icon name="ArrowLeft" size={16} /> Voltar para as pontes</button>
@@ -54,6 +61,19 @@ function Bridge({ bridge, state, update, back }) {
       <p className="bridge-concept">{bridge.concept}</p>
       <p className="small">Exemplo pronto, para ler antes de tentar:</p>
       <pre className="example-code">{bridge.example}</pre>
+      <label className="practice-field">O que este exemplo vai mostrar? Escreva antes de executar.
+        <textarea aria-label="Minha previsão da saída do exemplo" maxLength={400} value={record.previsao || ''}
+          onChange={event => { save({ previsao: event.target.value }); setPrevisto(''); }} placeholder="Eu acho que vai aparecer…" />
+      </label>
+      <div className="button-row">
+        <button className="button outline" disabled={python.busy || !String(record.previsao || '').trim()} onClick={preverExemplo}>
+          <Icon name="Play" size={15} /> Executar o exemplo e comparar
+        </button>
+      </div>
+      {previsto && <p role="status" className={previsto === 'certa' ? 'success-text' : 'muted'}>{previsto === 'certa'
+        ? 'Você previu certo. Isso é sinal de que já entendeu o mecanismo — agora escreva o seu.'
+        : 'Sua previsão ficou diferente da saída. Compare as duas acima e procure a linha que explica a diferença: é aí que o aprendizado gruda.'}</p>}
+      <p className="small">Errar a previsão não trava nada e não tira ponto. Ela existe para você descobrir o que ainda não sabia.</p>
       <div className="step-head"><span className={`icon-tile ${record.passed ? 'teal' : 'orange'}`}><Icon name={record.passed ? 'CheckCircle2' : 'SquareTerminal'} size={21} /></span><div><div className="eyebrow">SUA VEZ</div><h3>Escreva você</h3></div></div>
       <p className="bridge-challenge">{bridge.challenge}</p>
       <div className="expected"><span>SAÍDA ESPERADA</span><pre>{bridge.expected}</pre></div>
@@ -76,6 +96,13 @@ function Bridge({ bridge, state, update, back }) {
         <span>{String.fromCharCode(65 + index)}</span>{option}
       </label>)}
       {answered !== null && <p className={answered === bridge.answer ? 'success-text' : 'error-text'} role="status">{answered === bridge.answer ? 'Isso mesmo.' : 'Ainda não. Releia a ideia no topo e o exemplo, e escolha outra alternativa.'}</p>}
+      {/* Explicar com as próprias palavras é o que separa reconhecer de saber. O Lumi lê e
+          comenta; a etapa continua sendo liberada por código e prova, nunca por este texto. */}
+      <label className="practice-field">Explique, sem consultar, por que sua solução funciona.
+        <textarea aria-label="Minha explicação da ponte" maxLength={1200} value={record.explicacao || ''}
+          onChange={event => save({ explicacao: event.target.value })} placeholder="Eu pensei assim…" />
+      </label>
+      <ExplainReview subject={`Ponte de função: ${bridge.title} — ${bridge.concept}`} reference={code} explanation={record.explicacao || ''} />
       <ul className="practice-checklist">
         <li className={record.passed ? 'done' : ''}><Icon name={record.passed ? 'CheckCircle2' : 'Circle'} size={16} /> Código com a saída esperada</li>
         <li className={record.quizCorrect ? 'done' : ''}><Icon name={record.quizCorrect ? 'CheckCircle2' : 'Circle'} size={16} /> Pergunta respondida corretamente</li>

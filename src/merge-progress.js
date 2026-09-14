@@ -43,7 +43,10 @@ function juntarPonte(a = {}, b = {}) {
     passed: Boolean(a.passed || b.passed),
     quizCorrect: Boolean(a.quizCorrect || b.quizCorrect),
     answered: Number.isInteger(a.answered) ? a.answered : b.answered,
-    code: maisLongo(a.code, b.code)
+    code: maisLongo(a.code, b.code),
+    // Texto escrito à mão é o que mais dói perder ao juntar dois aparelhos: fica o mais longo.
+    previsao: maisLongo(a.previsao, b.previsao),
+    explicacao: maisLongo(a.explicacao, b.explicacao)
   };
 }
 
