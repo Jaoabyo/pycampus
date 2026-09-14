@@ -62,7 +62,15 @@ const EXIGE_TECNICA = {
   // Técnica e não chamada: `chama()` recusa nome precedido de ponto, e `statistics.median(...)`
   // é um caminho perfeitamente válido.
   analise: [tecnica(b + 'median\\s*\\(', 'calcular a mediana com median, que é o assunto da aula')],
-  deploy: [tecnica('getenv|environ', 'ler a variável de ambiente, com valor padrão')]
+  deploy: [tecnica('getenv|environ', 'ler a variável de ambiente, com valor padrão')],
+
+  // Miniprojetos cuja resposta aparece legitimamente no código, então a regra do literal se
+  // isenta sozinha. Sem isto eles ficariam sem nenhuma exigência automática.
+  portaria: [tecnica(b + 'if' + b, 'decidir com if'), tecnica(b + 'else' + b, 'tratar o outro caminho com else')],
+  excecao: [tecnica(b + 'try' + b, 'colocar a conversão dentro de try'), tecnica(b + 'except' + b, 'tratar o erro com except')],
+  permissao: [tecnica(b + 'def' + b, 'escrever a regra como função, para valer nos dois casos')],
+  registro: [tecnica(b + 'logging' + b, 'registrar pelo logging, não por print')],
+  ambiente: [tecnica('getenv|environ', 'ler do ambiente, com valor padrão')]
 };
 
 // Miniprojeto, ponte de função e aula guardam a solução em campos diferentes, mas o problema é o

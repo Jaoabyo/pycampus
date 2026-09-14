@@ -18,7 +18,8 @@ const comProgresso = {
 test('the report carries real progress, real mistakes and the student own words', () => {
   const texto = montarRelatorio(comProgresso, hoje);
   assert.match(texto, /2 de 48 aulas concluídas/);
-  assert.match(texto, /1 de 24 miniprojetos treinados/);
+  // Conta os miniprojetos do currículo, para o teste não quebrar cada vez que um é criado.
+  assert.match(texto, new RegExp(`1 de ${practiceProjects.length} miniprojetos treinados`));
   assert.match(texto, /essa linha guarda o nome/, 'a explicação escrita precisa entrar');
   assert.match(texto, /3 de 5/, 'o resultado da prova precisa entrar');
   assert.match(texto, /Como estou indo\?/, 'o relatório termina pedindo a avaliação');

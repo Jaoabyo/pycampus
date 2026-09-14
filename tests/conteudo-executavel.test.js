@@ -24,7 +24,11 @@ test('toda solução guardada é um programa completo, sem depender de código d
       if (funcao) definidos.add(funcao[1]);
     }
     for (const linha of String(p.solution).split(String.fromCharCode(10))) {
-      const uso = linha.match(new RegExp('([A-Z][A-Za-z0-9_]*)' + String.fromCharCode(92) + '('));
+      // Fora das aspas: COUNT(*) dentro de um comando SQL é texto, não chamada de Python.
+      // Precedido de ponto é atributo de algo já importado (io.StringIO), não nome solto.
+      const semTexto = linha.replace(new RegExp(String.fromCharCode(34) + "[^" + String.fromCharCode(34) + "]*" + String.fromCharCode(34), "g"), " ")
+        .replace(new RegExp(String.fromCharCode(39) + "[^" + String.fromCharCode(39) + "]*" + String.fromCharCode(39), "g"), " ");
+      const uso = semTexto.match(new RegExp("(?<![A-Za-z0-9_.])([A-Z][A-Za-z0-9_]*)" + String.fromCharCode(92) + "("));
       if (uso) assert.ok(definidos.has(uso[1]), p.id + ': a solução usa ' + uso[1] + ' sem definir');
     }
   }

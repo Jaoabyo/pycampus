@@ -39,7 +39,7 @@ test('quase todo exercício ganhou requisito; as isenções são poucas e por um
     ...practiceProjects.filter(p => !requisitosDaAula(comoExercicio(p)).length).map(p => 'miniprojeto ' + p.id),
     ...functionBridges.filter(b => !requisitosDaAula(b).length).map(b => 'ponte ' + b.id)
   ];
-  assert.deepEqual(semRequisito, ['miniprojeto portaria', 'miniprojeto excecao', 'ponte ponte-funcao-chamar']);
+  assert.deepEqual(semRequisito, ['ponte ponte-funcao-chamar']);
 });
 
 test('as três telas que executam código do estudante mostram a leitura do Lumi', () => {
