@@ -17,7 +17,7 @@ O que muda no site publicado, em relação ao PyCampus aberto no seu computador:
 
 - **O Lumi conversa também aqui**, com o computador ligado: dê um duplo clique em `iniciar-lumi-online.cmd`, copie o endereço que aparecer e cole em *Configurações → Onde a IA do Lumi mora*. Sem isso, as dicas escritas dos quatro degraus continuam funcionando em qualquer aparelho, sem depender de nada.
 - **As respostas de `input()` precisam ser preenchidas antes de executar**, no campo "Entradas para input()". Responder durante a execução exige cabeçalhos que o GitHub Pages não envia. No computador funciona dos dois jeitos.
-- **O progresso é de cada aparelho.** O que você faz no celular não aparece no computador. Use a exportação de backup em Configurações para levar de um para o outro.
+- **O progresso acompanha você entre aparelhos** se ligar a nuvem em *Configurações*: ele passa a ser guardado num Gist privado da sua conta do GitHub. Sem isso, fica só no navegador daquele aparelho, e a exportação de backup continua disponível.
 
 Atualização dos projetos: os oito projetos agora abrem no estúdio, com 42 passos de tarefa, dicas graduais, conferência e explicação escrita pelo estudante. Os programas resolvidos da calculadora são apenas fixtures de teste; não são entregues pelo estúdio. Código, posição, respostas e rascunhos de README sobrevivem ao recarregamento e ao backup. As respostas dos projetos também entram no relatório de aprendizagem.
 
