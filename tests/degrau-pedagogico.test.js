@@ -52,7 +52,7 @@ test('nada é exigido num desafio antes de aparecer em código que roda', () => 
     if (novas.length) furos.push(aula.id + ": " + novas.join(" "));
     for (const nome of [...exigidas, ...mostradas]) jaEscritas.add(nome);
   }
-  // conjuntos: o desafio pede set() e o exemplo da aula usa outra forma. Fica registrado como
-  // a única exceção conhecida, em vez de o teste ser afrouxado e esconder as próximas.
-  assert.deepEqual(furos, ['conjuntos: set']);
+  // Nenhuma exceção. Se um dia aparecer uma, ela vem nomeada aqui com o motivo, e não por
+  // afrouxamento da regra.
+  assert.deepEqual(furos, []);
 });
