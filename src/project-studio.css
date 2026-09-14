@@ -1,4 +1,5 @@
 .studio-steps{margin:0 0 22px}
+.studio-progress{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.7fr) auto;align-items:center;gap:22px;padding:18px 22px;margin:0 0 16px;background:linear-gradient(120deg,#fff,#faf7fe);border-color:#e8dff3}.studio-progress strong,.studio-progress span{display:block}.studio-progress strong{font-family:var(--heading);font-size:14px;color:#42354f;margin-top:5px}.studio-progress>div>span{font-size:11px;color:#887c99;margin-top:4px}.studio-progress-track{height:8px;background:#eee9f5;border-radius:99px;overflow:hidden}.studio-progress-track i{display:block;height:100%;background:linear-gradient(90deg,#8a69dd,#aa8bea);border-radius:99px;transition:width .3s}.studio-progress-count{font:700 13px var(--heading);color:#7655bd;background:#f0eafa;border-radius:9px;padding:8px 10px}
 .studio-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:24px;align-items:start}
 .studio-brief,.studio-requirements,.studio-work,.studio-publish{padding:24px;margin-bottom:20px}
 .studio-brief p,.studio-work p,.studio-publish p{font-size:13px;line-height:1.8;color:#6f6382}
@@ -23,6 +24,7 @@
   .studio-layout{grid-template-columns:1fr}
 }
 @media(max-width:760px){
+  .studio-progress{grid-template-columns:1fr auto;gap:14px;padding:17px}.studio-progress-track{grid-column:1/-1;grid-row:2}.studio-progress>div>span{font-size:10px}
   .studio-brief,.studio-requirements,.studio-work,.studio-publish{padding:18px}
   .studio-steps{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
   .studio-steps>button{flex-shrink:0}
@@ -46,3 +48,9 @@
   .studio-phases>button{flex:1 0 100%;justify-content:center}
   .studio-next .button-row>.button{width:100%;justify-content:center}
 }
+
+/* A entrega é uma sequência. Os três botões passam a parecer etapas do mesmo roteiro. */
+.studio-publish>.tab-row{padding:6px;background:#faf8fe;border:1px solid #ebe4f5;border-radius:11px;gap:6px}
+.studio-publish>.tab-row>button{flex:1;justify-content:center;min-height:42px;border-radius:7px;font-weight:650;color:#7d708e}
+.studio-publish>.tab-row>button[aria-pressed=true]{background:#7755d9;color:#fff;box-shadow:0 3px 10px #7755d927}
+@media(max-width:600px){.studio-publish>.tab-row>button{flex-basis:100%;justify-content:flex-start;padding-left:14px}}

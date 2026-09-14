@@ -437,3 +437,16 @@ As capturas locais ficam em `artifacts/study/`.
 - O mapa de atividade do Perfil ganhou tamanho e contraste para tornar os dias estudados identificáveis.
 - A página Sobre usa duas colunas no computador para os blocos complementares e preserva leitura em uma coluna no celular.
 - `npm test`: **215 testes aprovados**; build e jornada visual em 1440 e 390 px aprovados.
+
+## Roteiro visível no estúdio de projetos · 14/09/2026
+
+- Cada estúdio agora mostra o passo atual, quantos passos de construção faltam e uma barra de progresso antes do editor.
+- Ao registrar todos os passos, o mesmo bloco orienta a sequência de entrega: README, GitHub e conferência final.
+- A barra só apresenta o estado já salvo; não libera etapas nem altera XP, requisitos ou critérios de aprovação.
+- `npm test`: **215 testes aprovados**; build aprovado; `check-project-study` aprovou os oito estúdios, README, guia de entrega, retomada e interrupção do executor.
+
+## Entrega guiada do projeto · 14/09/2026
+
+- As três fases de entrega — escrever README, baixar/testar arquivos e publicar no GitHub — agora compartilham um roteiro visual, com a fase atual destacada.
+- O conteúdo e a ordem continuam os mesmos; o ajuste só torna claro que uma fase prepara a próxima.
+- `npm test`: **215 testes aprovados**; build aprovado.
