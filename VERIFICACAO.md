@@ -387,3 +387,12 @@ A verificação anterior falhou por limite de sessão, deixando 85 achados bruto
 - **Armadilha encontrada no caminho, e ela é do projeto inteiro:** as páginas (`Dashboard`, `Settings`, …) são funções declaradas dentro de `App`. Cada render de `App` cria uma identidade nova de componente, então o React desmonta e remonta a subárvore e **apaga todo `useState` local**. O relatório sumia no mesmo clique que o criava. A correção foi derivar o texto do estado em vez de guardá-lo; a armadilha ficou registrada no cofre, porque vai morder de novo.
 - 148 testes, jornada do iniciante sem regressão, verificado em 1440 px e 390 px.
 - **O túnel do Lumi para o celular parou de funcionar nesta rede:** o endereço `trycloudflare.com` não resolve mais o DNS daqui, embora tenha funcionado em 11/09. A IA local no computador está intacta — isso afeta apenas o acesso pelo celular ao site publicado.
+
+## Página "Sobre e limites" estava quebrada (13/09/2026)
+
+- Relatado pelo estudante. A página montava os cartões soltos, sem o contêiner que o resto do produto usa: os seis ficavam **colados, com folga zero**, parecendo um bloco quebrado, e o texto se esticava por 1440 px sem largura de leitura.
+- Causa: `.card` não tem margem própria; o espaçamento vem sempre do contêiner (`.settings-list`, `.targeted-list`, …). Eu montei a tela sem nenhum — exatamente o erro que a regra "interface nova se baseia no visual que já existe" existe para evitar.
+- Corrigido reaproveitando `.settings-list`, que já dá o espaçamento de 20 px e a largura de leitura de 820 px.
+- **A jornada automatizada passou a medir isso**: cartões empilhados com menos de 6 px de folga viram problema, em todas as abas. O detector foi provado contra a versão publicada com o defeito — acusou os 5 cartões com folga 0 — e contra a corrigida, onde não acusa nada. Um detector que nunca dispara não vale nada.
+- A jornada também passou a visitar as abas novas, Modo prova e Sobre e limites, que não estavam cobertas.
+- Corrigido no caminho: a página ainda dizia que o progresso é só do aparelho, o que deixou de ser verdade quando a nuvem entrou.

@@ -19,6 +19,7 @@ export default function Sobre({ navigate }) {
       </div>
     </div>
 
+    <div className="settings-list">
     <section className="card sobre-aviso">
       <div className="step-head"><span className="icon-tile yellow"><Icon name="Lightbulb" size={21} /></span>
         <div><div className="eyebrow">ANTES DE MAIS NADA</div><h3>Isto é material complementar</h3></div></div>
@@ -44,7 +45,7 @@ export default function Sobre({ navigate }) {
       <div className="step-head"><span className="icon-tile orange"><Icon name="TriangleAlert" size={21} /></span>
         <div><div className="eyebrow">SEJA AVISADO</div><h3>Limitações conhecidas</h3></div></div>
       <ul className="sobre-lista">
-        <li><strong>Seu progresso é deste aparelho.</strong> Ele vive no navegador. Em Configurações dá para ligar a nuvem (um Gist privado da sua conta do GitHub) ou exportar um backup.</li>
+        <li><strong>Sem ligar a nuvem, seu progresso é deste aparelho</strong> e vive no navegador — limpar os dados do navegador apaga tudo. Em Configurações dá para guardá-lo num Gist privado da sua conta do GitHub, ou exportar um backup.</li>
         <li><strong>O Lumi, o ajudante com IA, precisa de um modelo rodando no computador de quem estuda.</strong> Sem isso ele mostra as dicas escritas, que funcionam sempre, mas não conversa.</li>
         <li><strong>No site publicado, as respostas de <code>input()</code> precisam ser preenchidas antes de executar</strong>, no campo próprio. Responder durante a execução exige cabeçalhos que o GitHub Pages não envia.</li>
         <li><strong>O primeiro carregamento do Python leva alguns segundos</strong> e precisa de internet. Depois disso, as aulas abrem offline.</li>
@@ -81,5 +82,6 @@ export default function Sobre({ navigate }) {
       ))}</ul>
       <p className="small">Este é um projeto em desenvolvimento. Correções e melhorias entram conforme aparecem.</p>
     </section>
+    </div>
   </>;
 }
