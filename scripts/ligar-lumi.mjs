@@ -20,19 +20,36 @@ if (!modelos) {
 }
 console.log(`Ollama respondendo. Modelos: ${modelos.models.map(m => m.name).join(', ')}`);
 
+// Túnel rápido dá um endereço novo a cada vez que sobe. Quem tem uma conta Cloudflare pode
+// criar um túnel nomeado, com endereço fixo, e passá-lo aqui:
+//
+//   cloudflared tunnel login
+//   cloudflared tunnel create pycampus
+//   cloudflared tunnel route dns pycampus lumi.SEU-DOMINIO
+//   PYCAMPUS_TUNEL=pycampus PYCAMPUS_TUNEL_HOST=https://lumi.SEU-DOMINIO npm run lumi:celular
+//
+// Aí o link do celular para de mudar e dá para guardar na tela inicial. Sem isso, segue o
+// túnel rápido, que não exige conta nenhuma.
+const nomeado = process.env.PYCAMPUS_TUNEL;
+const hostFixo = process.env.PYCAMPUS_TUNEL_HOST;
+if (nomeado && !hostFixo) {
+  console.error('PYCAMPUS_TUNEL exige PYCAMPUS_TUNEL_HOST com o endereço https que aponta para ele.');
+  process.exit(1);
+}
+
 // --http-host-header: sem isso o Ollama recusa a requisição que chega com o host do túnel.
-const tunel = spawn(CLOUDFLARED, ['tunnel', '--url', OLLAMA, '--http-host-header', 'localhost:11434'], { stdio: ['ignore', 'pipe', 'pipe'] });
+const argumentos = nomeado
+  ? ['tunnel', 'run', '--url', OLLAMA, '--http-host-header', 'localhost:11434', nomeado]
+  : ['tunnel', '--url', OLLAMA, '--http-host-header', 'localhost:11434'];
+const tunel = spawn(CLOUDFLARED, argumentos, { stdio: ['ignore', 'pipe', 'pipe'] });
 tunel.on('error', erro => {
   console.error(`Não consegui iniciar o cloudflared (${erro.message}). Instale-o ou aponte a variável CLOUDFLARED para o executável.`);
   process.exit(1);
 });
 
 let anunciado = false;
-const procurarEndereco = texto => {
-  const achado = String(texto).match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/);
-  if (!achado || anunciado) return;
+const anunciar = endereco => {
   anunciado = true;
-  const endereco = achado[0];
   console.log(`
 Túnel no ar: ${endereco}
 
@@ -41,6 +58,11 @@ Abra este link no celular (ou mande para ele) — o campus já vai com o Lumi co
   ${SITE}?ia=${encodeURIComponent(endereco)}
 
 Deixe esta janela aberta enquanto estiver estudando. Ctrl+C encerra o túnel.`);
+};
+if (hostFixo) anunciar(hostFixo);
+const procurarEndereco = texto => {
+  const achado = String(texto).match(new RegExp("https://[a-z0-9-]+\\.trycloudflare\\.com"));
+  if (achado && !anunciado) anunciar(achado[0]);
 };
 tunel.stdout.on('data', procurarEndereco);
 tunel.stderr.on('data', procurarEndereco);

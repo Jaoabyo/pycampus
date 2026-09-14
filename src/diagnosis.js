@@ -77,6 +77,34 @@ export const patterns = [
       fix('Esta soma deveria dar 10, o total de 1 a 4, mas está perdendo um valor. Corrija o range.', 'total = 0\nfor n in range(1, 4):\n    total = total + n\nprint(total)', '10'),
       create('Do zero: monte uma compreensão de lista com os quadrados dos números de 1 a 5 e mostre a lista.', '[1, 4, 9, 16, 25]')
     ]
+  },
+  {
+    id: 'lista-compartilhada',
+    title: 'Duas variáveis, uma lista só',
+    summary: 'Atribuir uma lista a outro nome não cria uma cópia: os dois nomes passam a apontar para a mesma lista, e mexer por um muda o que o outro mostra. Número e texto não têm esse comportamento, porque não podem ser alterados no lugar.',
+    lesson: 'listas',
+    detect: ({ code, matched, source }) => /^\s*[a-z_]\w*\s*=\s*[a-z_]\w*\s*$/m.test(code) && /\.append\(|\.sort\(|\.remove\(/.test(code) && matched === false && source === 'lesson',
+    levels: [
+      predict('Sem executar: o que este programa mostra?', 'originais = [1, 2]\ncopia = originais\ncopia.append(3)\nprint(originais)',
+        ['[1, 2, 3], porque os dois nomes apontam para a mesma lista', '[1, 2], porque copia é uma cópia independente', '[3], porque append substitui o conteúdo'], 0,
+        'O sinal de igual entre duas listas dá um segundo nome à mesma lista, não uma cópia. Para copiar de verdade: copia = originais[:] ou list(originais).'),
+      fix('Este programa deveria manter originais intacta e mostrar [1, 2], mas a lista foi alterada junto. Corrija a cópia.', 'originais = [1, 2]\ncopia = originais\ncopia.append(3)\nprint(originais)', '[1, 2]'),
+      create('Do zero: crie precos com 10 e 20, faça uma cópia de verdade, acrescente 30 só na cópia e mostre a lista original.', '[10, 20]')
+    ]
+  },
+  {
+    id: 'escopo-da-funcao',
+    title: 'O que existe dentro da função',
+    summary: 'Uma variável criada dentro de uma função só existe ali. Quem está fora não a enxerga. Para o valor sair, a função precisa devolvê-lo com return e alguém precisa guardá-lo.',
+    lesson: 'funcoes',
+    detect: ({ code, output }) => /NameError/.test(output) && /\bdef\b/.test(code),
+    levels: [
+      predict('Sem executar: o que acontece na última linha?', 'def calcular():\n    total = 10\n\ncalcular()\nprint(total)',
+        ['NameError: total só existe dentro da função', 'Mostra 10, porque a função já rodou', 'Mostra None, porque a função não devolveu nada'], 0,
+        'Chamar a função executa o corpo dela, mas os nomes criados lá dentro somem ao terminar. O que sai é só o que o return devolve.'),
+      fix('Este programa deveria mostrar 10, mas a variável não existe fora da função. Faça a função devolver o valor.', 'def calcular():\n    total = 10\n\ncalcular()\nprint(total)', '10'),
+      create('Do zero: escreva dobro(numero) que devolve o dobro, guarde o resultado de dobro(21) em uma variável e mostre essa variável.', '42')
+    ]
   }
 ];
 
