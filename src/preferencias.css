@@ -4,6 +4,8 @@
 .ia-estado.is-off{background:#faf8fe;border:1px solid #e6e0f3;color:#6f6486}
 .ia-estado code{font-family:Consolas,monospace;background:#fff;border-radius:4px;padding:1px 5px}
 .ia-aviso{display:flex;align-items:flex-start;gap:8px;margin:12px 0 0;padding:11px 13px;border-radius:10px;background:#fffaf0;border:1px solid #f3e4c8;color:#8a7346;font-size:12.5px;line-height:1.75}
+/* Botao dentro de frase: herda tamanho e cor do aviso e nao vira bloco proprio. */
+.ia-aviso .text-button.inline{display:inline;padding:0;font-size:inherit;color:inherit;text-decoration:underline;font-weight:700}
 .ia-aviso>svg{flex-shrink:0;margin-top:3px}
 .ia-ajuda{margin-top:14px}
 .ia-ajuda>summary{cursor:pointer;color:#704ca3;font-size:13px}

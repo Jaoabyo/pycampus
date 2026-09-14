@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Icon } from './ui.jsx';
 import { LumiArt } from './Mentor.jsx';
-import { definirOllamaUrl, mentorAvailable, ollamaUrl, MENTOR_MODEL, OLLAMA_PADRAO } from './mentor.js';
+import { definirOllamaUrl, enderecoVeioDeLink, mentorAvailable, ollamaUrl, MENTOR_MODEL, OLLAMA_PADRAO } from './mentor.js';
 import { estadoNotificacao, pedirNotificacao, podeNotificar, temLembretePeriodico, avisar } from './pwa.js';
 import { baixarDaNuvem, conectado, conferirToken, definirGist, definirToken, salvarNaNuvem } from './nuvem.js';
 import { montarRelatorio, relatorioVencido, DIAS_ENTRE_RELATORIOS } from './relatorio.js';
@@ -16,6 +16,7 @@ export function EnderecoDaIA() {
   const [valor, setValor] = useState(ollamaUrl());
   const [estado, setEstado] = useState(null);
   const [testando, setTestando] = useState(false);
+  const veioDeLink = enderecoVeioDeLink();
 
   const testar = async endereco => {
     setTestando(true);
@@ -49,6 +50,10 @@ export function EnderecoDaIA() {
     </p>}
 
     {misto && <p className="ia-aviso"><Icon name="TriangleAlert" size={15} /> <span>Esta página é <strong>https</strong> e este endereço é <strong>http</strong>. O navegador bloqueia essa mistura antes mesmo de tentar. Para usar o Lumi aqui, o endereço precisa ser https — veja abaixo.</span></p>}
+
+    {/* Endereço trocado por link é comodidade real no celular, mas é para onde o seu código vai
+        ser enviado. Nunca em silêncio: a tela diz de onde veio e dá um clique para desfazer. */}
+    {veioDeLink && veioDeLink === valor && <p className="ia-aviso"><Icon name="Link" size={15} /> <span>Este endereço veio do link que você abriu: <code>{veioDeLink}</code>. É para onde seu código será enviado quando pedir ajuda ao Lumi. Se não foi você que gerou esse link, <button className="text-button inline" onClick={() => { setValor(OLLAMA_PADRAO); testar(OLLAMA_PADRAO); }}>volte ao padrão</button>.</span></p>}
 
     <details className="ia-ajuda">
       <summary>Como deixar o Lumi funcionando no celular</summary>

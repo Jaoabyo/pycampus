@@ -18,6 +18,29 @@ const semBarraFinal = texto => {
 export function ollamaUrl() {
   try { return semBarraFinal(localStorage.getItem(CHAVE) || OLLAMA_PADRAO); } catch { return OLLAMA_PADRAO; }
 }
+// O endereço do túnel muda a cada vez que ele sobe e é longo demais para digitar no celular.
+// Abrir o campus por um link com ?ia=... resolve isso numa tocada. Só https passa: a página é
+// https e um endereço http seria bloqueado pelo navegador de qualquer jeito.
+//
+// Trocar para onde o seu código é enviado não é detalhe, então o endereço aplicado por link
+// fica registrado para a tela avisar, em vez de mudar em silêncio.
+export const CHAVE_AVISO = 'pycampus.ia-veio-de-link';
+export function aplicarEnderecoDoLink(busca = typeof location !== 'undefined' ? location.search : '') {
+  let endereco = '';
+  try { endereco = new URLSearchParams(busca).get('ia') || ''; } catch { return null; }
+  if (!endereco) return null;
+  let alvo;
+  try { alvo = new URL(endereco); } catch { return null; }
+  const local = ['localhost', '127.0.0.1', '[::1]'].includes(alvo.hostname);
+  if (alvo.protocol !== 'https:' && !local) return null;
+  definirOllamaUrl(alvo.origin);
+  try { sessionStorage.setItem(CHAVE_AVISO, alvo.origin); } catch { /* aviso é extra */ }
+  return alvo.origin;
+}
+export function enderecoVeioDeLink() {
+  try { return sessionStorage.getItem(CHAVE_AVISO) || ''; } catch { return ''; }
+}
+
 export function definirOllamaUrl(valor) {
   try {
     const limpo = semBarraFinal(valor);
