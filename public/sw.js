@@ -18,12 +18,33 @@ const guardar = async (request, response) => {
   return response;
 };
 
+// Perguntar durante a execução (o input() parando o programa e esperando você responder) exige
+// que a página esteja "isolada entre origens", e isso depende de dois cabeçalhos que o GitHub
+// Pages não envia. Um service worker pode acrescentá-los na resposta antes de ela chegar à
+// página — é o que faz este trecho, e é o que devolve o formulário de pergunta no site publicado.
+//
+// É `credentialless`, e não `require-corp`, de propósito: o Pyodide vem do jsDelivr, que não
+// envia Cross-Origin-Resource-Policy. Com require-corp o Python simplesmente não carregaria.
+//
+// Navegador que não entende esses valores ignora os cabeçalhos: a página abre sem isolamento e
+// a plataforma volta sozinha ao campo de entradas preenchido antes. Nada quebra por causa disso.
+const isolar = response => {
+  if (!response || !response.body) return response;
+  const headers = new Headers(response.headers);
+  headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+};
+
 self.addEventListener('fetch', event => {
   const { request } = event;
   if (request.method !== 'GET') return;
   const url = request.url;
   const mesmaOrigem = url.startsWith(self.location.origin);
   const imutavel = /-[A-Za-z0-9_]{8,}\.(js|css)$/.test(url) || url.startsWith(PYODIDE);
+
+  // Documento e worker precisam sair daqui já isolados, venham da rede ou do cache.
+  const precisaIsolar = request.mode === 'navigate' || url.endsWith('/python-worker.js');
 
   if (imutavel) {
     // Cache primeiro: o nome do arquivo muda quando o conteúdo muda, então não há o que invalidar.
@@ -33,7 +54,10 @@ self.addEventListener('fetch', event => {
   if (mesmaOrigem) {
     // Rede primeiro, cache como rede de segurança: assim uma correção chega no próximo acesso,
     // e sem internet o campus continua abrindo.
-    event.respondWith(fetch(request).then(r => guardar(request, r)).catch(() => caches.match(request)));
+    event.respondWith(fetch(request)
+      .then(r => guardar(request, r))
+      .catch(() => caches.match(request))
+      .then(r => (precisaIsolar ? isolar(r) : r)));
   }
 });
 

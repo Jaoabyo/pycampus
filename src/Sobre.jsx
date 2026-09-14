@@ -47,7 +47,7 @@ export default function Sobre({ navigate }) {
       <ul className="sobre-lista">
         <li><strong>Sem ligar a nuvem, seu progresso é deste aparelho</strong> e vive no navegador — limpar os dados do navegador apaga tudo. Em Configurações dá para guardá-lo num Gist privado da sua conta do GitHub, ou exportar um backup.</li>
         <li><strong>O Lumi, o ajudante com IA, precisa de um modelo rodando no computador de quem estuda.</strong> Sem isso ele mostra as dicas escritas, que funcionam sempre, mas não conversa.</li>
-        <li><strong>No site publicado, as respostas de <code>input()</code> precisam ser preenchidas antes de executar</strong>, no campo próprio. Responder durante a execução exige cabeçalhos que o GitHub Pages não envia.</li>
+        <li><strong>Responder ao <code>input()</code> durante a execução depende do navegador.</strong> O site publicado consegue isso a partir da segunda abertura, quando o service worker já está instalado; em navegador que não permite, a plataforma avisa e as respostas são preenchidas antes de executar, no campo próprio. As duas formas funcionam — o exercício é o mesmo.</li>
         <li><strong>O primeiro carregamento do Python leva alguns segundos</strong> e precisa de internet. Depois disso, as aulas abrem offline.</li>
         <li><strong>As explicações escritas não são corrigidas automaticamente.</strong> A plataforma não julga se o seu texto demonstra entendimento.</li>
       </ul>

@@ -2,11 +2,31 @@
 // nenhuma parte da formação pode depender de service worker ou de notificação.
 const BASE = import.meta.env.BASE_URL;
 
+// A primeira visita chega antes de o service worker existir, então sem os cabeçalhos que
+// permitem perguntar durante a execução. Depois que ele assume o controle, uma única recarga
+// traz a página já isolada. A marca fica na aba: se o isolamento não vier mesmo assim (navegador
+// que não entende `credentialless`), não se recarrega de novo — a plataforma segue com o campo
+// de entradas preenchido antes, que funciona em todo lugar.
+const MARCA = 'pycampus.recarregou-para-isolar';
+
+function recarregarUmaVezParaIsolar() {
+  try {
+    if (globalThis.crossOriginIsolated || sessionStorage.getItem(MARCA)) return;
+    sessionStorage.setItem(MARCA, '1');
+    location.reload();
+  } catch { /* aba sem sessionStorage: melhor não recarregar do que recarregar em laço */ }
+}
+
 export function registrarServiceWorker() {
   if (!('serviceWorker' in navigator) || !import.meta.env.PROD) return;
   // Só depois do carregamento: registrar cedo compete com o Pyodide pela banda.
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`${BASE}sw.js`, { scope: BASE }).catch(() => {});
+  window.addEventListener('load', async () => {
+    try {
+      await navigator.serviceWorker.register(`${BASE}sw.js`, { scope: BASE });
+      // Já controlada: se ainda não está isolada, é porque o registro é desta visita.
+      if (navigator.serviceWorker.controller) return recarregarUmaVezParaIsolar();
+      navigator.serviceWorker.addEventListener('controllerchange', recarregarUmaVezParaIsolar, { once: true });
+    } catch { /* sem service worker o campus funciona igual, só sem perguntar durante a execução */ }
   });
 }
 
