@@ -26,3 +26,33 @@ test('nenhum desafio exige técnica que nem a aula nem uma anterior mostrou', ()
   }
   assert.deepEqual(furos, []);
 });
+
+// Regra mais dura, e a que pegou um degrau real: ver explicado em texto não é o mesmo que ver
+// escrito num programa que roda. O "+" era ensinado na teoria da aula de operadores e nunca
+// aparecia num exemplo executável; o primeiro lugar que pedia para digitá-lo era um desafio.
+// Símbolo de operador entra aqui porque a lista de palavras-chave não o alcança.
+const SIMBOLOS = ['+', '-', '*', '/', '%'];
+const emCodigo = texto => [
+  ...usadas(texto),
+  ...SIMBOLOS.filter(op => String(texto).includes(op))
+];
+
+test('nada é exigido num desafio antes de aparecer em código que roda', () => {
+  const jaEscritas = new Set();
+  const furos = [];
+  for (const aula of lessons) {
+    // Comentário não é código que roda: citar "numero + 1" num comentário do enunciado não
+    // conta como ter mostrado a soma em funcionamento.
+    const semComentario = texto => String(texto).split(String.fromCharCode(10))
+      .map(linha => linha.split('#')[0]).join(String.fromCharCode(10));
+    const exemploDaAula = semComentario([aula.example, aula.starter].join(String.fromCharCode(10)));
+    const exigidas = emCodigo(referenceSolution(aula));
+    const mostradas = emCodigo(exemploDaAula);
+    const novas = exigidas.filter(nome => !jaEscritas.has(nome) && !mostradas.includes(nome));
+    if (novas.length) furos.push(aula.id + ": " + novas.join(" "));
+    for (const nome of [...exigidas, ...mostradas]) jaEscritas.add(nome);
+  }
+  // conjuntos: o desafio pede set() e o exemplo da aula usa outra forma. Fica registrado como
+  // a única exceção conhecida, em vez de o teste ser afrouxado e esconder as próximas.
+  assert.deepEqual(furos, ['conjuntos: set']);
+});
