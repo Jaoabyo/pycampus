@@ -42,7 +42,9 @@ try {
   const legacyCode = 'texto = int("21")\nprint(texto * 2)';
   await page.evaluate(state => localStorage.setItem('pycampus.v1', JSON.stringify(state)), { ...initialState(), completed: ['ola', 'variaveis'], codes: { tipos: legacyCode } });
   await page.reload();
-  await page.getByRole('button', { name: 'Continuar aprendendo' }).click();
+  // O texto do botão principal mudou para o rótulo do próximo passo pendente, que varia com o
+  // progresso. Prender o teste a um texto fixo o deixou quebrado sem ninguém notar.
+  await page.locator('.hero-button').click();
   await page.locator('.revision-notice').waitFor();
   assert.equal(await page.getByRole('textbox', { name: 'Editor de código Python' }).inputValue(), legacyCode);
   assert.ok((await page.locator('.challenge').innerText()).includes('Não precisa fazer nenhuma conta'));
