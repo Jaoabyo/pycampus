@@ -33,6 +33,16 @@ Para repetir a verificação dos exemplos e da interface, inicie uma instância 
 
 Plataforma pessoal e gamificada para aprender Python em português, feita com React e Vite. Formação independente para complementar a faculdade, com introdução a temas avançados e projetos para aprofundamento.
 
+## Ambiente e limites
+
+- **Python 3.12.7** (CPython compilado para o navegador via Pyodide) e **SQLite 3.39.0**.
+- Biblioteca padrão disponível; **pacotes externos não** — sem `pip install`, `requests`, `pandas` ou `numpy`.
+- O código do estudante **não acessa a internet**. Arquivos criados são temporários.
+- Cada execução para em 15 segundos, para laço infinito não travar o navegador.
+- Material **complementar**: não substitui o roteiro de nenhuma disciplina e não emite certificado.
+
+Encontrou erro de conteúdo? [Abra uma issue](https://github.com/Jaoabyo/pycampus/issues/new) — conteúdo errado é pior que conteúdo ausente. A página **Sobre e limites**, dentro do campus, traz o mesmo resumo e o histórico de melhorias.
+
 ## Abrir no computador
 
 Requisitos: Node.js 20.19+ ou 22.12+ e npm. Na pasta do projeto:

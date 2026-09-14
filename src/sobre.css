@@ -1,0 +1,8 @@
+.sobre-aviso{border-color:#f3e4c8;background:#fffdf7}
+.sobre-lista{margin:12px 0 0;padding-left:20px}
+.sobre-lista>li{font-size:13px;line-height:1.85;color:#544a68;margin-bottom:7px}
+.sobre-lista code{font-family:Consolas,monospace;font-size:12px;background:#f4f1fd;border-radius:4px;padding:1px 5px}
+.sobre-mudancas{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.sobre-mudancas>li{display:flex;gap:13px;align-items:flex-start;padding:11px 13px;border-radius:9px;background:#faf8fe;border:1px solid #ece6f8;font-size:12.5px;line-height:1.75;color:#544a68}
+.sobre-data{flex-shrink:0;min-width:74px;font-family:Consolas,monospace;font-size:11.5px;color:#8a7da3}
+@media(max-width:760px){.sobre-mudancas>li{flex-direction:column;gap:4px}}
