@@ -6,7 +6,7 @@ export function referenceSolution(lesson) {
     tipos: 'texto = "21"\nnumero = int(texto)\nprint(numero)\nprint(type(numero))',
     operadores: 'quantidade = 3\npreco = 20\ndesconto = 5\nsubtotal = quantidade * preco\ntotal = subtotal - desconto\nprint(total)',
     strings: 'texto = "  python  "\nlimpo = texto.strip()\nmaiusculo = limpo.upper()\nprint(maiusculo)',
-    entrada: 'texto = input()\nnumero = int(texto)\nprint(numero)',
+    entrada: 'texto = input()\nnumero = int(texto)\nprint(numero + 1)',
     condicoes: lesson.example.replace('nota = 8', 'nota = 6'),
     booleanos: 'idade = 20\ntem_ingresso = True\nmaior_de_idade = idade >= 18\npermitido = maior_de_idade and tem_ingresso\nprint(permitido)',
     for: 'total = 0\nfor numero in range(1, 6):\n    total = total + numero\nprint(total)',

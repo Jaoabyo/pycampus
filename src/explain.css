@@ -11,3 +11,15 @@
 .explain-block li{font-size:12.5px;line-height:1.75;color:#5f5480;margin-bottom:4px}
 .explain-question{display:flex;align-items:flex-start;gap:8px;margin:0 0 8px;padding:10px 12px;border-radius:9px;background:#fff;border:1px solid #ece4fb;font-size:12.5px;line-height:1.75;color:#4a3d63}
 .explain-question>svg{flex-shrink:0;margin-top:3px;color:#c0a44e}
+
+/* Conferência do código depois de a saída bater. Quando falta cumprir o objetivo da aula, o
+   bloco ganha a moldura âmbar de "ainda não terminou" — nunca a vermelha de erro, porque o
+   programa do estudante rodou e está certo naquilo que ele fez. */
+.code-review{margin-top:12px}
+.code-review.is-pending{border:1px solid #f0dcc2;border-radius:11px;background:#fffaf3;padding:14px 16px}
+.code-review-block h5{display:flex;align-items:flex-start;gap:7px;font-family:var(--heading);font-size:12.5px;margin:0 0 6px;color:#8a5a22}
+.code-review-block h5>svg{flex-shrink:0;margin-top:2px}
+.code-review-block>p{font-size:12.5px;line-height:1.75;color:#6b5a44;margin:0 0 8px}
+.code-review-block ul{margin:0 0 8px;padding-left:19px}
+.code-review-block li{font-size:12.5px;line-height:1.75;color:#6b5a44;margin-bottom:4px}
+.code-review .explain-block>p{font-size:12.5px;line-height:1.75;color:#5f5480;margin:0}

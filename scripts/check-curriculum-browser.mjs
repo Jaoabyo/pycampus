@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { lessons } from '../src/curriculum.js';
 import { initialState } from '../src/progress.js';
 import { referenceSolution } from '../tests/curriculum-solutions.js';
+import { alternativeSolution } from '../tests/curriculum-alternatives.js';
 
 const browser = await chromium.launch({ channel: process.env.PYCAMPUS_TEST_BROWSER || 'msedge', headless: true });
 try {
@@ -12,9 +13,12 @@ try {
   await page.goto(process.env.PYCAMPUS_TEST_URL || 'http://127.0.0.1:5176');
   const cases = lessons.flatMap(l => [
     { id: l.id, kind: 'example', code: l.example, stdin: l.stdin || '' },
-    { id: l.id, kind: 'solution', code: referenceSolution(l), stdin: l.stdin || '', expected: l.expected }
+    { id: l.id, kind: 'solution', code: referenceSolution(l), stdin: l.stdin || '', expected: l.expected },
+    // O segundo caminho: outros nomes, outra abordagem, mesma saída. Se ele parar de funcionar,
+    // a prova de que a conferência não exige formato deixa de valer.
+    ...(alternativeSolution(l.id) ? [{ id: l.id, kind: 'alternativa', code: alternativeSolution(l.id), stdin: l.stdin || '', expected: l.expected }] : [])
   ]);
-  console.log('Executando 48 exemplos e 48 soluções no Python real…');
+  console.log(`Executando ${cases.length} programas no Python real (exemplos, soluções e caminhos alternativos)…`);
   const results = await page.evaluate(async cases => {
     const worker = new Worker('/python-worker.js');
     const results = [];
@@ -33,7 +37,7 @@ try {
   }, cases);
   const failed = results.filter(r => !r.ok);
   assert.deepEqual(failed, [], JSON.stringify(failed));
-  console.log(`${results.length}/96 execuções aprovadas.`);
+  console.log(`${results.length} execuções aprovadas.`);
 
   const legacyCode = 'texto = int("21")\nprint(texto * 2)';
   await page.evaluate(state => localStorage.setItem('pycampus.v1', JSON.stringify(state)), { ...initialState(), completed: ['ola', 'variaveis'], codes: { tipos: legacyCode } });
@@ -80,7 +84,9 @@ try {
   await page.getByRole('button', { name: 'Executar código' }).click();
   await page.getByRole('textbox', { name: 'Resposta ao input' }).fill('21');
   await page.getByRole('button', { name: 'Enviar resposta' }).click();
-  await page.waitForFunction(() => document.querySelector('.console')?.textContent === '21\n', null, { timeout: 60000 });
+  // A aula pede a idade do ano que vem: responder 21 tem de mostrar 22. Se voltasse 21, a
+  // conversão não teria acontecido — era exatamente o buraco que deixava print(input()) passar.
+  await page.waitForFunction(() => document.querySelector('.console')?.textContent === '22\n', null, { timeout: 60000 });
   const finalState = await page.evaluate(() => JSON.parse(localStorage.getItem('pycampus.v1')));
   assert.deepEqual(finalState.completed, ['ola', 'variaveis', 'tipos']);
   assert.equal(finalState.codeRevisions.tipos, 2);

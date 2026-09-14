@@ -8,7 +8,7 @@ import { normalizeProvas } from './exam.js';
 export const STORAGE_KEY = 'pycampus.v1';
 export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 export const shiftDate = (key, days) => { const date = new Date(`${key}T12:00:00`); date.setDate(date.getDate() + days); return localDate(date); };
-export const initialState = () => ({ version: 1, name: 'Estudante', bio: 'Um passo de cada vez, uma linha de código por dia.', avatar: '🚀', goal: 1, weeklyGoal: 5, lembrete: '', completed: [], history: [], projectChecks: {}, projectLinks: {}, projectGrades: {}, projectCodes: {}, projectStepsDone: {}, mastery: {}, functionBridges: {}, customLessons: {}, provas: [], ultimoRelatorio: '', activities: {}, sessions: [], codes: {}, learning: {}, playground: '# Seu espaço para experimentar\nprint("Olá, PyCampus!")\n', joined: localDate() });
+export const initialState = () => ({ version: 1, name: 'Estudante', bio: 'Um passo de cada vez, uma linha de código por dia.', avatar: '🚀', goal: 1, weeklyGoal: 5, lembrete: '', completed: [], history: [], projectChecks: {}, projectLinks: {}, projectGrades: {}, projectCodes: {}, projectStepsDone: {}, mastery: {}, functionBridges: {}, customLessons: {}, liberacoesDoLumi: {}, provas: [], ultimoRelatorio: '', activities: {}, sessions: [], codes: {}, learning: {}, playground: '# Seu espaço para experimentar\nprint("Olá, PyCampus!")\n', joined: localDate() });
 const validDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T12:00:00`).valueOf()) && localDate(new Date(`${value}T12:00:00`)) === value;
 const validTime = value => typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 const bounded = (value, fallback, min, max) => Number.isInteger(value) && value >= min && value <= max ? value : fallback;
@@ -98,9 +98,14 @@ export function streak(state, today = localDate()) {
   while (state.activities[cursor]?.length) { count++; cursor = shiftDate(cursor, -1); }
   return count;
 }
-export function completeLesson(state, id, date = localDate()) {
+export function completeLesson(state, id, date = localDate(), liberadoPeloLumi = null) {
   if (state.completed.includes(id) || !lessons.some(l => l.id === id)) return state;
-  return { ...state, completed: [...state.completed, id], activities: { ...state.activities, [date]: [...new Set([...(state.activities[date] || []), id])] } };
+  const proximo = { ...state, completed: [...state.completed, id], activities: { ...state.activities, [date]: [...new Set([...(state.activities[date] || []), id])] } };
+  // Quando a conferência automática não reconheceu o caminho e foi o Lumi quem liberou, fica
+  // registrado — com o código e o motivo. Serve para o relatório de estudo e para revisar
+  // depois se ele passou a mão em algo: aprovação de modelo precisa poder ser auditada.
+  if (!liberadoPeloLumi) return proximo;
+  return { ...proximo, liberacoesDoLumi: { ...(state.liberacoesDoLumi || {}), [id]: { data: date, porque: String(liberadoPeloLumi.porque || '').slice(0, 300), codigo: String(liberadoPeloLumi.codigo || '').slice(0, 2000) } } };
 }
 export const weekDays = (today = localDate()) => { const day = new Date(`${today}T12:00:00`).getDay(); const monday = shiftDate(today, -(day + 6) % 7); return Array.from({ length: 7 }, (_, i) => shiftDate(monday, i)); };
 export const badges = [

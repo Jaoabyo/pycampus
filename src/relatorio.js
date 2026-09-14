@@ -48,6 +48,7 @@ export function montarRelatorio(estado, hoje = localDate()) {
   }
 
   const provas = (estado.provas || []).slice(-3);
+  const liberacoes = Object.entries(estado.liberacoesDoLumi || {});
 
   const linhas = [
     `# Relatório de estudo — PyCampus`,
@@ -86,6 +87,17 @@ export function montarRelatorio(estado, hoje = localDate()) {
     provas.length
       ? provas.map(p => `- ${dia(p.data)}: ${p.acertos} de ${p.total}, em ${Math.round(p.segundos / 60)} min`).join('\n')
       : 'Ainda não fiz nenhuma prova.',
+    ``,
+    // Aprovação de modelo precisa poder ser auditada por gente. Estas são as aulas em que a
+    // conferência automática não reconheceu o caminho e quem liberou foi o Lumi.
+    `## Aulas liberadas pelo Lumi, e não pela conferência automática`,
+    ``,
+    liberacoes.length
+      ? `Nestas aulas a saída estava certa, mas a conferência automática não reconheceu o caminho; o Lumi leu o código e liberou. Vale conferir se ele acertou:\n\n${liberacoes.map(([id, dado]) => {
+        const aula = lessons.find(l => l.id === id);
+        return `**${aula ? aula.title : id}** — ${dia(dado.data)}\n\n> ${String(dado.porque).replace(/\n+/g, ' ')}\n\n\`\`\`python\n${dado.codigo}\n\`\`\``;
+      }).join('\n\n')}`
+      : 'Nenhuma: tudo o que concluí passou pela conferência automática.',
     ``,
     `## O que eu gostaria de saber`,
     ``,

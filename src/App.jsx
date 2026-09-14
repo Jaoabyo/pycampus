@@ -12,6 +12,8 @@ import { conectado, precisaSalvar, salvarNaNuvem } from './nuvem.js';
 import { relogioDoLembrete } from './pwa.js';
 import { mergeProgress, ganhosDaJuncao } from './merge-progress.js';
 import { ErrorHelp, StyleTips, OutputCompare } from './RunFeedback.jsx';
+import CodeReview from './CodeReview.jsx';
+import { requisitosFaltando } from './requisitos.js';
 import { useEffect, useRef, useState } from 'react';
 import { Icon, Progress } from './ui.jsx';
 import { modules, lessons, projects, resources } from './curriculum.js';
@@ -52,8 +54,14 @@ function StepHead({ number, title, icon, color, done = false }) {
 }
 function LessonView({ lesson, state, update, notify, openLesson, navigate }) {
   const python = usePython({ source: 'lesson', lessonId: lesson.id, title: lesson.title, expected: lesson.expected, onRecord: attempt => update(s => appendAttempt(s, attempt)) });
-  const [stdin, setStdin] = useState(() => interativo ? '' : (lesson.stdin || '')), [answer, setAnswer] = useState(null), [passed, setPassed] = useState(false), [feedback, setFeedback] = useState(''), [showHint, setShowHint] = useState(false), [showPuzzle, setShowPuzzle] = useState(false), [mismatch, setMismatch] = useState(null), [fails, setFails] = useState(0), [celebrate, setCelebrate] = useState(0);
+  const [stdin, setStdin] = useState(() => interativo ? '' : (lesson.stdin || '')), [answer, setAnswer] = useState(null), [saidaOk, setSaidaOk] = useState(false), [feedback, setFeedback] = useState(''), [showHint, setShowHint] = useState(false), [showPuzzle, setShowPuzzle] = useState(false), [mismatch, setMismatch] = useState(null), [fails, setFails] = useState(0), [celebrate, setCelebrate] = useState(0);
+  // Saída certa é pré-condição, não aprovação: `print("resposta")` produz a saída esperada sem
+  // fazer o que a aula ensina. O desafio só conta quando o código também cumpre o objetivo —
+  // pela medida automática ou, para quem resolveu de um jeito que ela não reconheceu, pelo Lumi.
+  const [faltando, setFaltando] = useState([]), [aprovacao, setAprovacao] = useState(null);
   const code = state.codes[lesson.id] ?? lesson.starter;
+  const liberadoPeloLumi = aprovacao?.cumpre === true && aprovacao.codigo === code;
+  const passed = saidaOk && (!faltando.length || liberadoPeloLumi);
   const completed = state.completed.includes(lesson.id), position = lessons.findIndex(l => l.id === lesson.id);
   const stage = modules.find(m => m.id === lesson.moduleId);
   const moduleColor = stage?.color || 'purple', moduleIcon = stage?.icon || 'Terminal';
@@ -65,9 +73,24 @@ function LessonView({ lesson, state, update, notify, openLesson, navigate }) {
     if (!ready) setReadyNotice(false);
     previousReady.current = ready;
   }, [ready]);
-  const setCode = value => { update(s => ({ ...s, codes: { ...s.codes, [lesson.id]: value }, codeRevisions: { ...s.codeRevisions, [lesson.id]: lesson.revision } })); setPassed(false); setFeedback(''); setMismatch(null); };
-  const run = () => { setPassed(false); python.run(code, stdin, result => { const match = result.ok && result.output.trim() === lesson.expected.trim(); setPassed(match); setMismatch(result.ok && !match ? result.output : null); setFeedback(match ? 'Saída correta! Agora responda à revisão para concluir.' : result.ok ? 'O programa executou. Compare a saída com o resultado esperado e tente novamente.' : 'Leia a mensagem de erro, ajuste o código e tente novamente.'); setFails(n => match ? 0 : n + 1); if (match) setCelebrate(n => n + 1); }); };
-  const finish = () => { if (!ready) return; setReadyNotice(false); update(s => completeLesson(s, lesson.id)); };
+  const setCode = value => { update(s => ({ ...s, codes: { ...s.codes, [lesson.id]: value }, codeRevisions: { ...s.codeRevisions, [lesson.id]: lesson.revision } })); setSaidaOk(false); setFaltando([]); setFeedback(''); setMismatch(null); };
+  const run = () => {
+    setSaidaOk(false); setFaltando([]);
+    python.run(code, stdin, result => {
+      const bate = result.ok && result.output.trim() === lesson.expected.trim();
+      const pendentes = bate ? requisitosFaltando(lesson, code) : [];
+      const cumpriu = bate && (!pendentes.length || (aprovacao?.cumpre === true && aprovacao.codigo === code));
+      setSaidaOk(bate); setFaltando(pendentes);
+      setMismatch(result.ok && !bate ? result.output : null);
+      setFeedback(cumpriu ? 'Saída correta e objetivo cumprido! Agora responda à revisão para concluir.'
+        : bate ? 'A saída está certa, mas o objetivo da aula ainda não foi cumprido — veja abaixo.'
+        : result.ok ? 'O programa executou. Compare a saída com o resultado esperado e tente novamente.'
+        : 'Leia a mensagem de erro, ajuste o código e tente novamente.');
+      setFails(n => cumpriu ? 0 : n + 1);
+      if (cumpriu) setCelebrate(n => n + 1);
+    });
+  };
+  const finish = () => { if (!ready) return; setReadyNotice(false); update(s => completeLesson(s, lesson.id, undefined, faltando.length && liberadoPeloLumi ? aprovacao : null)); };
   const steps = [[1, 'Ideia', 'Lightbulb', null], [2, 'Exemplo', 'Code2', null], [3, 'Desafio', 'SquareTerminal', passed], [4, 'Revisão', 'BookOpenCheck', answer === lesson.answer]];
   const goToStep = number => document.getElementById(`passo-${number}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   return <>{readyNotice && ready && <ReadyToComplete onComplete={finish} onClose={() => setReadyNotice(false)} />}
@@ -110,6 +133,7 @@ function LessonView({ lesson, state, update, notify, openLesson, navigate }) {
         <CodeEditor code={code} onChange={setCode} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} stdin={stdin} setStdin={setStdin} />
         {python.success === false && <ErrorHelp output={python.output} code={code} />}
         {mismatch !== null && <OutputCompare actual={mismatch} expected={lesson.expected} />}
+        {saidaOk && <CodeReview lesson={lesson} codigo={code} saida={python.output} faltando={faltando} aprovacao={aprovacao} onAprovacao={setAprovacao} />}
         {fails > 0 && <Mentor title={lesson.title} challenge={lesson.challenge} expected={lesson.expected} code={code} output={python.output} lessonId={lesson.id} attempts={fails} />}
         <StyleTips code={code} show={python.success === true} />
         <div className="exercise-tools"><button className="text-button" disabled={python.busy} onClick={() => { setCode(lesson.starter); python.reset(); }}><Icon name="RotateCcw" size={14} /> Reiniciar código</button><button className="text-button" onClick={() => setShowHint(!showHint)}><Icon name="Lightbulb" size={15} /> Uma ajudinha</button>{lesson.puzzle && <button className="text-button" onClick={() => setShowPuzzle(!showPuzzle)}><Icon name="Boxes" size={15} /> {showPuzzle ? 'Fechar o quebra-cabeça' : 'Travou? Monte o código embaralhado'}</button>}</div>
@@ -126,7 +150,7 @@ function LessonView({ lesson, state, update, notify, openLesson, navigate }) {
         <div className={`complete-box ${completed ? "is-complete" : ready ? "is-ready" : ""}`} aria-live="polite">
           <div className="step-head"><span className={`icon-tile ${completed ? 'teal' : 'yellow'}`}><Icon name={completed ? 'Trophy' : 'Target'} size={21} /></span><div><div className="eyebrow">{completed ? 'AULA REGISTRADA' : 'PARA CONCLUIR'}</div><h3>{completed ? 'Aula concluída · +100 XP' : ready ? 'Tudo pronto! Confirme abaixo' : 'Faltam dois passos'}</h3></div></div>
           <p>{completed ? 'Esta aula já faz parte das suas conquistas. Revisar é sempre bem-vindo!' : ready ? 'Desafio e revisão resolvidos. Confirmar registra a aula e soma os XP.' : 'A aula é registrada quando as duas coisas abaixo estiverem certas.'}</p>
-          {!completed && <ul className="complete-checklist">{[['Desafio com a saída esperada', passed], ['Revisão rápida correta', answer === lesson.answer]].map(([label, done]) => <li key={label} className={done ? 'done' : ''}><Icon name={done ? 'CheckCircle2' : 'Circle'} size={16} /> {label}</li>)}</ul>}
+          {!completed && <ul className="complete-checklist">{[['Desafio com a saída esperada e o objetivo cumprido', passed], ['Revisão rápida correta', answer === lesson.answer]].map(([label, done]) => <li key={label} className={done ? 'done' : ''}><Icon name={done ? 'CheckCircle2' : 'Circle'} size={16} /> {label}</li>)}</ul>}
           {completed ? <button className="button primary full" onClick={() => position < lessons.length - 1 ? openLesson(lessons[position + 1].id) : navigate('projects')}>{position < lessons.length - 1 ? 'Próxima aula' : 'Ir para os projetos'}<Icon name="ArrowRight" size={17} /></button> : <button className="button primary full" disabled={!passed || answer !== lesson.answer || python.busy} onClick={finish}>Concluir aula <span>+100 XP</span><Icon name="Check" size={17} /></button>}
         </div>
         <section className="card lesson-workshop">
