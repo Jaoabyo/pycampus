@@ -3,7 +3,7 @@ import ProjectStudio from './ProjectStudio.jsx';
 import TargetedPractice from './TargetedPractice.jsx';
 import Prova from './Prova.jsx';
 import Sobre from './Sobre.jsx';
-import CodeEditor from './CodeEditor.jsx';
+import CodeEditor, { interativo } from './CodeEditor.jsx';
 import ParsonsPuzzle from './ParsonsPuzzle.jsx';
 import Visualizador from './Visualizador.jsx';
 import Mentor, { FlyingLumi } from './Mentor.jsx';
@@ -52,7 +52,7 @@ function StepHead({ number, title, icon, color, done = false }) {
 }
 function LessonView({ lesson, state, update, notify, openLesson, navigate }) {
   const python = usePython({ source: 'lesson', lessonId: lesson.id, title: lesson.title, expected: lesson.expected, onRecord: attempt => update(s => appendAttempt(s, attempt)) });
-  const [stdin, setStdin] = useState(''), [answer, setAnswer] = useState(null), [passed, setPassed] = useState(false), [feedback, setFeedback] = useState(''), [showHint, setShowHint] = useState(false), [showPuzzle, setShowPuzzle] = useState(false), [mismatch, setMismatch] = useState(null), [fails, setFails] = useState(0), [celebrate, setCelebrate] = useState(0);
+  const [stdin, setStdin] = useState(() => interativo ? '' : (lesson.stdin || '')), [answer, setAnswer] = useState(null), [passed, setPassed] = useState(false), [feedback, setFeedback] = useState(''), [showHint, setShowHint] = useState(false), [showPuzzle, setShowPuzzle] = useState(false), [mismatch, setMismatch] = useState(null), [fails, setFails] = useState(0), [celebrate, setCelebrate] = useState(0);
   const code = state.codes[lesson.id] ?? lesson.starter;
   const completed = state.completed.includes(lesson.id), position = lessons.findIndex(l => l.id === lesson.id);
   const stage = modules.find(m => m.id === lesson.moduleId);
@@ -104,7 +104,9 @@ function LessonView({ lesson, state, update, notify, openLesson, navigate }) {
           <div className="expected"><span>SAÍDA ESPERADA</span><pre>{lesson.expected}</pre></div>
         </div>
         {state.codes[lesson.id] !== undefined && (state.codeRevisions?.[lesson.id] || 0) < lesson.revision && <div className="revision-notice"><strong>Esta aula foi revisada para explicar os passos antes do desafio.</strong><p>Seu código anterior foi preservado. Confira o novo enunciado; suas aulas concluídas e seu XP continuam registrados.</p><button className="text-button" disabled={python.busy} onClick={() => { setCode(lesson.starter); python.reset(); }}>Usar o início do exercício revisado</button></div>}
-        {lesson.stdin && <p className="hint">Execute e responda <strong>{lesson.stdin}</strong> quando a pergunta aparecer abaixo do editor. Se preferir, pode preencher esse valor em “Entradas para input()” antes de executar.</p>}
+        {lesson.stdin && <p className="hint">{interativo
+          ? <>Execute e responda <strong>{lesson.stdin}</strong> quando a pergunta aparecer abaixo do editor. Se preferir, preencha esse valor em “Entradas para input()” antes de executar.</>
+          : <>Já deixei <strong>{lesson.stdin}</strong> preenchido em “Entradas para input()”, logo abaixo do editor: aqui as respostas são lidas dali. É só executar.</>}</p>}
         <CodeEditor code={code} onChange={setCode} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} stdin={stdin} setStdin={setStdin} />
         {python.success === false && <ErrorHelp output={python.output} />}
         {mismatch !== null && <OutputCompare actual={mismatch} expected={lesson.expected} />}

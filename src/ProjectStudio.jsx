@@ -5,7 +5,7 @@ import { stepsFor, fileNameFor } from './project-steps.js';
 import { pendingStageWork } from './progression.js';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
-import CodeEditor from './CodeEditor.jsx';
+import CodeEditor, { interativo } from './CodeEditor.jsx';
 import { ErrorHelp, OutputCompare } from './RunFeedback.jsx';
 import { ProjectPreparation } from './LessonGuidance.jsx';
 import ProjectDelivery from './ProjectDelivery.jsx';
@@ -15,6 +15,9 @@ import './project-studio.css';
 
 // Um projeto não pertence a uma aula, e sim a uma etapa inteira: o Lumi pode se apoiar em
 // tudo que foi ensinado até o fim do módulo dele.
+// O passo já sabe o que responder; 'pergunta' e 'conversao' da calculadora usam 1200, como diz a dica.
+const respostasDoPasso = passo => passo.stdin || '';
+
 const lastLessonOfModule = index => lessons.filter(lesson => Number(lesson.moduleNumber) <= index + 1).at(-1)?.id || '';
 
 export default function ProjectStudio({ project, state, update, back, openLesson, download, navigate, openProject }) {
@@ -26,7 +29,7 @@ export default function ProjectStudio({ project, state, update, back, openLesson
     const next = steps.findIndex(s => !state.projectStepsDone?.[project.id]?.includes(s.id));
     return next < 0 ? steps.length - 1 : next;
   });
-  const [feedback, setFeedback] = useState(''), [mismatch, setMismatch] = useState(null), [hints, setHints] = useState(0), [fails, setFails] = useState(0), [checkedRun, setCheckedRun] = useState(false), [manualCheck, setManualCheck] = useState(false), [celebrate, setCelebrate] = useState(0);
+  const [feedback, setFeedback] = useState(''), [mismatch, setMismatch] = useState(null), [hints, setHints] = useState(0), [fails, setFails] = useState(0), [stdin, setStdin] = useState(() => interativo ? '' : respostasDoPasso(steps[0])), [checkedRun, setCheckedRun] = useState(false), [manualCheck, setManualCheck] = useState(false), [celebrate, setCelebrate] = useState(0);
   const step = steps[current], done = state.projectStepsDone?.[project.id] || [];
   const file = fileNameFor(project.id);
   const code = state.projectCodes?.[project.id] ?? `# ${project.title}\n# Escreva uma instrução de cada vez.\n`;
@@ -36,8 +39,8 @@ export default function ProjectStudio({ project, state, update, back, openLesson
   const python = usePython({ source: 'playground', title: `Projeto: ${project.title} · ${step.title}`, expected: exact ? step.expected : undefined, onRecord: attempt => update(s => appendAttempt(s, attempt)) });
   const setCode = value => { update(s => ({ ...s, projectCodes: { ...s.projectCodes, [project.id]: value } })); setFeedback(''); setMismatch(null); setCheckedRun(false); setManualCheck(false); };
   const saveNote = answer => update(s => ({ ...s, projectNotes: { ...s.projectNotes, [project.id]: { ...s.projectNotes?.[project.id], [step.id]: { answer } } } }));
-  const go = index => { setCurrent(index); setHints(0); setFeedback(''); setMismatch(null); setCheckedRun(false); setManualCheck(false); python.reset(); update(s => ({ ...s, projectPositions: { ...s.projectPositions, [project.id]: steps[index].id } })); };
-  const run = () => { setFeedback(''); setCheckedRun(false); setMismatch(null); python.run(code, '', result => {
+  const go = index => { setCurrent(index); setHints(0); setStdin(interativo ? '' : respostasDoPasso(steps[index])); setFeedback(''); setMismatch(null); setCheckedRun(false); setManualCheck(false); python.reset(); update(s => ({ ...s, projectPositions: { ...s.projectPositions, [project.id]: steps[index].id } })); };
+  const run = () => { setFeedback(''); setCheckedRun(false); setMismatch(null); python.run(code, stdin, result => {
     const match = result.ok && (!exact || result.output.trim() === step.expected.trim());
     setCheckedRun(match);
     setFails(n => match ? 0 : n + 1);
@@ -64,8 +67,8 @@ export default function ProjectStudio({ project, state, update, back, openLesson
       <button className="button outline" disabled={hints >= step.hints.length} onClick={() => setHints(n => n + 1)}>{hints ? 'Preciso de mais uma pista' : 'Me dê uma pista'}</button>
       {step.hints.slice(0, hints).map((hint, index) => <p className="hint" key={index}><strong>Pista {index + 1}:</strong> {hint}</p>)}
       {exact && <details className="coach-expected"><summary>Conferir a saída deste teste</summary><pre className="example-code">{step.expected}</pre></details>}
-      {(step.stdin || ['pergunta', 'conversao'].includes(step.id)) && <p className="hint">Neste teste, responda {step.stdin ? step.stdin.split('\n').join(', ') : '1200'} quando o programa perguntar. Use ponto para centavos.</p>}
-      <CodeEditor code={code} onChange={setCode} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} filename={file} runDisabled={!inBrowser} runLabel={inBrowser ? 'Testar o que escrevi' : 'Este passo é conferido fora do executor'} emptyOutput="Seu resultado aparece aqui depois de executar." />
+      {step.stdin ? <p className="hint">{interativo ? <>Neste teste, responda <strong>{step.stdin.split(String.fromCharCode(10)).join(', ')}</strong> quando o programa perguntar.</> : <>Já deixei <strong>{step.stdin.split(String.fromCharCode(10)).join(', ')}</strong> preenchido em “Entradas para input()”, abaixo do editor.</>} Use ponto para centavos.</p> : (!interativo && inBrowser && <p className="hint">Se o seu código usar <code>input()</code>, escreva as respostas do teste em “Entradas para input()”, abaixo do editor, uma por linha. Neste endereço o Python não consegue parar para perguntar.</p>)}
+      <CodeEditor code={code} onChange={setCode} stdin={stdin} setStdin={setStdin} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} filename={file} runDisabled={!inBrowser} runLabel={inBrowser ? 'Testar o que escrevi' : 'Este passo é conferido fora do executor'} emptyOutput="Seu resultado aparece aqui depois de executar." />
       {feedback && <p role="status" className="practice-feedback">{feedback}</p>}{python.success === false && <ErrorHelp output={python.output} />}{mismatch !== null && <OutputCompare actual={mismatch} expected={step.expected} />}
       {fails > 0 && <Mentor attempts={fails} title={`${project.title} · ${step.title}`} challenge={step.instruction} expected={step.expected} code={code} output={python.output} lessonId={lastLessonOfModule(project.module)} />}
       <section className="coach-check"><h3>Vamos conferir juntos</h3><p>{step.check}</p><label className="practice-field">{step.question}<textarea aria-label="Minha explicação do passo" maxLength={2000} value={note} onChange={e => saveNote(e.target.value)} placeholder="Eu pensei assim…" /></label><ExplainReview subject={`${step.title} — ${step.question}`} reference={code} explanation={note} /><label className="coach-confirm"><input type="checkbox" checked={manualCheck} onChange={e => setManualCheck(e.target.checked)} /> Fiz a conferência indicada e registrei o que entendi.</label><p className="small">Sua explicação fica guardada para avaliação posterior. A plataforma não julga automaticamente se o texto demonstra domínio.</p><button className="button primary" disabled={python.busy || !note.trim() || !manualCheck || inBrowser && !checkedRun} onClick={register}>Registrar este passo</button></section>

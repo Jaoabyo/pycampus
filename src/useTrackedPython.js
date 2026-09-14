@@ -1,4 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
+
+// No site publicado não existe COOP/COEP, então o Python não consegue parar e perguntar: as
+// respostas de input() têm de vir do campo de entradas. Sem isso input() devolve texto vazio e
+// o programa quebra num erro que não tem nada a ver com o que o estudante escreveu. Em vez de
+// deixar isso acontecer, avisamos antes de executar e dizemos exatamente o que fazer.
+export const podeResponderDurante = () => globalThis.crossOriginIsolated === true && typeof SharedArrayBuffer !== "undefined";
+
+export function faltaEntrada(code, stdin) {
+  if (String(stdin || "").trim() || podeResponderDurante()) return false;
+  return String(code || "").split(String.fromCharCode(10))
+    .some(linha => !linha.trim().startsWith("#") && new RegExp("input\\s*\\(").test(linha.split("#")[0]));
+}
+
+export const AVISO_ENTRADA = "Seu programa usa input(), e aqui as respostas são lidas do campo “Entradas para input()”, logo abaixo do editor. Escreva ali a resposta (uma por linha, na ordem em que o programa pergunta) e execute de novo. Não é erro no seu código: neste endereço o Python não consegue parar para perguntar.";
 export function usePython(options = {}) {
   const worker = useRef(null), timer = useRef(null), active = useRef(null), observer = useRef(options);
   const inputBuffer = useRef(null);
@@ -22,6 +36,7 @@ export function usePython(options = {}) {
   }, []);
   const run = (code, stdin = '', onResult) => {
     if (active.current) return;
+    if (faltaEntrada(code, stdin)) { setOutput(AVISO_ENTRADA); setSuccess(false); setBusy(false); setInputRequest(null); onResult?.({ ok: false, output: AVISO_ENTRADA, kind: 'input' }); return; }
     active.current = { id: crypto.randomUUID(), startedAt: new Date().toISOString(), code, stdin, source: observer.current.source || 'playground', lessonId: observer.current.lessonId || '', title: observer.current.title || 'Laboratório livre', expected: observer.current.expected };
     observer.current.onRecord?.({ ...active.current, status: 'running', output: 'Execução iniciada; resultado ainda não recebido.' });
     setBusy(true); setSuccess(null); setOutput('Carregando o ambiente Python…');

@@ -10,8 +10,8 @@ export const projectSteps = {
     step('valores', 'Guarde os valores', 'Crie a variável renda com 3000.0 e três variáveis de despesa com 1200.0, 450.0 e 300.0. Mostre apenas a renda.', '3000.0'),
     step('total', 'Some as despesas', 'Some as três despesas em uma variável chamada total_despesas. Mostre apenas o total.', '1950.0'),
     step('saldo', 'Calcule o saldo', 'Calcule saldo = renda - total_despesas e mostre o saldo com duas casas decimais.', '1050.00'),
-    step('pergunta', 'Faça uma pergunta', 'Treine uma única pergunta: Quanto é sua despesa? Responda 1200 e mostre o texto recebido.', '1200'),
-    step('conversao', 'Transforme a resposta', 'Leia a despesa e transforme a resposta em número na linha seguinte. Responda 1200.', '1200.0'),
+    step('pergunta', 'Faça uma pergunta', 'Treine uma única pergunta: Quanto é sua despesa? Responda 1200 e mostre o texto recebido.', '1200', '1200'),
+    step('conversao', 'Transforme a resposta', 'Leia a despesa e transforme a resposta em número na linha seguinte. Responda 1200.', '1200.0', '1200'),
     step('entrada', 'Leia os valores digitados', 'Troque os quatro valores fixos por leituras de input() convertidas com float(). A ordem lida é: renda, primeira despesa, segunda despesa, terceira despesa. A saída continua sendo o saldo com duas casas.', '1050.00', '3000\n1200\n450\n300'),
     step('relatorio', 'Monte o relatório final', 'Mantendo a leitura da entrada, mostre três linhas nesta ordem e neste formato, todas com duas casas decimais.', 'Renda: 3000.00\nDespesas: 1950.00\nSaldo: 1050.00', '3000\n1200\n450\n300')
   ]
