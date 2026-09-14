@@ -9,3 +9,5 @@
 .ia-ajuda>summary{cursor:pointer;color:#704ca3;font-size:13px}
 .ia-ajuda code{font-family:Consolas,monospace;font-size:12px;background:#f4f1fd;border-radius:4px;padding:1px 5px;overflow-wrap:anywhere}
 .ia-ajuda .guided-actions{margin-top:10px}
+.relatorio-vencido{border-color:#f0dfb6;background:#fffdf7}
+.relatorio-texto{margin:14px 0 0;padding:14px 16px;border-radius:10px;background:#faf8ff;border:1px solid #ece4fb;font-family:Consolas,monospace;font-size:11.5px;line-height:1.75;color:#4a4060;white-space:pre-wrap;overflow-wrap:anywhere;max-height:340px;overflow-y:auto}

@@ -8,7 +8,7 @@ import { normalizeProvas } from './exam.js';
 export const STORAGE_KEY = 'pycampus.v1';
 export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 export const shiftDate = (key, days) => { const date = new Date(`${key}T12:00:00`); date.setDate(date.getDate() + days); return localDate(date); };
-export const initialState = () => ({ version: 1, name: 'Estudante', bio: 'Um passo de cada vez, uma linha de código por dia.', avatar: '🚀', goal: 1, weeklyGoal: 5, lembrete: '', completed: [], history: [], projectChecks: {}, projectLinks: {}, projectGrades: {}, projectCodes: {}, projectStepsDone: {}, mastery: {}, functionBridges: {}, customLessons: {}, provas: [], activities: {}, sessions: [], codes: {}, learning: {}, playground: '# Seu espaço para experimentar\nprint("Olá, PyCampus!")\n', joined: localDate() });
+export const initialState = () => ({ version: 1, name: 'Estudante', bio: 'Um passo de cada vez, uma linha de código por dia.', avatar: '🚀', goal: 1, weeklyGoal: 5, lembrete: '', completed: [], history: [], projectChecks: {}, projectLinks: {}, projectGrades: {}, projectCodes: {}, projectStepsDone: {}, mastery: {}, functionBridges: {}, customLessons: {}, provas: [], ultimoRelatorio: '', activities: {}, sessions: [], codes: {}, learning: {}, playground: '# Seu espaço para experimentar\nprint("Olá, PyCampus!")\n', joined: localDate() });
 const validDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T12:00:00`).valueOf()) && localDate(new Date(`${value}T12:00:00`)) === value;
 const validTime = value => typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 const bounded = (value, fallback, min, max) => Number.isInteger(value) && value >= min && value <= max ? value : fallback;
@@ -29,6 +29,7 @@ export function normalizeState(input) {
   base.joined = validDate(input.joined) ? input.joined : base.joined;
   // Horário do lembrete: só um HH:MM válido entra.
   base.lembrete = validTime(input.lembrete) ? input.lembrete : '';
+  base.ultimoRelatorio = validDate(input.ultimoRelatorio) ? input.ultimoRelatorio : '';
   base.completed = [...new Set(input.completed.filter(id => ids.has(id)))];
   for (const project of projects) {
     const checks = input.projectChecks?.[project.id];

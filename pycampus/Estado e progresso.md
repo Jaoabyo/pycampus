@@ -45,3 +45,26 @@ xpTotal = aulas × 100 + projetos × 250 + miniprojetos × 40
 > e receber uma [[Lumi · Leitura de explicações|leitura de explicação]]. São apoio, não conquista.
 
 Relacionado: [[Liberação de etapas]] · [[Regras que não se quebram]] · [[Testes · o que cada um protege]]
+
+## Progresso na nuvem
+
+`src/nuvem.js`. O progresso sobe para um **Gist privado da conta do próprio estudante** — não
+há servidor nosso nem conta nova. O token do GitHub fica em `localStorage` daquele navegador,
+com escopo apenas de Gists, e nunca entra no repositório.
+
+- Sobe sozinho 20 segundos depois da última mudança, e só quando algo mudou de verdade.
+- Trazer de outro aparelho abre o mesmo diálogo de [[Estado e progresso|junção]]: juntar é o
+  caminho normal, substituir fica atrás de um aviso.
+
+## Relatório de estudo
+
+`src/relatorio.js`. Monta, a partir do que foi registrado, um texto para avaliação externa:
+onde o estudante está, onde mais travou, o que o diagnóstico encontrou, as explicações que ele
+escreveu e os resultados das provas. A tela avisa quando faz três dias ou mais.
+
+> [!danger] As páginas do campus remontam a cada mudança de estado
+> `Dashboard`, `Settings` e as outras são funções declaradas **dentro** de `App`. Cada render
+> de `App` cria uma identidade nova, e o React desmonta e remonta a subárvore — apagando todo
+> `useState` local. O relatório sumia no mesmo clique que o criava por causa disso.
+> **Como conviver:** em componentes dessas páginas, derive do estado em vez de guardar em
+> `useState` o que precisa sobreviver a um `update()`.

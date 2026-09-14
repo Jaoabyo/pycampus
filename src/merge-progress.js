@@ -62,6 +62,8 @@ export function mergeProgress(atual, entrada) {
 
   base.completed = uniao(atual.completed, entrada.completed);
   base.joined = maisCedo(atual.joined, entrada.joined) || atual.joined;
+  base.ultimoRelatorio = maisTarde(atual.ultimoRelatorio, entrada.ultimoRelatorio);
+  base.provas = [...(entrada.provas || []), ...(atual.provas || [])].slice(-20);
 
   base.activities = {};
   for (const dia of chaves(atual.activities, entrada.activities)) {
