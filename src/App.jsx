@@ -1,11 +1,6 @@
-const PracticeStudio = lazy(() => import('./PracticeStudio.jsx'));
-const ProjectStudio = lazy(() => import('./ProjectStudio.jsx'));
-const TargetedPractice = lazy(() => import('./TargetedPractice.jsx'));
-const Prova = lazy(() => import('./Prova.jsx'));
 import Sobre from './Sobre.jsx';
 import CodeEditor, { interativo } from './CodeEditor.jsx';
 import ParsonsPuzzle from './ParsonsPuzzle.jsx';
-const Visualizador = lazy(() => import('./Visualizador.jsx'));
 import Mentor, { FlyingLumi } from './Mentor.jsx';
 import { EnderecoDaIA, InstalarApp, LembreteDeEstudo, ProgressoNaNuvem, RecomecarDoZero, RelatorioDeEstudo } from './Preferencias.jsx';
 import { conectado, precisaSalvar, salvarNaNuvem } from './nuvem.js';
@@ -22,11 +17,20 @@ import { lessonAllowed, blockingSummary, missingSummary, moduleIsOpen, moduleInd
 import { STORAGE_KEY, initialState, normalizeState, localDate, shiftDate, completeLesson, levelInfo, streak, weekDays, badges, doneProjects } from './progress.js';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
-const HistoryView = lazy(() => import('./HistoryView.jsx'));
 import Celebration, { ReadyToComplete } from './Celebration.jsx';
 import { buildCelebration } from './celebrations.js';
 import { SimpleConcept, LessonOrientation, ExampleWalkthrough, GuidedHints, ProjectPreparation } from './LessonGuidance.jsx';
 import './lesson.css';
+
+// Telas pesadas que ninguém abre no primeiro segundo: carregadas sob demanda, o conteúdo que
+// só elas usam sai do pacote inicial. Precisam vir depois dos imports, porque lazy() é
+// executado na avaliação do módulo, e não içado como as declarações de import.
+const PracticeStudio = lazy(() => import('./PracticeStudio.jsx'));
+const ProjectStudio = lazy(() => import('./ProjectStudio.jsx'));
+const TargetedPractice = lazy(() => import('./TargetedPractice.jsx'));
+const Prova = lazy(() => import('./Prova.jsx'));
+const Visualizador = lazy(() => import('./Visualizador.jsx'));
+const HistoryView = lazy(() => import('./HistoryView.jsx'));
 
 const dateLabel = date => new Date(`${date}T12:00:00`).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
 const navItems = [{ id: 'dashboard', title: 'Visão geral', icon: 'LayoutDashboard' }, { id: 'course', title: 'Minha formação', icon: 'GraduationCap' }, { id: 'practice', title: 'Oficina de prática', icon: 'Hammer' }, { id: 'projects', title: 'Projetos', icon: 'FolderCode' }, { id: 'playground', title: 'Laboratório Python', icon: 'SquareTerminal' }, { id: 'targeted', title: 'Treino dirigido', icon: 'Target' }, { id: 'prova', title: 'Modo prova', icon: 'ShieldCheck' }, { id: 'history', title: 'Diário de aprendizagem', icon: 'BookOpenCheck' }, { id: 'calendar', title: 'Meu calendário', icon: 'CalendarDays' }, { id: 'badges', title: 'Conquistas', icon: 'Award' }];

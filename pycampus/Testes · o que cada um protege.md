@@ -32,3 +32,25 @@ quebrada uma vez.
 > Ver [[Publicação e hospedagem]].
 
 Relacionado: [[Regras que não se quebram]]
+
+## Conferência do código, e não só da saída (set/2026)
+
+- `requisitos-em-tudo.test.js` — a solução guardada de cada miniprojeto e de cada ponte cumpre o
+  que aquele exercício cobra; as quatro telas que executam código do estudante oferecem a
+  leitura do Lumi; as telas internas da App são chamadas, não montadas.
+- `solucoes-alternativas.test.js` — para cada aula com requisito existe uma segunda solução, com
+  outros nomes e outra abordagem, e ela é aceita igual. É a prova de que a conferência não exige
+  formato. Se algum requisito recusar um caminho legítimo, este teste falha e o requisito sai.
+- `desafio-exige-trabalho.test.js` — nenhum desafio é resolvido devolvendo a entrada sem
+  transformar. Uma exceção nomeada: `calculadora/pergunta`, onde ecoar é a tarefa.
+- `conteudo-executavel.test.js` — a etapa Criar nunca espera a saída que já está na tela, toda
+  solução guardada roda sozinha, e erro em esqueleto com `pass` explica que falta escrever o corpo.
+- `degrau-pedagogico.test.js` — nenhum desafio exige técnica que nem a aula nem uma anterior
+  mostrou. A regra era conferida a olho; agora é medida.
+- `entrada-preparada.test.js` — todo conteúdo que manda responder algo declara a resposta.
+- `endereco-por-link.test.js` — `?ia=` só aceita https ou o próprio computador, e só a origem.
+- `mistura-http.test.js` — página https com Ollama http nem tenta: responde na hora.
+- `liberacao-do-lumi.test.js` — aprovação dada pelo Lumi fica registrada e sai no relatório.
+
+Fora da suíte, contra o navegador: `npm run test:curriculum` (143 programas no Python real) e
+`npm run test:isolamento` (o input() perguntando durante a execução num servidor igual ao Pages).

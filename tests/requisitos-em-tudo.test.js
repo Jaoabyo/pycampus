@@ -62,3 +62,14 @@ test('as telas internas são chamadas, não montadas, e continuam sem hooks', ()
     assert.doesNotMatch(corpo, /use(State|Effect|Ref|Memo|Callback)\s*\(/, `${nome} usa hook: não pode ser chamada direto`);
   }
 });
+
+// lazy() roda na avaliação do módulo e não é içado como as declarações de import. Declarado
+// acima da linha que importa lazy, o app quebra com "Cannot access 'lazy' before
+// initialization" — e só em dev, porque o empacotador de produção reordena e esconde o erro.
+test('as telas sob demanda são declaradas depois dos imports', () => {
+  const linhas = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8').split(String.fromCharCode(10));
+  const importaLazy = linhas.findIndex(l => /^import .*\blazy\b.*from 'react'/.test(l));
+  const primeiraLazy = linhas.findIndex(l => /^const \w+ = lazy\(/.test(l));
+  assert.ok(importaLazy >= 0, 'App.jsx deveria importar lazy');
+  assert.ok(primeiraLazy > importaLazy, 'lazy() é chamado antes de a ligação do import existir');
+});
