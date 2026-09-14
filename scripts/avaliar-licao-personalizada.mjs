@@ -52,6 +52,7 @@ const igual = (a, b) => String(a).replace(/\r/g, '').trim() === String(b).replac
 console.log(`Modelo: ${MENTOR_MODEL} · ${patterns.length} enganos × ${PASSADAS} passadas${NL}`);
 
 let boas = 0;
+let palpiteErrado = 0;
 const comAlguma = [];
 let total = 0;
 const motivos = new Map();
@@ -72,10 +73,13 @@ for (const engano of patterns) {
     }
     const exemplo = await rodar(licao.exemplo, licao.entradasExemplo || []);
     if (!exemplo.ok) { anotar('o exemplo quebrou ao rodar'); continue; }
-    if (!igual(exemplo.saida, licao.saidaExemplo)) { anotar('a saída prometida do exemplo não bateu'); continue; }
+    if (!String(exemplo.saida).trim()) { anotar('o exemplo não imprime nada'); continue; }
     const solucao = await rodar(licao.solucao, licao.entradasDesafio || []);
     if (!solucao.ok) { anotar('a solução do desafio quebrou ao rodar'); continue; }
-    if (!igual(solucao.saida, licao.saidaDesafio)) { anotar('a saída prometida do desafio não bateu'); continue; }
+    if (!String(solucao.saida).trim()) { anotar('a solução do desafio não imprime nada'); continue; }
+    // Quanto o modelo erra o próprio palpite continua sendo medido — só não descarta mais a
+    // lição, porque a saída exibida ao estudante é a medida.
+    if (!igual(exemplo.saida, licao.saidaExemplo) || !igual(solucao.saida, licao.saidaDesafio)) palpiteErrado++;
     const desconhecidas = untaughtCallables(`${licao.exemplo}${NL}${licao.solucao}`, ensinado);
     if (desconhecidas.length) { anotar('usou o que ainda não foi ensinado: ' + desconhecidas.join(', ')); continue; }
     boas++;
@@ -92,7 +96,8 @@ if (motivos.size) {
 }
 // O estudante não vive a taxa por tentativa: a tela tenta três vezes antes de desistir. O que
 // ele sente é "pedi uma lição e recebi uma", e é esse o número que vale.
-console.log(`${NL}Enganos que renderam pelo menos uma lição: ${comAlguma.length} de ${patterns.length}.`);
+console.log(`${NL}Lições em que o modelo errou o próprio palpite de saída: ${palpiteErrado} (não descarta mais: a saída exibida é a medida).`);
+console.log(`Enganos que renderam pelo menos uma lição: ${comAlguma.length} de ${patterns.length}.`);
 console.log(`${NL}Descarte não é bug: o portão existe para isso. A tela tenta três vezes antes de desistir.`);
 await browser.close();
 process.exitCode = boas > 0 ? 0 : 1;

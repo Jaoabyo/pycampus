@@ -48,14 +48,18 @@ export default function CustomLesson({ weakness, evidence, lessonId, state, upda
 
           setStatus('Rodando o exemplo no Python de verdade para conferir…');
           const example = await runOnce(draft.exemplo, draft.entradasExemplo);
-          if (!example.ok || !same(example.output, draft.saidaExemplo)) { refused.push('o exemplo não produziu a saída prometida'); continue; }
+          if (!example.ok) { refused.push('o exemplo não roda'); continue; }
+          if (!String(example.output).trim()) { refused.push('o exemplo não imprime nada'); continue; }
 
           setStatus('Conferindo se o desafio tem solução…');
           const solution = await runOnce(draft.solucao, draft.entradasDesafio);
-          if (!solution.ok || !same(solution.output, draft.saidaDesafio)) { refused.push('a solução do desafio não bateu com a saída'); continue; }
+          if (!solution.ok) { refused.push('a solução do desafio não roda'); continue; }
+          if (!String(solution.output).trim()) { refused.push('a solução do desafio não imprime nada'); continue; }
 
           if (controller.signal.aborted) return;
-          update(s => ({ ...s, customLessons: { ...s.customLessons, [weakness.id]: { ...draft, criadaEm: localDate() } } }));
+          // A saída mostrada é a medida, não a prometida: é a que o estudante vai comparar.
+          const conferida = { ...draft, saidaExemplo: String(example.output).trim(), saidaDesafio: String(solution.output).trim() };
+          update(s => ({ ...s, customLessons: { ...s.customLessons, [weakness.id]: { ...conferida, criadaEm: localDate() } } }));
           setStatus('');
           return;
         } catch (failure) {
