@@ -3,6 +3,7 @@ import { practiceProjects, practiceDone } from './practice-content.js';
 import { functionBridges } from './function-bridges.js';
 import { diagnose, patterns } from './diagnosis.js';
 import { doneProjects, xpTotal, levelInfo, streak, localDate, shiftDate } from './progress.js';
+import { normalizeLumiNotes } from './lumi-notes.js';
 
 // O estudante pediu para o Lumi preparar, de tempos em tempos, um relatório do que ele andou
 // fazendo — para ser avaliado por fora. O relatório é montado a partir do que a plataforma
@@ -49,6 +50,7 @@ export function montarRelatorio(estado, hoje = localDate()) {
 
   const provas = (estado.provas || []).slice(-3);
   const liberacoes = Object.entries(estado.liberacoesDoLumi || {});
+  const conversasLumi = normalizeLumiNotes(estado.lumiNotes).filter(note => note.at.slice(0, 10) >= desde).slice(-8).reverse();
 
   const linhas = [
     `# Relatório de estudo — PyCampus`,
@@ -81,6 +83,12 @@ export function montarRelatorio(estado, hoje = localDate()) {
     explicacoes.length
       ? explicacoes.slice(0, 8).map(e => `**${e.onde}**\n\n> ${e.texto.replace(/\n+/g, ' ')}`).join('\n\n')
       : 'Ainda não escrevi nenhuma explicação.',
+    ``,
+    `## Conversas recentes com o Lumi`,
+    ``,
+    conversasLumi.length
+      ? `Estas são orientações recebidas; elas mostram onde pedi ajuda, mas não comprovam domínio por si só.\n\n${conversasLumi.map(note => `**${note.title}** — ${dia(note.at.slice(0, 10))} · ajuda nível ${note.level}/4\n\n- Minha pergunta: ${note.question}\n- Orientação: ${note.tip}`).join('\n\n')}`
+      : 'Ainda não registrei uma conversa recente com o Lumi.',
     ``,
     `## Provas sem consulta`,
     ``,

@@ -101,7 +101,12 @@ export function mentorPrompt(context, level, question = '') {
     'Use as palavras e os exemplos da aula, copiados abaixo. Quando explicar algo que a aula já explica, siga a explicação dela em vez de criar outra.',
     'O que vem marcado como fato medido foi contado por programa: é verdadeiro e você não pode contradizê-lo.',
     'Nunca use recursos que não estejam nessa lista, mesmo que exista solução mais curta.',
-    `Degrau de ajuda atual: ${level} de 4. ${rules[level]}`
+    // Quando ele escreve a própria pergunta, a regra do degrau 1 ("responda só com uma pergunta")
+    // vira absurdo: ele perguntou algo e receberia outra pergunta de volta. O degrau continua
+    // valendo como profundidade — quanto do caminho pode ser revelado —, não como formato.
+    question
+      ? `Degrau de ajuda atual: ${level} de 4. Responda À PERGUNTA DELE, de forma direta e curta. ${level <= 2 ? 'Sem escrever código: explique em palavras.' : rules[level]}`
+      : `Degrau de ajuda atual: ${level} de 4. ${rules[level]}`
   ].join('\n');
   const aula = aulaEmTexto(context.lessonId);
   const glossario = glossarioDoCodigo(context.code, context.lessonId);
@@ -156,7 +161,12 @@ export function entregaSolucao(texto, codigoDoEstudante) {
 }
 
 
-export function sanitizeReply(text, level, codigoDoEstudante = "") {
+// Quando o estudante escreve a própria pergunta, a resposta é para ELA. Reduzir isso a "uma
+// pergunta só" era o motivo de a resposta sumir da tela: ele perguntava "por que dá erro?" e
+// recebia silêncio. A regra do primeiro degrau existe para a dica automática, não para a
+// conversa que ele começou. O que continua valendo em qualquer caso: nada de código antes do
+// terceiro degrau, e nada de função que ele ainda não escreveu.
+export function sanitizeReply(text, level, codigoDoEstudante = "", perguntaLivre = false) {
   if (typeof text !== 'string') return '';
   if (level >= MAX_LEVEL) return text.trim();
   const limit = level >= 3 ? 2 : 0;
@@ -164,6 +174,8 @@ export function sanitizeReply(text, level, codigoDoEstudante = "") {
     ? block
     : '[o código fica para o próximo degrau — tente você primeiro]').trim();
   if (level !== 1) return clean;
+  // Ele perguntou; responder é o ponto. O que continua barrado é a linha pronta para copiar.
+  if (perguntaLivre) return entregaSolucao(clean, codigoDoEstudante) ? '' : clean;
   const pergunta = onlyQuestion(clean);
   return entregaSolucao(pergunta, codigoDoEstudante) ? '' : pergunta;
 }
@@ -226,11 +238,11 @@ export async function askMentor({ context, level, question = '', onToken, signal
       const piece = JSON.parse(line).message?.content || '';
       if (!piece) continue;
       full += piece;
-      onToken?.(sanitizeReply(full, level, context.code));
+      onToken?.(sanitizeReply(full, level, context.code, Boolean(question)));
     }
   }
-  const limpo = sanitizeReply(full, level, context.code);
-  // Quando a limpeza esvazia a resposta — porque o modelo tentou entregar a solução antes da
-  // hora — o estudante não pode ficar sem nada. A ajuda escrita existe para exatamente isto.
-  return limpo.trim() ? limpo : localHelp(context, level).join(" ");
+  const limpo = sanitizeReply(full, level, context.code, Boolean(question));
+  // Vazio significa "a limpeza descartou tudo". Quem chama decide: a tela sobe um degrau
+  // quando havia uma pergunta, ou mostra a ajuda escrita quando não havia.
+  return limpo;
 }

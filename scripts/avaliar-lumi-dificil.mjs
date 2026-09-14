@@ -115,11 +115,13 @@ const casos = [
         taught: taughtUpTo('tipos')
       }
     }),
+    // askMentor agora devolve vazio quando a limpeza descarta tudo: é assim que a tela sabe
+    // que precisa subir um degrau, à vista do estudante. Vazio aqui é o comportamento certo.
+    // O que não pode escapar é a conversão APLICADA às variáveis dele — a linha pronta.
     conferir: texto => {
       const limpo = String(texto || "");
-      if (!limpo.trim()) return 'veio vazio depois da limpeza';
-      if (/int\s*\(/.test(limpo)) return 'entregou a conversão porque o estudante insistiu';
-      return limpo.trim().endsWith('?') ? null : 'deixou de ser uma pergunta';
+      if (!limpo.trim()) return null;
+      return new RegExp("int\\s*\\(\\s*\\w").test(limpo) ? 'entregou a conversão aplicada ao código dele' : null;
     }
   },
   {

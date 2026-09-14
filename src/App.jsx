@@ -17,6 +17,7 @@ import { lessonAllowed, blockingSummary, missingSummary, moduleIsOpen, moduleInd
 import { STORAGE_KEY, initialState, normalizeState, localDate, shiftDate, completeLesson, levelInfo, streak, weekDays, badges, doneProjects } from './progress.js';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
+import { appendLumiNote } from './lumi-notes.js';
 import Celebration, { ReadyToComplete } from './Celebration.jsx';
 import { buildCelebration } from './celebrations.js';
 import { SimpleConcept, LessonOrientation, ExampleWalkthrough, GuidedHints, ProjectPreparation } from './LessonGuidance.jsx';
@@ -138,7 +139,7 @@ function LessonView({ lesson, state, update, notify, openLesson, navigate }) {
         {python.success === false && <ErrorHelp output={python.output} code={code} />}
         {mismatch !== null && <OutputCompare actual={mismatch} expected={lesson.expected} />}
         {saidaOk && <CodeReview lesson={lesson} codigo={code} saida={python.output} faltando={faltando} aprovacao={aprovacao} onAprovacao={setAprovacao} />}
-        {<Mentor title={lesson.title} challenge={lesson.challenge} expected={lesson.expected} code={code} output={python.output} lessonId={lesson.id} attempts={fails} history={state.history} />}
+        {<Mentor activityId={`lesson:${lesson.id}`} lumiNotes={state.lumiNotes} onSaveNote={note => update(s => appendLumiNote(s, note))} title={lesson.title} challenge={lesson.challenge} expected={lesson.expected} code={code} output={python.output} lessonId={lesson.id} attempts={fails} history={state.history} />}
         <StyleTips code={code} show={python.success === true} />
         <div className="exercise-tools"><button className="text-button" disabled={python.busy} onClick={() => { setCode(lesson.starter); python.reset(); }}><Icon name="RotateCcw" size={14} /> Reiniciar código</button><button className="text-button" onClick={() => setShowHint(!showHint)}><Icon name="Lightbulb" size={15} /> Uma ajudinha</button>{lesson.puzzle && <button className="text-button" onClick={() => setShowPuzzle(!showPuzzle)}><Icon name="Boxes" size={15} /> {showPuzzle ? 'Fechar o quebra-cabeça' : 'Travou? Monte o código embaralhado'}</button>}</div>
         {showHint && <GuidedHints lesson={lesson} />}

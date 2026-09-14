@@ -51,66 +51,101 @@ const inline = text => text.split(/(`[^`]+`|\*\*[^*]+\*\*)/).filter(Boolean).map
 
 // attempts conta as tentativas sem sucesso e vem de fora de propósito: durante cada execução o
 // estado volta a "rodando", este componente é desmontado e qualquer contagem interna zeraria.
-export default function Mentor({ title, challenge, expected, code, output, lessonId = '', attempts = 0, history = [] }) {
+//
+// O painel é uma conversa, não uma sequência de dicas prontas. Ele abria disparando a dica do
+// primeiro degrau sozinho, e enquanto ela vinha o campo de pergunta ficava bloqueado: quem
+// abria para perguntar alguma coisa esperava por uma resposta que não tinha pedido. Agora ele
+// abre pronto para ouvir, e a escada continua ali para quem quiser mais profundidade.
+export default function Mentor({ title, challenge, expected, code, output, lessonId = '', attempts = 0, history = [], activityId = '', onSaveNote = null }) {
   const [open, setOpen] = useState(false);
   const [level, setLevel] = useState(1);
-  const [replies, setReplies] = useState({});
+  const [conversa, setConversa] = useState([]);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState(null);
   const [question, setQuestion] = useState('');
   const abort = useRef(null);
-  // lessonId, history e replies são o que faltava: sem eles o Lumi respondia sem saber em que
-  // aula o estudante está, o que ele já errou antes, nem o que ele mesmo já tinha dito.
+
+  // As respostas já dadas viram turnos anteriores: o degrau 2 continua de onde o 1 parou.
+  const replies = Object.fromEntries(conversa
+    .filter(turno => turno.de === 'lumi' && turno.texto)
+    .map(turno => [turno.nivel, turno.texto]));
   const context = { title, challenge, expected, code, output, lessonId, history, taught: taughtUpTo(lessonId), replies };
 
-  // Cada execução nova é um problema novo: a escada recomeça do primeiro degrau.
-  useEffect(() => { setLevel(1); setReplies({}); }, [output]);
-  // Na terceira tentativa seguida sem sair do lugar, o Lumi aparece sozinho — quem está
-  // travado de verdade costuma insistir no mesmo erro em vez de pedir ajuda.
+  // Cada execução nova é um problema novo: a escada recomeça e a conversa anterior sai da tela.
+  useEffect(() => { setLevel(1); setConversa([]); }, [output]);
+  // Na terceira tentativa seguida sem sair do lugar, o Lumi aparece sozinho — quem está travado
+  // de verdade costuma insistir no mesmo erro em vez de pedir ajuda.
   useEffect(() => { if (attempts >= 3) setOpen(true); }, [attempts]);
   useEffect(() => () => abort.current?.abort(), []);
   useEffect(() => {
-    if (!open) return;
+    if (!open) return undefined;
     const controller = new AbortController();
-    mentorAvailable(controller.signal).then(result => {
-      setStatus(result);
-      if (result.ok) warmMentor(controller.signal);
+    mentorAvailable(controller.signal).then(resultado => {
+      setStatus(resultado);
+      if (resultado.ok) warmMentor(controller.signal);
     });
     return () => controller.abort();
   }, [open]);
-  // A primeira pergunta só pode sair depois de saber que a IA está no ar; antes disso o
-  // estudante já está lendo a ajuda garantida, que não depende de nada.
-  useEffect(() => {
-    if (open && status?.ok && !busy && replies[level] === undefined) ask(level);
-  }, [open, status, level, busy, replies]);
 
-  const ask = async (nextLevel, freeQuestion = '') => {
-    setLevel(nextLevel);
+  const perguntar = async (proximoNivel, texto = '') => {
+    if (busy) return;
+    setLevel(proximoNivel);
+    const minha = texto.trim();
+    setConversa(atual => [
+      ...atual,
+      ...(minha ? [{ de: 'voce', texto: minha }] : []),
+      { de: 'lumi', nivel: proximoNivel, texto: '', pergunta: minha }
+    ]);
     if (!status?.ok) return;
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
     setBusy(true);
-    setReplies(current => ({ ...current, [nextLevel]: '' }));
+    const escrever = patch => setConversa(atual => atual.map((turno, indice) => (indice === atual.length - 1 ? { ...turno, ...patch } : turno)));
     try {
-      await askMentor({
-        context, level: nextLevel, question: freeQuestion, signal: controller.signal,
-        onToken: partial => setReplies(current => ({ ...current, [nextLevel]: partial }))
+      const resposta = await askMentor({
+        context, level: proximoNivel, question: minha, signal: controller.signal,
+        onToken: parcial => { if (!controller.signal.aborted) escrever({ texto: parcial }); }
       });
-    } catch (error) {
-      if (!controller.signal.aborted) setReplies(current => ({ ...current, [nextLevel]: `__falhou__${error.message}` }));
+      if (controller.signal.aborted) return;
+      // A limpeza esvazia quando a resposta revelaria algo que o degrau ainda não permite.
+      if (!resposta.trim()) {
+        if (minha && proximoNivel < MAX_LEVEL) {
+          // Ele perguntou: ignorar seria pior do que subir. O degrau sobe à vista dele, com
+          // custo, em vez de a pergunta virar silêncio ou uma dica genérica.
+          escrever({ texto: `Para responder isso eu preciso subir um degrau — vou para o ${proximoNivel + 1}.` });
+          setBusy(false);
+          return perguntar(proximoNivel + 1, minha);
+        }
+        escrever({ texto: localHelp(context, proximoNivel).join(" ") });
+        return;
+      }
+      escrever({ texto: resposta });
+      // Fica registrada a orientação, não a resposta pronta: serve para o diário e o relatório
+      // mostrarem onde ele pediu ajuda, sem virar um caderno de respostas.
+      // id, at e lessonId não são enfeite: sem eles normalizeLumiNotes descarta a nota em
+      // silêncio, e a conversa não chega ao diário nem ao relatório.
+      onSaveNote?.({
+        id: `${activityId}:${Date.now()}`,
+        at: new Date().toISOString(),
+        activityId, lessonId: lessonId || activityId,
+        title, level: proximoNivel,
+        question: minha || mentorSteps[proximoNivel - 1].label,
+        tip: resposta
+      });
+    } catch (erro) {
+      if (!controller.signal.aborted) escrever({ falhou: erro.message });
     } finally {
       if (!controller.signal.aborted) setBusy(false);
     }
   };
 
-  const step = mentorSteps[level - 1];
-  const reply = replies[level];
-  const failed = typeof reply === 'string' && reply.startsWith('__falhou__');
+  const degrau = mentorSteps[level - 1];
+  const jaExecutou = String(output || '').trim().length > 0;
 
   if (!open) return <button className="lumi-call" onClick={() => setOpen(true)}>
     <LumiArt size={30} />
-    <span><strong>Travou? Chama o Lumi</strong><small>Ele te ajuda a achar sozinho</small></span>
+    <span><strong>Travou? Chama o Lumi</strong><small>Pergunte com suas palavras, quando quiser</small></span>
   </button>;
 
   return <section className="mentor" aria-label="Ajuda do Lumi">
@@ -118,46 +153,64 @@ export default function Mentor({ title, challenge, expected, code, output, lesso
       <LumiArt size={40} awake={!busy} />
       <div>
         <h4>Lumi</h4>
-        <p>{busy ? 'Pensando…' : status?.ok ? 'Eu ilumino o caminho, você dá os passos.' : 'Usando as dicas que já vêm comigo.'}</p>
+        {/* Estado dito com todas as letras: sem isso o painel parecia travado enquanto pensava. */}
+        <p>{busy ? 'Pensando…'
+          : status === null ? 'Vendo se a IA está no ar…'
+          : status.ok ? 'Pronto. Pergunte o que quiser sobre este exercício.'
+          : 'Sem IA agora: valem as dicas escritas.'}</p>
       </div>
       <button className="icon-button" aria-label="Fechar a ajuda do Lumi" onClick={() => { abort.current?.abort(); setOpen(false); }}><Icon name="X" size={17} /></button>
     </header>
 
     <div className="mentor-ladder" aria-label="Degraus de ajuda">
       {mentorSteps.map(item => <span key={item.level} className={`mentor-rung ${item.level < level ? 'past' : item.level === level ? 'now' : ''}`} title={item.reveals} />)}
-      <small>Degrau {level} de {MAX_LEVEL} · {step.reveals}</small>
+      <small>Degrau {level} de {MAX_LEVEL} · {degrau.reveals}</small>
     </div>
 
     <div className="mentor-body">
-      {/* No degrau 1 a ajuda escrita termina numa pergunta. Se o Lumi já fez a dele, sobra
-          a mesma pergunta duas vezes — então guardamos só a parte factual do erro. */}
-      {(reply && !failed && level === 1 ? localHelp(context, level).slice(0, 1) : localHelp(context, level))
-        .map(line => <p key={line} className="mentor-sure">{line}</p>)}
-      {/* O texto vai dentro de um span: sem ele, cada <strong> e <code> vira uma coluna do
-          flex e a frase se parte em pedaços desalinhados. */}
+      {/* A ajuda escrita abre a conversa e não depende de nada estar ligado. */}
+      {localHelp(context, level).map(linha => <p key={linha} className="mentor-sure">{linha}</p>)}
+
+      {/* O texto vai dentro de um span: sem ele, cada <strong> e <code> vira uma coluna do flex
+          e a frase se parte em pedaços desalinhados. */}
       {status && !status.ok && <p className="mentor-offline">
         <Icon name="PlugZap" size={15} />
         <span>{status.reason === 'modelo'
           ? <>O Ollama está ligado, mas falta o modelo <code>{MENTOR_MODEL}</code>. No terminal: <code>ollama pull {MENTOR_MODEL}</code>.</>
           : remoto
-            ? <>Aqui eu não converso: a conversa usa uma IA que roda no computador de quem estuda, e esta página não alcança nenhuma. <strong>Tudo acima é escrito e funciona em qualquer aparelho</strong> — é o que costuma bastar para destravar um erro. Quem tiver a IA própria pode ligá-la em Configurações.</>
+            ? <>Aqui eu não converso: a conversa usa uma IA que roda no computador de quem estuda, e esta página não alcança nenhuma. <strong>Tudo acima é escrito e funciona em qualquer aparelho</strong>. Quem tiver a IA própria pode ligá-la em Configurações.</>
             : <>A IA local está desligada. Abra o aplicativo <strong>Ollama</strong> para conversar comigo; sem ele, as dicas acima continuam valendo.</>}</span>
       </p>}
-      {failed && <p className="mentor-offline"><Icon name="TriangleAlert" size={15} /> <span>Não consegui responder agora ({reply.replace('__falhou__', '')}). As dicas acima continuam valendo.</span></p>}
-      {reply && !failed && <div className="mentor-reply"><Rich text={reply} /></div>}
-      {busy && !reply && <p className="mentor-typing"><span /><span /><span /></p>}
+
+      {conversa.map((turno, indice) => {
+        if (turno.de === 'voce') return <p key={indice} className="mentor-bolha is-voce"><span>{turno.texto}</span></p>;
+        if (turno.falhou) return <p key={indice} className="mentor-offline"><Icon name="TriangleAlert" size={15} /> <span>Não consegui responder agora ({turno.falhou}). As dicas acima continuam valendo.</span></p>;
+        if (!turno.texto) return <p key={indice} className="mentor-typing"><span /><span /><span /></p>;
+        return <div key={indice} className="mentor-bolha is-lumi"><LumiArt size={20} /><div><Rich text={turno.texto} /></div></div>;
+      })}
     </div>
 
     <footer className="mentor-actions">
-      {level < MAX_LEVEL
-        ? <button className="button outline" disabled={busy} onClick={() => ask(level + 1)}>
-            <Icon name="ArrowUp" size={15} /> {mentorSteps[level].label}
-          </button>
-        : <p className="mentor-final"><Icon name="Sprout" size={15} /> Agora escreva com suas palavras por que aquilo resolveu. Explicar é o que fixa.</p>}
-      {status?.ok && <form className="mentor-ask" onSubmit={event => { event.preventDefault(); if (!question.trim() || busy) return; ask(level, question.trim()); setQuestion(''); }}>
-        <input value={question} onChange={event => setQuestion(event.target.value)} placeholder="Pergunte com suas palavras…" aria-label="Pergunte ao Lumi" />
-        <button className="icon-button" aria-label="Enviar pergunta" disabled={busy || !question.trim()}><Icon name="SendHorizontal" size={17} /></button>
+      {status?.ok && <form className="mentor-ask" onSubmit={evento => {
+        evento.preventDefault();
+        if (!question.trim() || busy) return;
+        perguntar(level, question);
+        setQuestion('');
+      }}>
+        <input value={question} onChange={evento => setQuestion(evento.target.value)} placeholder="Pergunte com suas palavras…" aria-label="Pergunte ao Lumi" />
+        <button className="button primary" disabled={busy || !question.trim()}><Icon name="SendHorizontal" size={16} /> Enviar pergunta</button>
       </form>}
+
+      <div className="mentor-atalhos">
+        {level < MAX_LEVEL
+          ? <button className="button outline" disabled={busy || !status?.ok} onClick={() => perguntar(level + 1)}>
+              <Icon name="ArrowUp" size={15} /> {mentorSteps[level].label}
+            </button>
+          : <p className="mentor-final"><Icon name="Sprout" size={15} /> Agora escreva com suas palavras por que aquilo resolveu. Explicar é o que fixa.</p>}
+        {status?.ok && jaExecutou && <button className="button outline" disabled={busy} onClick={() => perguntar(level, 'Comente o meu código: o que está bom e o que dá para melhorar?')}>
+          <Icon name="Eye" size={15} /> Comentar meu código
+        </button>}
+      </div>
     </footer>
   </section>;
 }

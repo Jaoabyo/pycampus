@@ -67,3 +67,16 @@
 }
 @keyframes lumi-bob{0%,100%{transform:translateY(0) rotate(-4deg)}25%{transform:translateY(-38px) rotate(5deg)}50%{transform:translateY(10px) rotate(-2deg)}75%{transform:translateY(-22px) rotate(6deg)}}
 @media(prefers-reduced-motion:reduce){.lumi-flight{display:none}}
+
+/* A conversa em bolhas. O painel antes mostrava uma resposta só, substituída a cada degrau:
+   o estudante perdia o que tinha perguntado e o que já tinha sido respondido. */
+.mentor-bolha{display:flex;gap:9px;margin:10px 0 0;padding:11px 13px;border-radius:13px;font-size:13px;line-height:1.75}
+.mentor-bolha>svg{flex-shrink:0;margin-top:1px}
+.mentor-bolha.is-voce{justify-content:flex-end;margin-left:auto;max-width:88%;background:#efe7fb;border:1px solid #ddd0f6;color:#4f3f75;border-bottom-right-radius:4px}
+.mentor-bolha.is-lumi{max-width:95%;background:#fff;border:1px solid #e6dcf8;color:#3f3557;border-bottom-left-radius:4px}
+.mentor-bolha.is-lumi p{margin:0 0 7px;font-size:13px;line-height:1.75}
+.mentor-bolha.is-lumi p:last-child{margin-bottom:0}
+/* Botões de atalho quebram linha: no celular eles não cabem lado a lado. */
+.mentor-atalhos{display:flex;flex-wrap:wrap;gap:9px;margin-top:11px}
+.mentor-ask{display:flex;flex-wrap:wrap;gap:9px}
+.mentor-ask input{flex:1 1 190px;min-width:0}

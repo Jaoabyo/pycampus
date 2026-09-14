@@ -1,6 +1,7 @@
 import { normalizeState, doneProjects, donePractices, xpTotal } from './progress.js';
 import { HISTORY_LIMIT } from './history.js';
 import { practiceAchievement, practiceProjects } from './practice-content.js';
+import { mergeLumiNotes } from './lumi-notes.js';
 
 // Estudar no celular e no computador cria duas jornadas separadas, e importar um backup
 // substituía uma pela outra — apagando o que foi feito no outro aparelho. Aqui elas se juntam.
@@ -140,6 +141,7 @@ export function mergeProgress(atual, entrada) {
   const diario = new Map();
   for (const item of [...(entrada.history || []), ...(atual.history || [])]) diario.set(item.id, item);
   base.history = [...diario.values()].sort((a, b) => String(b.startedAt).localeCompare(String(a.startedAt))).slice(0, HISTORY_LIMIT);
+  base.lumiNotes = mergeLumiNotes(entrada.lumiNotes, atual.lumiNotes);
 
   return normalizeState(base);
 }

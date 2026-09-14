@@ -82,6 +82,7 @@
 .practice-stage-tabs button{flex:1;justify-content:center;min-height:44px;border-radius:9px;color:#655176;font-size:13px}
 .practice-stage-tabs button.active{background:#7753cb;color:#fff;box-shadow:0 3px 9px #7753cb25}
 .practice-stage-tabs button:disabled{color:#81758e;background:#f4f2f7;opacity:1;cursor:not-allowed}
+.practice-stage-tabs button.needs-practice{color:#7652ad;background:#fbf8ff;border:1px dashed #cbb8ec}
 .practice-stage-tabs button:focus-visible,.practice-success-dialog button:focus-visible{outline:3px solid #c1a8f3;outline-offset:3px}
 .practice-reading{padding:18px;background:#f7f4fc;border:1px solid #e8e0f4;border-radius:12px;margin:18px 0}
 .practice-reading .example-code{padding:0;margin:12px 0 0;border:0;background:transparent;font-size:14px;line-height:1.85;overflow:auto}
@@ -96,3 +97,25 @@
 @keyframes practice-pop{from{opacity:0;transform:translateY(12px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:760px){.practice-stage-tabs{gap:6px}.practice-stage-tabs button{flex:1 1 28%;font-size:12px}.practice-reading{padding:14px}.practice-success-dialog{padding:24px 20px}}
 @media(prefers-reduced-motion:reduce){.practice-success-dialog,.practice-success-mark{animation:none}}
+
+/* A prova final depende de duas práticas. Esta caixa mostra o estado e aponta o próximo passo,
+   para que "Conferir" nunca pareça quebrado ou simplesmente desativado. */
+.practice-gate{margin:20px 0 14px;padding:18px;border:1px solid #e1d5f4;border-radius:14px;background:#fbf9ff}
+.practice-gate.is-ready{border-color:#c6e6d8;background:#f4fbf8}
+.practice-gate-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;color:#7652b0}
+.practice-gate.is-ready .practice-gate-head{color:#2f8f70}
+.practice-gate-head h4{margin:4px 0 0;font-size:16px;color:#4c3d5f}
+.practice-gate ul{list-style:none;padding:0;margin:15px 0 14px;display:grid;gap:8px}
+.practice-gate li{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e7e0f1;border-radius:10px;background:#fff;color:#786b87}
+.practice-gate li.done{border-color:#cce9db;background:#f5fbf8;color:#2f8f70}
+.practice-gate li>svg{flex:none;color:#c6bdcf}
+.practice-gate li.done>svg{color:#3aa17f}
+.practice-gate li>span{display:grid;gap:2px;min-width:0;flex:1}
+.practice-gate li strong{font-size:13px}
+.practice-gate li small{font-size:11px;color:#90839d}
+.practice-gate li code{padding:4px 8px;border-radius:6px;background:#f3eff9;color:#5d477d;font:600 12px Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.practice-gate-action{gap:7px;align-items:center}
+.practice-gate-action code{padding:2px 6px;border-radius:5px;background:#ffffff29;font:700 12px Consolas,monospace}
+.practice-gate .success-text{margin:0;display:flex;align-items:center;gap:8px;font-size:13px}
+.practice-rerun-notice{display:flex;align-items:center;gap:8px;margin:14px 0;padding:10px 12px;border-left:3px solid #a77fe0;border-radius:0 8px 8px 0;background:#faf7ff;color:#654d81;font-size:13px}
+@media(max-width:560px){.practice-gate{padding:15px}.practice-gate li{align-items:flex-start}.practice-gate li code{margin-top:1px}.practice-gate-action{width:100%;justify-content:center;flex-wrap:wrap}.practice-gate-action code{max-width:100%;overflow-wrap:anywhere}}
