@@ -37,7 +37,7 @@ export default function ExplainReview({ subject, reference, explanation }) {
     {!written && <span className="explain-hint">Escreva sua explicação para o Lumi poder lê-la.</span>}
     {error && <p className="explain-error" role="alert"><Icon name="TriangleAlert" size={14} /> <span>{error}</span></p>}
     {review && <div className="explain-card">
-      <div className="explain-head"><LumiArt size={26} /><span>O que eu vi na sua explicação</span></div>
+      <div className="explain-head"><LumiArt size={26} /><span>{review.suficiente ? 'Sua explicação está completa' : 'O que eu vi na sua explicação'}</span></div>
       {review.acertou.length > 0 && <div className="explain-block is-good">
         <h5><Icon name="CheckCircle2" size={14} /> Você acertou</h5>
         <ul>{review.acertou.map(line => <li key={line}>{line}</li>)}</ul>
@@ -47,6 +47,8 @@ export default function ExplainReview({ subject, reference, explanation }) {
         <ul>{review.faltou.map(line => <li key={line}>{line}</li>)}</ul>
       </div>}
       {review.pergunta && <p className="explain-question"><Icon name="Lightbulb" size={15} /> <span>{review.pergunta}</span></p>}
+      {review.suficiente && <p className="explain-suficiente"><Icon name="CheckCircle2" size={15} /> <span>Não ficou faltando nada. Você explicou o essencial deste assunto.</span></p>
+      }
       <p className="small">Isto é uma leitura para você melhorar o texto. Não vale XP e não marca nenhuma etapa como concluída.</p>
     </div>}
   </div>;

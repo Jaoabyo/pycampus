@@ -73,3 +73,18 @@ test('as telas sob demanda são declaradas depois dos imports', () => {
   assert.ok(importaLazy >= 0, 'App.jsx deveria importar lazy');
   assert.ok(primeiraLazy > importaLazy, 'lazy() é chamado antes de a ligação do import existir');
 });
+
+// Terminar uma atividade e ficar sem botão nenhum é o momento mais fácil de perder o embalo:
+// o estudante acabou de acertar e precisa caçar o caminho no menu. Toda tela de atividade
+// oferece uma saída depois de concluída.
+test('toda atividade concluída diz para onde ir', () => {
+  const telas = {
+    'PracticeStudio.jsx': /practice-onde-agora/,
+    'FunctionBridges.jsx': /practice-onde-agora/,
+    'App.jsx': /Próxima aula/
+  };
+  for (const [tela, marca] of Object.entries(telas)) {
+    const fonte = readFileSync(new URL(`../src/${tela}`, import.meta.url), 'utf8');
+    assert.match(fonte, marca, `${tela}: sem saída depois de concluir a atividade`);
+  }
+});

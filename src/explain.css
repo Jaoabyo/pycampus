@@ -23,3 +23,7 @@
 .code-review-block ul{margin:0 0 8px;padding-left:19px}
 .code-review-block li{font-size:12.5px;line-height:1.75;color:#6b5a44;margin-bottom:4px}
 .code-review .explain-block>p{font-size:12.5px;line-height:1.75;color:#5f5480;margin:0}
+
+/* Dizer "está completo" precisa parecer uma conclusão, não mais um item de lista. */
+.explain-suficiente{display:flex;align-items:flex-start;gap:8px;margin:0 0 10px;padding:10px 12px;border-radius:9px;background:#eff9f3;border:1px solid #cfe6d6;color:#3f7f62;font-size:12.5px;line-height:1.75}
+.explain-suficiente>svg{flex-shrink:0;margin-top:3px}

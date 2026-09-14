@@ -20,7 +20,7 @@ import './bridges.css';
 export const bridgeDone = (state, id) => Boolean(state?.functionBridges?.[id]?.passed && state?.functionBridges?.[id]?.quizCorrect);
 export const bridgesDone = state => functionBridges.filter(bridge => bridgeDone(state, bridge.id)).length;
 
-function Bridge({ bridge, state, update, back }) {
+function Bridge({ bridge, state, update, back, proxima, irPara }) {
   const record = state.functionBridges?.[bridge.id] || {};
   const [code, setCode] = useState(record.code ?? bridge.starter);
   const [feedback, setFeedback] = useState(''), [mismatch, setMismatch] = useState(null), [hints, setHints] = useState(0), [fails, setFails] = useState(0), [puzzle, setPuzzle] = useState(false), [celebrate, setCelebrate] = useState(0);
@@ -108,6 +108,15 @@ function Bridge({ bridge, state, update, back }) {
         <li className={record.quizCorrect ? 'done' : ''}><Icon name={record.quizCorrect ? 'CheckCircle2' : 'Circle'} size={16} /> Pergunta respondida corretamente</li>
       </ul>
       {bridgeDone(state, bridge.id) && <p className="success-text" role="status">Ponte concluída. Ela conta para liberar a próxima etapa.</p>}
+      {bridgeDone(state, bridge.id) && <div className="practice-onde-agora">
+        <h3>Para onde agora</h3>
+        <div className="button-row">
+          {proxima
+            ? <button className="button primary" onClick={() => irPara(proxima)}>Próxima ponte: {proxima.title} <Icon name="ArrowRight" size={16} /></button>
+            : <button className="button primary" onClick={back}>Ver todas as pontes <Icon name="ArrowRight" size={16} /></button>}
+          <button className="text-button" onClick={back}><Icon name="ArrowLeft" size={15} /> Voltar para as pontes</button>
+        </div>
+      </div>}
     </section></>;
 }
 
@@ -116,7 +125,8 @@ export default function FunctionBridges({ state, update, openLesson }) {
   const lesson = lessons.find(l => l.id === 'funcoes');
   const unlocked = state.completed.includes('funcoes');
   const done = bridgesDone(state);
-  if (selected) return <Bridge key={selected.id} bridge={selected} state={state} update={update} back={() => setSelected(null)} />;
+  if (selected) return <Bridge key={selected.id} bridge={selected} state={state} update={update} back={() => setSelected(null)}
+    proxima={functionBridges[functionBridges.findIndex(item => item.id === selected.id) + 1] || null} irPara={setSelected} />;
   return <section className="card bridges-panel">
     <div className="step-head">
       <span className="icon-tile blue"><Icon name="Footprints" size={22} /></span>

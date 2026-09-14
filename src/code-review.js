@@ -21,6 +21,8 @@ export function fatosDoCodigo(codigo) {
   const nomes = expressao => [...new Set([...semComentario.matchAll(expressao)].map(achado => achado[1]))];
   return {
     linhasDeCodigo: linhas.filter(linha => linha.trim()).length,
+    comentarios: linhas.filter(linha => linha.includes('#')).length,
+    exemplosDeComentario: linhas.filter(linha => linha.includes('#')).map(linha => linha.trim()).slice(0, 4),
     funcoesChamadas: nomes(/\b([A-Za-z_]\w*)\s*\(/g),
     metodosUsados: nomes(/\.([A-Za-z_]\w*)\s*\(/g),
     variaveisCriadas: nomes(/^\s*([A-Za-z_]\w*)\s*=[^=]/gm),
@@ -43,7 +45,10 @@ export function codeReviewPrompt({ lesson, codigo, saida }) {
     'por exemplo, escrever a resposta pronta em vez de calculá-la, ou pular a técnica da aula.',
     'Escreva em português do Brasil, frases curtas, sem jargão. Fale com ele por "você".',
     'Em "porque", uma frase dizendo o que no código cumpre (ou deixa de cumprir) o objetivo.',
-    'Em "poderia_melhorar", até duas observações sobre a abordagem dele. Pode ficar vazio.',
+    'Em "poderia_melhorar", até duas observações sobre a abordagem dele. QUANDO NÃO HOUVER NADA RELEVANTE, DEVOLVA UMA LISTA VAZIA.',
+    'Não invente melhoria para preencher espaço. Um código curto e correto para o objetivo da aula não precisa de nada.',
+    'Nunca contrarie os fatos medidos. Se comentarios for maior que zero, o código TEM comentários: não peça para acrescentá-los.',
+    'Não peça nada além do que a aula pediu: validação de entrada, tratamento de erro, função ou generalização que o enunciado não exige não são melhorias aqui, são fora de escopo.',
     'Nunca escreva o código pronto na resposta.',
     'Responda APENAS um JSON: {"cumpre":true,"porque":"uma frase","poderia_melhorar":["até duas frases"]}'
   ].join(NL);

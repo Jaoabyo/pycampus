@@ -43,7 +43,13 @@ export default function PracticeStudio({ state, update, openLesson }) {
   const readyProjects = practiceProjects.filter(p => practiceIsOpen(state, p.id));
   const next = due[0] || readyProjects.find(p => !practiceDone(state.learning?.[p.id], p)) || readyProjects[0];
   const select = project => { if (project && practiceIsOpen(state, project.id)) setSelected(project); };
-  if (selected && practiceIsOpen(state, selected.id)) return <Practice key={selected.id} project={selected} state={state} update={update} back={() => setSelected(null)} openLesson={openLesson} />;
+  // O próximo miniprojeto é o seguinte na ordem do currículo que já esteja liberado.
+  const proximoDe = atual => {
+    const depois = practiceProjects.slice(practiceProjects.findIndex(item => item.id === atual.id) + 1);
+    return depois.find(item => practiceIsOpen(state, item.id)) || null;
+  };
+  if (selected && practiceIsOpen(state, selected.id)) return <Practice key={selected.id} project={selected} state={state} update={update}
+    back={() => setSelected(null)} openLesson={openLesson} proximo={proximoDe(selected)} irPara={select} />;
   return <>
     <section className="hero practice-hero">
       <div className="hero-copy">
@@ -98,7 +104,7 @@ export default function PracticeStudio({ state, update, openLesson }) {
   </>;
 }
 
-function Practice({ project: p, state, update, back, openLesson }) {
+function Practice({ project: p, state, update, back, openLesson, proximo, irPara }) {
   const [stage, setStage] = useState('read'), [hint, setHint] = useState(false), [feedback, setFeedback] = useState(''), [ran, setRan] = useState(false), [mismatch, setMismatch] = useState(null), [fails, setFails] = useState(0), [predicted, setPredicted] = useState(''), [puzzle, setPuzzle] = useState(false), [celebrate, setCelebrate] = useState(0);
   const item = state.learning?.[p.id] || {};
   const save = patch => update(s => recordPractice({ ...s, learning: { ...s.learning, [p.id]: { ...s.learning?.[p.id], ...patch } } }, p.id));
@@ -186,6 +192,16 @@ function Practice({ project: p, state, update, back, openLesson }) {
       <div className="tab-row"><button onClick={() => save({ rating: 'help', reviewed: localDate(), streak: 0 })}><Icon name="Lightbulb" size={14} /> Precisei de ajuda · rever amanhã</button><button onClick={() => save({ rating: 'solo', reviewed: localDate(), streak: (item.streak || 0) + 1 })}><Icon name="Zap" size={14} /> Consegui sem consultar · rever em {reviewInterval(item, 'solo')} dias</button></div>
       {item.rating && <p role="status">Relato salvo. Próxima revisão sugerida: {brDate(nextReview(item))}.</p>}
       <p className="small">Cada acerto sem consultar afasta a próxima revisão ({soloIntervals.join(' → ')} dias); precisar de ajuda traz de volta para amanhã. Código, previsão e explicações ficam salvos neste navegador e no backup. As execuções aparecem no Diário de aprendizagem.</p>
+      {complete && <div className="practice-onde-agora">
+        <h3>Para onde agora</h3>
+        <div className="button-row">
+          {proximo
+            ? <button className="button primary" onClick={() => irPara(proximo)}>Próximo miniprojeto: {proximo.title} <Icon name="ArrowRight" size={16} /></button>
+            : <button className="button primary" onClick={back}>Ver todos os miniprojetos <Icon name="ArrowRight" size={16} /></button>}
+          <button className="button outline" onClick={() => openLesson(p.prerequisite)}><Icon name="BookOpen" size={16} /> Rever a aula deste miniprojeto</button>
+          <button className="text-button" onClick={back}><Icon name="ArrowLeft" size={15} /> Voltar para a oficina</button>
+        </div>
+      </div>}
     </section></>}
   </>;
 }

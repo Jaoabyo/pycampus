@@ -67,3 +67,9 @@
 .prediction-compare>div>pre{margin:0;font-family:Consolas,monospace;font-size:12px;line-height:1.75;color:#4a3d63;white-space:pre-wrap;overflow-wrap:anywhere}
 .prediction-compare.is-certa>div{border-color:#cce9db;background:#f0faf5}
 @media(max-width:760px){.prediction-compare{grid-template-columns:1fr}}
+
+/* Classe própria, e não a do aviso em linha: este bloco pode ser movido sem levar o estilo
+   de outro elemento junto. */
+.practice-onde-agora{margin-top:18px;padding-top:16px;border-top:1px solid #dcecdf}
+.practice-onde-agora h3{font-size:13px;margin:0 0 11px;color:#3f7f62}
+.practice-onde-agora .button-row{flex-wrap:wrap;gap:9px}
