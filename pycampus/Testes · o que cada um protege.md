@@ -96,3 +96,18 @@ sempre terminando em pergunta. `tests/travas-do-lumi.test.js` guarda cada uma.
 A camada medida foi conferida contra 277 códigos corretos do próprio currículo: zero falsos
 positivos. Dois apareceram no caminho e viraram regra — uso dentro de f-string conta como uso,
 e variável atribuída dentro de `try` pode existir só para a linha falhar.
+
+## Bancada por tela (set/2026)
+
+`npm run avaliar:telas` — as duas primeiras bancadas usam sempre um objetivo de aula bem
+escrito, mas cada tela entrega um formato diferente para a Lumi julgar: a ponte manda um
+conceito, o miniprojeto manda a **história** ("Mostre seu nome em um cartão feito com código"),
+o passo de projeto manda o porquê. Objetivo vago é o caminho mais curto para ela aprovar
+qualquer coisa ou reprovar um acerto. A leitura de explicação recebe cinco formatos de assunto.
+
+Dez casos, três passadas: 30 de 30. Esta foi a primeira bancada da série que não encontrou
+nenhum defeito — os formatos de objetivo aguentam.
+
+`npm run avaliar:licao` — a lição personalizada. O portão passou a exibir a saída medida no
+Pyodide em vez da prometida pelo modelo: 48% para 76% de aprovação por tentativa, e de 5 para 6
+dos 7 enganos rendendo lição. Com as três tentativas da tela, o estudante sente ~99%.

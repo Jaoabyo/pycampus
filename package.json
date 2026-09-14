@@ -14,7 +14,8 @@
     "avaliar:lumi": "node scripts/avaliar-lumi.mjs",
     "avaliar:lumi-dificil": "node scripts/avaliar-lumi-dificil.mjs",
     "avaliar:ao-vivo": "node scripts/avaliar-leitura-ao-vivo.mjs",
-    "avaliar:licao": "node scripts/avaliar-licao-personalizada.mjs"
+    "avaliar:licao": "node scripts/avaliar-licao-personalizada.mjs",
+    "avaliar:telas": "node scripts/avaliar-lumi-telas.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
