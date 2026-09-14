@@ -48,3 +48,17 @@ test('as três telas que executam código do estudante mostram a leitura do Lumi
     assert.match(fonte, /<CodeReview/, `${tela}: executa código do estudante e não oferece a conferência do Lumi`);
   }
 });
+
+// As telas declaradas dentro da App não podem ser montadas como <Tela />: a cada render a App
+// cria um tipo novo, o React remonta a página inteira e joga fora rolagem e foco. Chamadas
+// direto (Tela()) o JSX entra no lugar. Isso só é seguro enquanto nenhuma delas usar hook.
+test('as telas internas são chamadas, não montadas, e continuam sem hooks', () => {
+  const fonte = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8');
+  const internas = ['Dashboard', 'Course', 'Projects', 'Calendar', 'Achievements', 'Profile', 'Settings'];
+  for (const nome of internas) {
+    assert.ok(fonte.includes(`${nome}()`), `${nome} deveria ser chamada direto`);
+    assert.ok(!fonte.includes(`<${nome} />`), `${nome} está montada como componente e vai remontar a cada render`);
+    const corpo = fonte.slice(fonte.indexOf(`  function ${nome}(`)).split(String.fromCharCode(10))[0];
+    assert.doesNotMatch(corpo, /use(State|Effect|Ref|Memo|Callback)\s*\(/, `${nome} usa hook: não pode ser chamada direto`);
+  }
+});
