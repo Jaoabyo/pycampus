@@ -1,5 +1,6 @@
 import { readError } from './error-guide.js';
 import { lessons } from './curriculum.js';
+import { aulaEmTexto, glossarioDoCodigo, historicoDoEstudante, degrausAnteriores } from './contexto-do-lumi.js';
 
 // O Lumi é um vaga-lume: ilumina o caminho, não caminha por você.
 // A ajuda sobe em quatro degraus e só avança quando o estudante pede. Os dois primeiros
@@ -8,6 +9,7 @@ import { lessons } from './curriculum.js';
 // O endereço da IA precisa ser configurável: no computador ela vive em 127.0.0.1, mas no
 // celular abrindo o site publicado é preciso apontar para outro lugar — a máquina na rede
 // local ou um túnel https. A escolha fica no aparelho, não no código.
+const QUEBRA = String.fromCharCode(10);
 export const OLLAMA_PADRAO = 'http://127.0.0.1:11434';
 const CHAVE = 'pycampus.ia';
 const semBarraFinal = texto => {
@@ -94,10 +96,20 @@ export function mentorPrompt(context, level, question = '') {
     'Você é gentil e direto, nunca sarcástico. Nunca diga que a pergunta é fácil ou óbvia.',
     'Fale COM o estudante, usando "você". Nunca fale sobre ele em terceira pessoa.',
     `O estudante só aprendeu estes assuntos, nesta ordem: ${context.taught.join(', ')}.`,
+    // Sem isto ele explicava com as palavras dele, não com as da aula — duas definições para a
+    // mesma coisa é o que mais confunde quem está começando.
+    'Use as palavras e os exemplos da aula, copiados abaixo. Quando explicar algo que a aula já explica, siga a explicação dela em vez de criar outra.',
+    'O que vem marcado como fato medido foi contado por programa: é verdadeiro e você não pode contradizê-lo.',
     'Nunca use recursos que não estejam nessa lista, mesmo que exista solução mais curta.',
     `Degrau de ajuda atual: ${level} de 4. ${rules[level]}`
   ].join('\n');
+  const aula = aulaEmTexto(context.lessonId);
+  const glossario = glossarioDoCodigo(context.code, context.lessonId);
+  const historico = historicoDoEstudante(context.history, context.lessonId);
   const user = [
+    aula,
+    glossario && `Como a plataforma já explicou, para ele, o que aparece no código:${QUEBRA}${glossario}`,
+    historico && `Fatos medidos sobre este estudante:${QUEBRA}${historico}`,
     `Atividade: ${context.title}`,
     context.challenge && `O que foi pedido: ${context.challenge}`,
     context.expected && `Saída esperada:\n${context.expected}`,
@@ -197,7 +209,7 @@ export async function askMentor({ context, level, question = '', onToken, signal
     body: JSON.stringify({
       model: MENTOR_MODEL, stream: true, keep_alive: '30m',
       options: { temperature: 0.3, num_predict: 400 },
-      messages: [{ role: 'system', content: system }, { role: 'user', content: user }]
+      messages: [{ role: 'system', content: system }, { role: 'user', content: user }, ...degrausAnteriores(context.replies, level)]
     })
   });
   if (!response.ok || !response.body) throw new Error(`Ollama respondeu ${response.status}`);

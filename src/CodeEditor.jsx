@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Icon } from './ui.jsx';
+import LeituraAoVivo from './LeituraAoVivo.jsx';
 
 
 // Editor único da plataforma: aula, laboratório e oficina compartilham a mesma aparência de IDE.
@@ -12,7 +13,7 @@ import { Icon } from './ui.jsx';
 // falhar com EOFError sem explicação.
 export const interativo = typeof globalThis !== 'undefined' && globalThis.crossOriginIsolated === true;
 
-export default function CodeEditor({ code, onChange, busy, onRun, onStop, output, success, stdin, setStdin, inputRequest = null, onReply, celebrate = 0, filename = 'main.py', readOnly = false, runDisabled = false, runLabel = 'Executar código', emptyOutput = 'A saída do seu programa aparecerá aqui.' }) {
+export default function CodeEditor({ code, onChange, busy, onRun, onStop, output, success, stdin, setStdin, inputRequest = null, onReply, celebrate = 0, filename = 'main.py', readOnly = false, runDisabled = false, runLabel = 'Executar código', emptyOutput = 'A saída do seu programa aparecerá aqui.', aoVivo = null }) {
   const editor = useRef(null);
   const [response, setResponse] = useState('');
   const change = value => { if (!readOnly) onChange(value); };
@@ -26,6 +27,7 @@ export default function CodeEditor({ code, onChange, busy, onRun, onStop, output
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); if (!busy && !runDisabled) onRun(); }
       }} />
     </div>
+    {aoVivo && !readOnly && <LeituraAoVivo code={code} {...aoVivo} />}
     {setStdin && <details className="stdin" open={!interativo && code.includes('input(')}><summary>Entradas para input() <span>{interativo ? 'preencher antes é opcional' : 'preencha antes de executar'}</span></summary>{interativo ? <p>Deixe vazio para responder às perguntas durante a execução. Se preencher, o programa usa estas linhas automaticamente, uma resposta por input().</p> : <p><strong>Aqui você precisa preencher antes de executar.</strong> Responder durante a execução exige cabeçalhos que este endereço não envia — no PyCampus aberto no seu computador isso funciona. Escreva uma resposta por linha, na ordem em que o programa perguntar.</p>}<textarea disabled={busy} aria-label="Entradas do programa" placeholder="Uma resposta por linha" value={stdin} onChange={e => setStdin(e.target.value)} /></details>}
     <div className="run-bar"><span>{runDisabled ? 'Código editável para sua entrega' : 'Ctrl + Enter para executar'}</span>{busy ? <button className="button danger" onClick={() => onStop()}><Icon name="Square" size={15} /> Interromper</button> : <button className="button primary" disabled={runDisabled} onClick={onRun}><Icon name="Play" size={15} /> {runLabel}</button>}</div>
     <div className="console-heading"><Icon name="Terminal" size={15} /> Saída do programa <span className={success === false ? 'error-text' : 'success-text'}>{busy ? '● Executando' : success === true ? '✓ Executado' : success === false ? 'Verifique a mensagem' : ''}</span>{celebrate > 0 && <span key={celebrate} className="run-check" role="status"><Icon name="Sparkles" size={13} /> Deu certo!</span>}</div>

@@ -51,7 +51,7 @@ const inline = text => text.split(/(`[^`]+`|\*\*[^*]+\*\*)/).filter(Boolean).map
 
 // attempts conta as tentativas sem sucesso e vem de fora de propósito: durante cada execução o
 // estado volta a "rodando", este componente é desmontado e qualquer contagem interna zeraria.
-export default function Mentor({ title, challenge, expected, code, output, lessonId = '', attempts = 0 }) {
+export default function Mentor({ title, challenge, expected, code, output, lessonId = '', attempts = 0, history = [] }) {
   const [open, setOpen] = useState(false);
   const [level, setLevel] = useState(1);
   const [replies, setReplies] = useState({});
@@ -59,7 +59,9 @@ export default function Mentor({ title, challenge, expected, code, output, lesso
   const [status, setStatus] = useState(null);
   const [question, setQuestion] = useState('');
   const abort = useRef(null);
-  const context = { title, challenge, expected, code, output, taught: taughtUpTo(lessonId) };
+  // lessonId, history e replies são o que faltava: sem eles o Lumi respondia sem saber em que
+  // aula o estudante está, o que ele já errou antes, nem o que ele mesmo já tinha dito.
+  const context = { title, challenge, expected, code, output, lessonId, history, taught: taughtUpTo(lessonId), replies };
 
   // Cada execução nova é um problema novo: a escada recomeça do primeiro degrau.
   useEffect(() => { setLevel(1); setReplies({}); }, [output]);

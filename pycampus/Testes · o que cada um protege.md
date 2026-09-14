@@ -72,3 +72,16 @@ A bancada difícil começou em 85% e o que ela encontrou virou trava em código,
 `entregaSolucao` (o primeiro degrau não entrega função nova nem argumento corrigido),
 `repeteOEnunciado` (cópia do enunciado não é explicação) e a ajuda escrita do primeiro degrau
 sempre terminando em pergunta. `tests/travas-do-lumi.test.js` guarda cada uma.
+
+## Leitura ao vivo (set/2026)
+
+- `tests/leitura-ao-vivo.test.js` — a camada medida acha parêntese aberto, aspa aberta,
+  dois-pontos faltando, `=` no lugar de `==`, bloco vazio e variável criada e nunca usada; e
+  cala em código correto. Também trava o filtro da observação do Lumi.
+- `npm run avaliar:ao-vivo` — contra códigos pela metade, mede se a dica que aparece sozinha
+  entrega a resposta. Achou um vazamento real (`total += numero`) que a trava de chamadas não
+  pegava, porque ali não havia chamada nenhuma, havia um operador.
+
+A camada medida foi conferida contra 277 códigos corretos do próprio currículo: zero falsos
+positivos. Dois apareceram no caminho e viraram regra — uso dentro de f-string conta como uso,
+e variável atribuída dentro de `try` pode existir só para a linha falhar.

@@ -12,7 +12,8 @@
     "test:isolamento": "node scripts/check-isolamento.mjs",
     "lumi:celular": "node scripts/ligar-lumi.mjs",
     "avaliar:lumi": "node scripts/avaliar-lumi.mjs",
-    "avaliar:lumi-dificil": "node scripts/avaliar-lumi-dificil.mjs"
+    "avaliar:lumi-dificil": "node scripts/avaliar-lumi-dificil.mjs",
+    "avaliar:ao-vivo": "node scripts/avaliar-leitura-ao-vivo.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

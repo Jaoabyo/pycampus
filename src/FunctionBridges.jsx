@@ -78,12 +78,12 @@ function Bridge({ bridge, state, update, back, proxima, irPara }) {
       <p className="bridge-challenge">{bridge.challenge}</p>
       <div className="expected"><span>SAÍDA ESPERADA</span><pre>{bridge.expected}</pre></div>
       {bridge.stdin && <p className="small">Neste teste, responda <strong>{bridge.stdin.split('\n').join(', ')}</strong> quando o programa perguntar.</p>}
-      <CodeEditor code={code} onChange={value => { setCode(value); setFeedback(''); setMismatch(null); setSaidaOk(false); setFaltando([]); }} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} filename="ponte.py" runLabel="Testar minha ponte" emptyOutput="Escreva e teste. Esta ponte é curta de propósito." />
+      <CodeEditor aoVivo={{ inicial: bridge.starter, lessonId: bridge.lessonId, challenge: bridge.challenge }} code={code} onChange={value => { setCode(value); setFeedback(''); setMismatch(null); setSaidaOk(false); setFaltando([]); }} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} filename="ponte.py" runLabel="Testar minha ponte" emptyOutput="Escreva e teste. Esta ponte é curta de propósito." />
       {feedback && <p className="practice-feedback" role="status">{feedback}</p>}
       {python.success === false && <ErrorHelp output={python.output} code={code} />}
       {saidaOk && <CodeReview lesson={{ ...bridge, objective: bridge.concept }} codigo={code} saida={python.output} faltando={faltando} aprovacao={aprovacao} onAprovacao={setAprovacao} />}
       {mismatch !== null && <OutputCompare actual={mismatch} expected={bridge.expected} />}
-      {fails > 0 && <Mentor attempts={fails} title={`Ponte de função: ${bridge.title}`} challenge={bridge.challenge} expected={bridge.expected} code={code} output={python.output} lessonId="funcoes" />}
+      {<Mentor attempts={fails} history={state.history} title={`Ponte de função: ${bridge.title}`} challenge={bridge.challenge} expected={bridge.expected} code={code} output={python.output} lessonId="funcoes" />}
       <button className="text-button" disabled={hints >= bridge.hints.length} onClick={() => setHints(n => n + 1)}><Icon name="Lightbulb" size={15} /> {hints ? 'Preciso de mais uma pista' : 'Me dê uma pista'}</button>
       <button className="text-button" onClick={() => setPuzzle(!puzzle)}><Icon name="Boxes" size={15} /> {puzzle ? 'Fechar o quebra-cabeça' : 'Travou? Monte o código embaralhado'}</button>
       {bridge.hints.slice(0, hints).map((hint, index) => <p className="hint" key={index}><strong>Pista {index + 1}:</strong> {hint}</p>)}

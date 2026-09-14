@@ -134,11 +134,11 @@ function LessonView({ lesson, state, update, notify, openLesson, navigate }) {
         {lesson.stdin && <p className="hint">{interativo
           ? <>Execute e responda <strong>{lesson.stdin}</strong> quando a pergunta aparecer abaixo do editor. Se preferir, preencha esse valor em “Entradas para input()” antes de executar.</>
           : <>Já deixei <strong>{lesson.stdin}</strong> preenchido em “Entradas para input()”, logo abaixo do editor: aqui as respostas são lidas dali. É só executar.</>}</p>}
-        <CodeEditor code={code} onChange={setCode} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} stdin={stdin} setStdin={setStdin} />
+        <CodeEditor aoVivo={{ inicial: lesson.starter, lessonId: lesson.id, challenge: lesson.challenge }} code={code} onChange={setCode} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} stdin={stdin} setStdin={setStdin} />
         {python.success === false && <ErrorHelp output={python.output} code={code} />}
         {mismatch !== null && <OutputCompare actual={mismatch} expected={lesson.expected} />}
         {saidaOk && <CodeReview lesson={lesson} codigo={code} saida={python.output} faltando={faltando} aprovacao={aprovacao} onAprovacao={setAprovacao} />}
-        {fails > 0 && <Mentor title={lesson.title} challenge={lesson.challenge} expected={lesson.expected} code={code} output={python.output} lessonId={lesson.id} attempts={fails} />}
+        {<Mentor title={lesson.title} challenge={lesson.challenge} expected={lesson.expected} code={code} output={python.output} lessonId={lesson.id} attempts={fails} history={state.history} />}
         <StyleTips code={code} show={python.success === true} />
         <div className="exercise-tools"><button className="text-button" disabled={python.busy} onClick={() => { setCode(lesson.starter); python.reset(); }}><Icon name="RotateCcw" size={14} /> Reiniciar código</button><button className="text-button" onClick={() => setShowHint(!showHint)}><Icon name="Lightbulb" size={15} /> Uma ajudinha</button>{lesson.puzzle && <button className="text-button" onClick={() => setShowPuzzle(!showPuzzle)}><Icon name="Boxes" size={15} /> {showPuzzle ? 'Fechar o quebra-cabeça' : 'Travou? Monte o código embaralhado'}</button>}</div>
         {showHint && <GuidedHints lesson={lesson} />}

@@ -1,0 +1,6 @@
+/* Leitura ao vivo: uma linha discreta abaixo do editor. Nunca um balão que cobre o código,
+   nunca algo que rouba o foco de quem está digitando. */
+.leitura-ao-vivo{display:flex;align-items:flex-start;gap:8px;margin:9px 0 0;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.7}
+.leitura-ao-vivo>svg{flex-shrink:0;margin-top:2px}
+.leitura-ao-vivo.is-medida{background:#fffaf3;border:1px solid #f0dcc2;color:#8a6a35}
+.leitura-ao-vivo.is-lumi{background:#faf8ff;border:1px solid #e6dcf8;color:#6b5a8f}
