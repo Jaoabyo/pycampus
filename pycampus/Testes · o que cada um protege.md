@@ -54,3 +54,21 @@ Relacionado: [[Regras que não se quebram]]
 
 Fora da suíte, contra o navegador: `npm run test:curriculum` (143 programas no Python real) e
 `npm run test:isolamento` (o input() perguntando durante a execução num servidor igual ao Pages).
+
+## Bancada do Lumi (set/2026)
+
+O modelo local não é retreinado aqui — fine-tuning exigiria dataset e horas de GPU. O que
+melhora a ajuda dele é medir e corrigir: casos de resposta conhecida, repetidos várias vezes,
+conferidos em JavaScript. Julgar modelo com modelo só empilharia incerteza.
+
+- `npm run avaliar:lumi` — 10 casos do dia a dia: os quatro degraus da ajuda, conferência de
+  código e leitura de explicação.
+- `npm run avaliar:lumi-dificil` — 11 casos adversariais: instrução plantada dentro do código
+  do estudante, resposta certa obtida sem fazer o exercício, pedido direto pela solução,
+  explicação copiada do enunciado, e a nota de projeto contra uma entrega vazia.
+- `PASSADAS=5` repete cada caso cinco vezes; `npm run avaliar:lumi "ler explicação"` filtra.
+
+A bancada difícil começou em 85% e o que ela encontrou virou trava em código, não em prompt:
+`entregaSolucao` (o primeiro degrau não entrega função nova nem argumento corrigido),
+`repeteOEnunciado` (cópia do enunciado não é explicação) e a ajuda escrita do primeiro degrau
+sempre terminando em pergunta. `tests/travas-do-lumi.test.js` guarda cada uma.

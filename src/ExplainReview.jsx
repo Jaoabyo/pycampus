@@ -7,7 +7,7 @@ import './explain.css';
 
 // Leitura da explicação escrita. Comenta e pergunta; nunca marca etapa como concluída nem
 // concede XP — o que libera progresso continua sendo prova respondida e código executado.
-export default function ExplainReview({ subject, reference, explanation }) {
+export default function ExplainReview({ subject, reference, explanation, enunciado = '' }) {
   const [review, setReview] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -22,7 +22,7 @@ export default function ExplainReview({ subject, reference, explanation }) {
     try {
       const availability = await mentorAvailable(controller.signal);
       if (!availability.ok) throw new Error('A IA local está desligada. Abra o aplicativo Ollama para eu ler sua explicação.');
-      setReview(await reviewExplanation({ subject, reference, explanation: written, signal: controller.signal }));
+      setReview(await reviewExplanation({ subject, reference, explanation: written, enunciado, signal: controller.signal }));
     } catch (failure) {
       if (!controller.signal.aborted) setError(failure.message);
     } finally {

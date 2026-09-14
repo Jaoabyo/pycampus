@@ -153,7 +153,7 @@ function Practice({ project: p, state, update, back, openLesson, proximo, irPara
       {stage === 'create' && <details className="guided-example"><summary>Ver o exemplo de novo</summary><pre className="example-code">{p.example}</pre></details>}
       {stage === 'read' && <label className="practice-field">Minha previsão<textarea maxLength={1000} value={item.prediction || ''} onChange={e => save({ prediction: e.target.value })} placeholder="Acho que vai mostrar…" /></label>}
       {stage === 'investigate' && <label className="practice-field">Explique esta linha com suas palavras, sem consultar: <code>{p.investigate.line}</code><textarea maxLength={1500} value={item.notes || ''} onChange={e => save({ notes: e.target.value })} placeholder="Essa linha…" /></label>}
-      {stage === 'investigate' && <ExplainReview subject={`Explicar a linha ${p.investigate.line} do miniprojeto ${p.title}`} reference={p.example} explanation={item.notes} />}
+      {stage === 'investigate' && <ExplainReview subject={`Explicar a linha ${p.investigate.line} do miniprojeto ${p.title}`} reference={p.example} enunciado={p.investigate.question} explanation={item.notes} />}
       <CodeEditor code={code} onChange={changeCode} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} readOnly={reading} filename={reading ? `exemplo_${p.id}.py` : `meu_${p.id}.py`} runLabel={reading ? 'Executar o exemplo' : 'Executar meu código'} emptyOutput={reading ? 'Escreva sua previsão e execute para comparar.' : 'Execute para ver a saída do seu código.'} />
       {feedback && <p className="practice-feedback" role="status">{feedback}</p>}
       {predicted && item.prediction && <div className={`prediction-compare is-${predicted}`}>
@@ -182,7 +182,7 @@ function Practice({ project: p, state, update, back, openLesson, proximo, irPara
       <div className="step-head" style={{ marginTop: 22 }}><span className="icon-tile blue"><Icon name="Code2" size={21} /></span><div><div className="eyebrow">SEU CÓDIGO, LOGO ACIMA</div><h3>O que você escreveu na etapa Crie</h3></div></div>
       <pre className="example-code">{item.codes?.create || '# Você ainda não escreveu nada na etapa 4 · Crie.'}</pre>
       <label className="practice-field">Escolha uma linha do código acima e explique o que ela faz. O que mudaria na saída se você trocasse um valor?<textarea maxLength={1500} value={item.reflection || ''} onChange={e => save({ reflection: e.target.value })} placeholder="Nesta linha eu… Se eu mudar…" /></label>
-      <ExplainReview subject={`Reflexão sobre o miniprojeto ${p.title}`} reference={item.codes?.create || p.example} explanation={item.reflection} />
+      <ExplainReview subject={`Reflexão sobre o miniprojeto ${p.title}`} reference={item.codes?.create || p.example} enunciado={p.create} explanation={item.reflection} />
     </section>
     <section className={`card practice-score ${complete ? 'is-complete' : ''}`} aria-live="polite">
       <div className="practice-score-head"><div className={`icon-tile ${complete ? 'teal' : color}`}><Icon name={complete ? 'Trophy' : 'Target'} size={24} /></div><div><h2>{complete ? `Miniprojeto treinado · +${practiceXp} XP` : `Como ganhar os ${practiceXp} XP`}</h2><p className="small">{complete ? 'Os XP já estão no seu nível e o dia conta na sua sequência. Rever depois não remove nem duplica pontos.' : 'Acertar só a saída não conta: a prova rápida existe para você saber explicar o porquê.'}</p></div></div>

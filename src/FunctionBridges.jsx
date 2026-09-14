@@ -102,7 +102,7 @@ function Bridge({ bridge, state, update, back, proxima, irPara }) {
         <textarea aria-label="Minha explicação da ponte" maxLength={1200} value={record.explicacao || ''}
           onChange={event => save({ explicacao: event.target.value })} placeholder="Eu pensei assim…" />
       </label>
-      <ExplainReview subject={`Ponte de função: ${bridge.title} — ${bridge.concept}`} reference={code} explanation={record.explicacao || ''} />
+      <ExplainReview subject={`Ponte de função: ${bridge.title} — ${bridge.concept}`} reference={code} explanation={record.explicacao || ''} enunciado={bridge.challenge} />
       <ul className="practice-checklist">
         <li className={record.passed ? 'done' : ''}><Icon name={record.passed ? 'CheckCircle2' : 'Circle'} size={16} /> Código com a saída esperada</li>
         <li className={record.quizCorrect ? 'done' : ''}><Icon name={record.quizCorrect ? 'CheckCircle2' : 'Circle'} size={16} /> Pergunta respondida corretamente</li>

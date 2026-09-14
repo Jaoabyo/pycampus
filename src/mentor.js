@@ -69,9 +69,11 @@ export function taughtUpTo(lessonId) {
 // Ajuda garantida, escrita e revisada, que funciona sem nenhuma IA ligada.
 export function localHelp(context, level) {
   const error = readError(context.output);
-  if (!error) return level >= 3
-    ? ['O programa rodou sem erro, então a diferença está no resultado. Compare sua saída com a esperada linha por linha, prestando atenção em espaços, acentos e maiúsculas.']
-    : ['O programa rodou sem erro de Python. Leia sua saída e a esperada e procure a primeira linha em que elas diferem.'];
+  if (!error) {
+    if (level >= 3) return ['O programa rodou sem erro, então a diferença está no resultado. Compare sua saída com a esperada linha por linha, prestando atenção em espaços, acentos e maiúsculas.'];
+    if (level === 2) return ['O programa rodou sem erro de Python: o que saiu é resultado do que o código realmente faz, não de uma falha.', 'A diferença está na lógica. Encontre a primeira linha em que sua saída e a esperada divergem e volte à instrução que a produziu.'];
+    return ['O programa rodou sem erro de Python, então a diferença está no resultado.', 'Comparando sua saída com a esperada, qual é a primeira linha em que elas divergem?'];
+  }
   const local = error.line ? ` Ele apareceu na linha ${error.line}.` : '';
   if (level === 1) return [`Esse é um ${error.type}.${local}`, 'Antes de mudar qualquer coisa: o que você queria que essa linha fizesse?'];
   if (level === 2) return [error.title + '.', error.meaning];
@@ -119,14 +121,39 @@ export function onlyQuestion(text) {
 }
 
 // A trava de verdade: o que o modelo mandar além do degrau é removido antes de chegar na tela.
-export function sanitizeReply(text, level) {
+// Medido na bancada: quando o estudante insiste ("me dá o código pronto"), o modelo fura o
+// primeiro degrau embutindo a solução dentro da própria pergunta — "já pensou em usar int()?".
+// Tirar bloco de código não resolve isso, porque a chamada vem solta no meio da frase.
+//
+// A regra: no primeiro degrau a pergunta pode citar o que JÁ ESTÁ no código do estudante, e
+// nada além disso. Uma função que ele ainda não escreveu é a resposta, não uma pergunta.
+// Quando isso acontece, a resposta do modelo é descartada e a ajuda escrita assume — ela
+// sempre existe e nunca entrega a solução antes da hora.
+export function entregaSolucao(texto, codigoDoEstudante) {
+  const codigo = String(codigoDoEstudante || "");
+  const jaUsadas = new Set([...codigo.matchAll(new RegExp("(?<![\\w.])([A-Za-z_]\\w*)\\s*\\(([^()]*)\\)", 'g'))].map(achado => achado[1]));
+  for (const achado of String(texto || "").matchAll(new RegExp("(?<![\\w.])([A-Za-z_]\\w*)\\s*\\(([^()]*)\\)", 'g'))) {
+    const [inteira, nome, argumentos] = achado;
+    // Função que o estudante ainda não escreveu é a resposta, não uma pergunta.
+    if (!jaUsadas.has(nome)) return true;
+    // Ele já usa a função, mas com outros argumentos: entregar os certos é entregar a correção.
+    // Citar o nome sem argumentos continua valendo — é assim que se pergunta sobre uma linha.
+    if (argumentos.trim() && !codigo.includes(inteira)) return true;
+  }
+  return false;
+}
+
+
+export function sanitizeReply(text, level, codigoDoEstudante = "") {
   if (typeof text !== 'string') return '';
   if (level >= MAX_LEVEL) return text.trim();
   const limit = level >= 3 ? 2 : 0;
   const clean = text.replace(fence, block => lineCount(block) <= limit
     ? block
     : '[o código fica para o próximo degrau — tente você primeiro]').trim();
-  return level === 1 ? onlyQuestion(clean) : clean;
+  if (level !== 1) return clean;
+  const pergunta = onlyQuestion(clean);
+  return entregaSolucao(pergunta, codigoDoEstudante) ? '' : pergunta;
 }
 
 // Página https falando com endereço http é bloqueado pelo navegador antes de sair da máquina.
@@ -187,8 +214,11 @@ export async function askMentor({ context, level, question = '', onToken, signal
       const piece = JSON.parse(line).message?.content || '';
       if (!piece) continue;
       full += piece;
-      onToken?.(sanitizeReply(full, level));
+      onToken?.(sanitizeReply(full, level, context.code));
     }
   }
-  return sanitizeReply(full, level);
+  const limpo = sanitizeReply(full, level, context.code);
+  // Quando a limpeza esvazia a resposta — porque o modelo tentou entregar a solução antes da
+  // hora — o estudante não pode ficar sem nada. A ajuda escrita existe para exatamente isto.
+  return limpo.trim() ? limpo : localHelp(context, level).join(" ");
 }

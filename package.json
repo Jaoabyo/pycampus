@@ -10,7 +10,9 @@
     "test": "node --test tests/*.test.js",
     "test:curriculum": "node scripts/check-curriculum-browser.mjs",
     "test:isolamento": "node scripts/check-isolamento.mjs",
-    "lumi:celular": "node scripts/ligar-lumi.mjs"
+    "lumi:celular": "node scripts/ligar-lumi.mjs",
+    "avaliar:lumi": "node scripts/avaliar-lumi.mjs",
+    "avaliar:lumi-dificil": "node scripts/avaliar-lumi-dificil.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

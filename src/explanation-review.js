@@ -4,6 +4,23 @@ import { MENTOR_MODEL, ollamaUrl } from './mentor.js';
 // delas. Não era mentira — o texto sempre disse que não havia julgamento automático — mas
 // escrever no vazio não ensina. O Lumi lê e comenta; ele nunca marca nada como concluído,
 // nem concede XP: os requisitos continuam sendo prova respondida e código com a saída certa.
+// Medido na bancada: copiar o enunciado e colar no campo de explicação passava como completa,
+// nas três tentativas. Repetir a pergunta não é explicar, e pedir ao modelo para perceber isso
+// não resolveu — ele vê um texto correto sobre o assunto e aprova.
+//
+// Aqui é contado: se quase toda palavra da explicação já estava no enunciado, ela não
+// acrescentou nada. A conta é feita antes de chamar o modelo, e o veredito não depende dele.
+const palavras = texto => String(texto || "").toLowerCase()
+  .normalize("NFD").replace(/[^a-z0-9 ]/g, " ").split(/[ ]+/).filter(palavra => palavra.length > 3);
+
+export function repeteOEnunciado(explicacao, assunto) {
+  const dela = palavras(explicacao);
+  if (dela.length < 4) return true;
+  const doEnunciado = new Set(palavras(assunto));
+  if (!doEnunciado.size) return false;
+  const repetidas = dela.filter(palavra => doEnunciado.has(palavra)).length;
+  return repetidas / dela.length >= 0.8;
+}
 export function explanationPrompt({ subject, reference, explanation }) {
   const system = [
     'Você é o Lumi e está lendo a explicação de um estudante brasileiro iniciante em Python.',
@@ -39,8 +56,15 @@ export function parseExplanationReview(raw) {
   return review;
 }
 
-export async function reviewExplanation({ subject, reference, explanation, signal }) {
+export async function reviewExplanation({ subject, reference, explanation, enunciado = "", signal }) {
   if (!String(explanation || '').trim()) throw new Error('Escreva sua explicação antes de pedir a leitura.');
+  // Cópia do enunciado nem chega ao modelo: o veredito já é conhecido e a cobrança é a certa.
+  if (repeteOEnunciado(explanation, [subject, enunciado].join(" "))) return {
+    suficiente: false,
+    acertou: [],
+    faltou: ['Sua explicação repete o enunciado com as mesmas palavras. Explicar é dizer, com as suas, o que o código faz e por quê.'],
+    pergunta: 'Se alguém que nunca viu esse código perguntasse por que ele funciona, o que você responderia?'
+  };
   const { system, user } = explanationPrompt({ subject, reference, explanation });
   const response = await fetch(`${ollamaUrl()}/api/chat`, {
     method: 'POST', signal,
