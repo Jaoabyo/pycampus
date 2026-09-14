@@ -8,7 +8,7 @@ const authored = [
   project('compra', 'Caixa da lojinha', 'operadores', 'Primeiro calcule uma compra. Só depois acrescente um desconto.', 'quantidade = 2\npreco = 10\nsubtotal = quantidade * preco\nprint(subtotal)', '20', 'Mude quantidade para 3. Mantenha o preço.', '30', 'Com 3 produtos de 20 reais, calcule o subtotal. Retire um desconto de 10 e mostre o total.', '50', 'Faça uma conta por linha: subtotal = quantidade * preco. Depois total = subtotal - desconto.'),
   project('crachas', 'Organizador de crachás', 'strings', 'Nomes digitados podem vir com espaços e letras minúsculas.', 'nome = "  ana  "\nlimpo = nome.strip()\nprint(limpo.upper())', 'ANA', 'Troque o nome por "  bia  ".', 'BIA', 'Guarde "  leo  " em nome. Remova os espaços e mostre em maiúsculas.', 'LEO', 'Use strip para limpar e upper para deixar as letras maiúsculas.'),
   project('portaria', 'Portaria por idade', 'condicoes', 'Uma regra fictícia permite entrar a partir de 18 anos.', 'idade = 20\nif idade >= 18:\n    print("Pode entrar")\nelse:\n    print("Ainda não")', 'Pode entrar', 'Mude idade para 17 e observe o outro caminho.', 'Ainda não', 'Crie idade = 18. Use if e else para mostrar Adulto a partir de 18 e Menor abaixo disso.', 'Adulto', 'A idade 18 está incluída em >= 18. else não recebe condição.'),
-  project('bilheteria', 'Ingresso e idade', 'booleanos', 'Para entrar neste evento fictício, é preciso ter idade e ingresso.', 'idade = 18\ningresso = True\nprint(idade >= 18 and ingresso)', 'True', 'Mude ingresso para False.', 'False', 'Defina idade = 20 e ingresso = True. Mostre se a pessoa tem pelo menos 18 anos e ingresso.', 'True', 'Use and para exigir as duas condições.'),
+  project('bilheteria', 'Ingresso e idade', 'booleanos', 'Para entrar neste evento fictício, é preciso ter idade e ingresso.', 'idade = 18\ningresso = True\nprint(idade >= 18 and ingresso)', 'True', 'Mude ingresso para False.', 'False', 'Defina idade = 16 e ingresso = True. Mostre primeiro se ela tem 18 anos ou mais E ingresso; depois, se tem 18 anos ou mais OU ingresso.', 'False\nTrue', 'Use and para exigir as duas condições.'),
   project('poupanca', 'Meu cofrinho', 'for', 'Some os depósitos de 1, 2 e 3 reais.', 'total = 0\nfor deposito in range(1, 4):\n    total = total + deposito\nprint(total)', '6', 'Inclua também o depósito de 4 reais mudando o limite do range.', '10', 'Some os depósitos de 1 a 5 reais com for. Mostre apenas o total.', '15', 'range(1, 6) inclui 1 até 5. O print final fica fora do for.'),
   project('contagem', 'Contagem do foguete', 'while', 'Mostre uma contagem antes da partida.', 'numero = 3\nwhile numero > 0:\n    print(numero)\n    numero = numero - 1', '3\n2\n1', 'Comece em 2, mantendo o restante.', '2\n1', 'Conte de 3 até 1 com while. Depois do laço, mostre Partiu!.', '3\n2\n1\nPartiu!', 'O print de Partiu! fica sem os espaços do bloco, depois da repetição.'),
   project('servico', 'Preço de um serviço', 'funcoes', 'Uma função calcula o preço a partir das horas trabalhadas.', 'def cobrar(horas):\n    return horas * 10\n\nprint(cobrar(2))', '20', 'Chame cobrar com 3 horas.', '30', 'Crie cobrar(horas), cobrando 20 por hora. Mostre o preço de 4 horas.', '80', 'return horas * 20 entrega o preço. Chame cobrar(4) dentro de print.'),
@@ -19,7 +19,7 @@ const authored = [
   project('chamada', 'Sem repetir na chamada', 'conjuntos', 'Uma lista de presença tem nomes repetidos. Descubra quem apareceu, sem repetição.', 'nomes = ["Ana", "Bia", "Ana"]\nunicos = set(nomes)\nprint(sorted(unicos))', "['Ana', 'Bia']", 'Troque a lista de nomes para ["Bia", "Bia", "Leo"].', "['Bia', 'Leo']", 'Crie uma lista com os números 4, 2, 4 e 1. Remova as repetições com set e mostre a lista ordenada com sorted.', '[1, 2, 4]', 'sorted(set(numeros)) remove repetições e depois ordena. Use direto dentro do print.'),
   project('promocao', 'Dobro de cada preço', 'comprehensions', 'Uma promoção dobra o preço de cada item da lista, em uma linha só.', 'precos = [10, 20, 30]\ndobrados = [preco * 2 for preco in precos]\nprint(dobrados)', '[20, 40, 60]', 'Troque a lista de preços para [5, 15].', '[10, 30]', 'Crie uma compreensão de lista com os quadrados de 1, 2 e 3 (n * n) e mostre a lista.', '[1, 4, 9]', 'Escreva [n * n for n in [1, 2, 3]]. O for percorre a lista; a expressão à esquerda transforma cada valor.'),
   project('ranking', 'Ranking de vendas', 'ordenacao', 'Ordene as vendas do maior para o menor para descobrir o destaque do mês.', 'vendas = [120, 80, 200]\nordenadas = sorted(vendas, reverse=True)\nprint(ordenadas)', '[200, 120, 80]', 'Troque as vendas para [50, 300, 100].', '[300, 100, 50]', 'Ordene a lista [7, 2, 9, 4] do menor para o maior, sem reverse, e mostre a lista.', '[2, 4, 7, 9]', 'sorted(lista) já devolve do menor para o maior. reverse=True inverteria essa ordem.'),
-  project('contador', 'Quantas vezes apareceu?', 'complexidade', 'Percorra uma lista de respostas e conte quantas vezes um valor aparece.', 'respostas = ["a", "b", "a", "a"]\ncontagem = 0\nfor resposta in respostas:\n    if resposta == "a":\n        contagem = contagem + 1\nprint(contagem)', '3', 'Troque a condição para contar "b" em vez de "a".', '1', 'Crie numeros = [2, 5, 2, 2, 9]. Conte quantas vezes 2 aparece, sem usar count, e mostre o total.', '3', 'Comece com contagem = 0 antes do for. Some 1 a contagem sempre que o item for igual a 2.'),
+  project('contador', 'Quantas vezes apareceu?', 'complexidade', 'Percorra uma lista de respostas e conte quantas vezes um valor aparece.', 'respostas = ["a", "b", "a", "a"]\ncontagem = 0\nfor resposta in respostas:\n    if resposta == "a":\n        contagem = contagem + 1\nprint(contagem)', '3', 'Troque a condição para contar "b" em vez de "a".', '1', 'Crie numeros = [2, 5, 2, 2, 9, 2]. Conte quantas vezes 2 aparece, sem usar count, e mostre o total.', '4', 'Comece com contagem = 0 antes do for. Some 1 a contagem sempre que o item for igual a 2.'),
   project('estudante', 'Meu primeiro objeto', 'classes', 'Crie uma classe simples e veja um método em ação.', 'class Saudacao:\n    def falar(self):\n        return "Olá!"\n\nprint(Saudacao().falar())', 'Olá!', 'Troque o texto retornado por "Oi, tudo bem?".', 'Oi, tudo bem?', 'Crie a classe Loja com um método abrir que retorna "Loja aberta!". Instancie e mostre o retorno de abrir.', 'Loja aberta!', 'def abrir(self): return "Loja aberta!" fica dentro da classe, com self como parâmetro. Chame Loja().abrir() dentro do print.'),
   project('perfil', 'Guardando dados no objeto', 'construtor', 'Use o construtor para que cada objeto nasça com seu próprio nome.', 'class Pessoa:\n    def __init__(self, nome):\n        self.nome = nome\n\nprint(Pessoa("Ana").nome)', 'Ana', 'Troque "Ana" por "Leo" ao criar a pessoa.', 'Leo', 'Crie a classe Livro com um construtor que guarda titulo. Mostre o titulo de Livro("Duna").', 'Duna', 'def __init__(self, titulo): self.titulo = titulo guarda o valor recebido. Livro("Duna").titulo acessa esse atributo.'),
   project('cofre', 'Depósito com regra', 'encapsulamento', 'Um cofre só aceita valores positivos. Guarde dois depósitos e confira o total.', 'class Cofre:\n    def __init__(self):\n        self._total = 0\n    def guardar(self, valor):\n        if valor <= 0:\n            return False\n        self._total = self._total + valor\n    @property\n    def total(self):\n        return self._total\n\ncofre = Cofre()\ncofre.guardar(20)\nprint(cofre.total)', '20', 'Depois de cofre.guardar(20), chame também cofre.guardar(15) antes do print.', '35', 'Crie um Cofre (pode reaproveitar a classe do exemplo). Guarde 50 e depois 30 e mostre o total.', '80', 'Chame guardar duas vezes antes do print. @property permite escrever cofre.total sem parênteses.'),
@@ -66,7 +66,7 @@ const solutions = {
   compra: 'quantidade = 3\npreco = 20\ndesconto = 10\nsubtotal = quantidade * preco\ntotal = subtotal - desconto\nprint(total)',
   crachas: 'nome = "  leo  "\nlimpo = nome.strip()\nprint(limpo.upper())',
   portaria: 'idade = 18\nif idade >= 18:\n    print("Adulto")\nelse:\n    print("Menor")',
-  bilheteria: 'idade = 20\ningresso = True\nprint(idade >= 18 and ingresso)',
+  bilheteria: 'idade = 16\ningresso = True\nprint(idade >= 18 and ingresso)\nprint(idade >= 18 or ingresso)',
   poupanca: 'total = 0\nfor deposito in range(1, 6):\n    total = total + deposito\nprint(total)',
   contagem: 'numero = 3\nwhile numero > 0:\n    print(numero)\n    numero = numero - 1\nprint("Partiu!")',
   servico: 'def cobrar(horas):\n    return horas * 20\n\nprint(cobrar(4))',
@@ -77,21 +77,26 @@ const solutions = {
   chamada: 'numeros = [4, 2, 4, 1]\nunicos = set(numeros)\nprint(sorted(unicos))',
   promocao: 'quadrados = [n * n for n in [1, 2, 3]]\nprint(quadrados)',
   ranking: 'numeros = [7, 2, 9, 4]\nprint(sorted(numeros))',
-  contador: 'numeros = [2, 5, 2, 2, 9]\ncontagem = 0\nfor numero in numeros:\n    if numero == 2:\n        contagem = contagem + 1\nprint(contagem)',
+  contador: 'numeros = [2, 5, 2, 2, 9, 2]\ncontagem = 0\nfor numero in numeros:\n    if numero == 2:\n        contagem = contagem + 1\nprint(contagem)',
   estudante: 'class Loja:\n    def abrir(self):\n        return "Loja aberta!"\n\nprint(Loja().abrir())',
   perfil: 'class Livro:\n    def __init__(self, titulo):\n        self.titulo = titulo\n\nprint(Livro("Duna").titulo)',
-  cofre: 'cofre = Cofre()\ncofre.guardar(50)\ncofre.guardar(30)\nprint(cofre.total)',
+  cofre: 'class Cofre:\n    def __init__(self):\n        self._total = 0\n    def guardar(self, valor):\n        if valor <= 0:\n            return False\n        self._total = self._total + valor\n    @property\n    def total(self):\n        return self._total\n\ncofre = Cofre()\ncofre.guardar(50)\ncofre.guardar(30)\nprint(cofre.total)',
   animais: 'class Animal:\n    def som(self):\n        return "..."\n\nclass Passaro(Animal):\n    def som(self):\n        return "Piu"\n\nprint(Passaro().som())',
   ficha: 'from dataclasses import dataclass\n\n@dataclass\nclass Aluno:\n    nome: str\n    nota: float\n\nprint(Aluno("Bia", 9.5).nota)',
   excecao: 'try:\n    numero = int("dez")\nexcept ValueError:\n    print("Não é um número")',
   lembrete: 'with open("meta.txt", "w", encoding="utf-8") as arquivo:\n    arquivo.write("Praticar todo dia")\nwith open("meta.txt", encoding="utf-8") as arquivo:\n    print(arquivo.read())'
 };
 // Contexto já pronto acima do quebra-cabeça, quando montar tudo seria longo demais.
+const semPrefixo = (solucao, prefixo) => {
+  const codigo = String(solucao || '');
+  if (!prefixo) return codigo;
+  return codigo.startsWith(prefixo) ? codigo.slice(prefixo.length).replace(new RegExp("^[\\n]+"), "") : codigo;
+};
 const prefixes = { cofre: 'class Cofre:\n    def __init__(self):\n        self._total = 0\n    def guardar(self, valor):\n        if valor <= 0:\n            return False\n        self._total = self._total + valor\n    @property\n    def total(self):\n        return self._total' };
 // Linha plausível e errada, para o estudante ter de rejeitar um engano comum em vez de só ordenar o certo.
 const distractors = {
   cartao: 'print("nome")', etiqueta: 'numero = str(texto)', compra: 'total = subtotal + desconto', crachas: 'nome.strip()',
-  portaria: 'else idade < 18:', bilheteria: 'print(idade >= 18 or ingresso)', poupanca: 'total = deposito', contagem: 'numero = numero + 1',
+  portaria: 'else idade < 18:', bilheteria: 'print(ingresso and idade)', poupanca: 'total = deposito', contagem: 'numero = numero + 1',
   servico: 'print(horas * 20)', cesta: 'precos = precos.append(30)', estoquezinho: 'produto["estoque"] - 3', cadastro: 'lida = json.dumps(texto)',
   boletim: 'print(total)', chamada: 'unicos = sorted(numeros)', promocao: 'quadrados = [n * n in [1, 2, 3]]', ranking: 'numeros.sort(reverse=True)',
   contador: 'contagem = contagem + numero', estudante: 'print(Loja.abrir())', perfil: 'titulo = titulo', cofre: 'cofre.total = 80',
@@ -112,7 +117,7 @@ export const practiceProjects = authored.map((p, index) => {
     ...p,
     icon: icons[p.id],
     solution: solutions[p.id],
-    puzzle: { blocks: toBlocks(solutions[p.id]), prefix: prefixes[p.id] || '', distractor: distractors[p.id] || '' },
+    puzzle: { blocks: toBlocks(semPrefixo(solutions[p.id], prefixes[p.id])), prefix: prefixes[p.id] || '', distractor: distractors[p.id] || '' },
     investigate: { ...found, options: [...found.options.slice(offset), ...found.options.slice(0, offset)], answer: (found.options.length - offset) % found.options.length }
   };
 });

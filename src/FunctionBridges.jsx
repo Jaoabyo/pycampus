@@ -49,7 +49,7 @@ function Bridge({ bridge, state, update, back }) {
       {bridge.stdin && <p className="small">Neste teste, responda <strong>{bridge.stdin.split('\n').join(', ')}</strong> quando o programa perguntar.</p>}
       <CodeEditor code={code} onChange={value => { setCode(value); setFeedback(''); setMismatch(null); }} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} filename="ponte.py" runLabel="Testar minha ponte" emptyOutput="Escreva e teste. Esta ponte é curta de propósito." />
       {feedback && <p className="practice-feedback" role="status">{feedback}</p>}
-      {python.success === false && <ErrorHelp output={python.output} />}
+      {python.success === false && <ErrorHelp output={python.output} code={code} />}
       {mismatch !== null && <OutputCompare actual={mismatch} expected={bridge.expected} />}
       {fails > 0 && <Mentor attempts={fails} title={`Ponte de função: ${bridge.title}`} challenge={bridge.challenge} expected={bridge.expected} code={code} output={python.output} lessonId="funcoes" />}
       <button className="text-button" disabled={hints >= bridge.hints.length} onClick={() => setHints(n => n + 1)}><Icon name="Lightbulb" size={15} /> {hints ? 'Preciso de mais uma pista' : 'Me dê uma pista'}</button>

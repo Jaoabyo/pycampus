@@ -21,8 +21,8 @@ export function OutputCompare({ actual, expected }) {
   </section>;
 }
 
-export function ErrorHelp({ output }) {
-  const error = readError(output);
+export function ErrorHelp({ output, code }) {
+  const error = readError(output, code);
   if (!error) return null;
   return <section className="run-help run-help-error" role="note">
     <h4>Como ler este erro</h4>

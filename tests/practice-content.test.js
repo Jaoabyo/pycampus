@@ -33,9 +33,12 @@ test('every miniproject has an investigation with three options, one correct ans
 });
 test('every puzzle rebuilds its reference solution and carries one plausible wrong piece', () => {
   for (const p of practiceProjects) {
-    const rebuilt = p.puzzle.blocks.map(block => `${'    '.repeat(block.indent)}${block.code}`).join('\n');
-    const expected = p.solution.split('\n').filter(line => line.trim()).join('\n');
-    assert.equal(rebuilt, expected, `${p.id}: os blocos não reconstroem a solução`);
+    // O prefixo é código já entregue pronto: montado com os blocos, tem de reproduzir a solução
+    // guardada, que por sua vez precisa rodar sozinha.
+    const blocos = p.puzzle.blocks.map(block => "    ".repeat(block.indent) + block.code).join(String.fromCharCode(10));
+    const rebuilt = [p.puzzle.prefix, blocos].filter(Boolean).join(String.fromCharCode(10));
+    const norma = texto => texto.split(String.fromCharCode(10)).filter(linha => linha.trim()).join(String.fromCharCode(10));
+    assert.equal(norma(rebuilt), norma(p.solution), p.id + ": prefixo e blocos não reconstroem a solução");
     assert.ok(p.puzzle.blocks.length >= 2 && p.puzzle.blocks.length <= 9, `${p.id}: ${p.puzzle.blocks.length} blocos`);
     assert.ok(p.puzzle.blocks.every(block => block.code === block.code.trim() && block.indent >= 0 && block.indent <= 3), p.id);
     // O distrator precisa ser uma linha que não existe na solução; ser parecido com uma delas é justamente o ponto.

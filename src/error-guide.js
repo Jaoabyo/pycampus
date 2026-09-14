@@ -28,7 +28,18 @@ const guides = {
 
 const fallback = { title: 'Erro durante a execução', meaning: 'O programa começou a rodar e parou nesta linha.', steps: ['Leia a última linha da mensagem: ela nomeia o tipo do erro.', 'Vá até a linha indicada e confira os valores envolvidos com um print pequeno.', 'Consulte a documentação oficial pelo nome exato do erro.'] };
 
-export function readError(output) {
+// Vários desafios começam com um esqueleto onde o corpo é só `pass`, esperando o estudante
+// escrever ali. Se ele executar antes disso, o erro que aparece (NoneType, AttributeError) fala
+// de um sintoma, não da causa, e parece que ele fez algo errado. Aqui a causa é dita.
+export const andaimeIntacto = code => String(code || '').split(String.fromCharCode(10))
+  .some(linha => new RegExp("^\\s+pass\\s*$").test(linha));
+
+const GUIA_ANDAIME = {
+  title: 'O corpo ainda está vazio: falta a sua parte',
+  meaning: 'Este desafio começa com um esqueleto pronto e a palavra pass no lugar do corpo. pass significa "não faça nada", então a função ou classe existe mas não devolve nem guarda coisa alguma — e o erro aparece só depois, em quem tentou usar o resultado.',
+  steps: ['Apague a linha pass e escreva ali dentro o que o desafio pede, com o mesmo recuo.', 'Se for uma função que precisa devolver algo, ela tem de terminar com return.', 'Se for um construtor (__init__), guarde o valor em self, como self.nome = nome.', 'Não é erro do seu raciocínio: o esqueleto sozinho não funciona mesmo.']
+};
+export function readError(output, code) {
   if (typeof output !== 'string' || !output.trim()) return null;
   const lines = output.split('\n').map(line => line.trim()).filter(Boolean);
   const last = lines[lines.length - 1] || '';
@@ -36,6 +47,7 @@ export function readError(output) {
   if (!match) return null;
   const type = match[1].split('.').pop();
   const numbers = [...output.matchAll(/line (\d+)/g)].map(m => Number(m[1]));
+  if (andaimeIntacto(code)) return { type, message: match[2] || '', line: numbers.length ? numbers[numbers.length - 1] : null, ...GUIA_ANDAIME };
   const guide = type === 'SyntaxError' && /cannot assign to function call/.test(match[2] || '') ? { title: 'Separe a leitura e a conversão em duas linhas', meaning: 'Uma chamada como input() não pode ficar à esquerda de =.', steps: ['Primeira linha: texto = input("Quanto é sua despesa? ")', 'Segunda linha: despesa_1 = float(texto)', 'Terceira linha, se quiser mostrar: print(despesa_1)', 'Não junte as duas ações como despesa_1 = input() = float(despesa_1).'] } : guides[type] || fallback;
   return { type, message: match[2] || '', line: numbers.length ? numbers[numbers.length - 1] : null, ...guide };
 }

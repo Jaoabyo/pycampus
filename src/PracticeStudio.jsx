@@ -145,7 +145,7 @@ function Practice({ project: p, state, update, back, openLesson }) {
         <div><span>SUA PREVISÃO</span><pre>{item.prediction}</pre></div>
         <div><span>O QUE O PYTHON MOSTROU</span><pre>{python.output}</pre></div>
       </div>}
-      {python.success === false && <ErrorHelp output={python.output} />}
+      {python.success === false && <ErrorHelp output={python.output} code={code} />}
       {mismatch !== null && <OutputCompare actual={mismatch} expected={expected} />}
       {fails > 0 && <Mentor attempts={fails} title={p.title} challenge={stage === 'modify' ? p.modify : p.create} expected={expected} code={code} output={python.output} lessonId={p.prerequisite} />}
       <StyleTips code={code} show={python.success === true && !reading} />
