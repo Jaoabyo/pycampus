@@ -167,7 +167,12 @@ export const practiceProjects = authored.map((p, index) => {
 // Um miniprojeto vale XP quando o estudante explicou o mecanismo (investigação correta),
 // adaptou o exemplo e criou a própria versão com a saída esperada.
 export const practiceXp = 40;
-export const practiceDone = (item, project) => Boolean(item) && item.answered === project?.investigate?.answer && ['modify', 'create'].every(stage => item.passed?.includes(stage));
+export const practiceAttemptDone = (item, project) => Boolean(item && project) && item.answered === project.investigate.answer && ['modify', 'create'].every(stage => item.passed?.includes(stage));
+export function practiceAchievement(item, project) {
+  if (!practiceAttemptDone(item?.achievement, project) && !practiceAttemptDone(item, project)) return null;
+  return { answered: project.investigate.answer, passed: ['modify', 'create'] };
+}
+export const practiceDone = (item, project) => Boolean(practiceAchievement(item, project));
 export const practiceSteps = (item, project) => [
   { id: 'investigate', label: 'Prova rápida respondida corretamente', done: item?.answered === project?.investigate?.answer },
   { id: 'modify', label: 'Etapa "Mude uma parte" com a saída esperada', done: Boolean(item?.passed?.includes('modify')) },
@@ -182,6 +187,9 @@ export function normalizeLearning(value = {}) {
     if (!item || typeof item !== 'object') continue;
     const rating = ['help', 'solo'].includes(item.rating) ? item.rating : '';
     result[p.id] = {
+      achievement: practiceAchievement(item, p),
+      earned: Boolean(practiceAchievement(item, p)),
+      position: ['read', 'investigate', 'modify', 'create', 'review'].includes(item.position) ? item.position : 'read',
       codes: Object.fromEntries(['modify', 'create'].filter(k => typeof item.codes?.[k] === 'string').map(k => [k, item.codes[k].slice(0, 15000)])),
       prediction: typeof item.prediction === 'string' ? item.prediction.slice(0, 1000) : '',
       notes: typeof item.notes === 'string' ? item.notes.slice(0, 1500) : '',
@@ -228,5 +236,12 @@ export function predictionMatches(prediction, output) {
   const lines = String(output ?? '').split('\n').map(normalize).filter(Boolean);
   if (!lines.length) return false;
   // Vale escrever só a saída, ou escrevê-la dentro de uma frase ("acho que mostra X").
-  return lines.every(line => written.includes(line));
+  const sentence = ` ${written} `;
+  let cursor = 0;
+  return lines.every(line => {
+    const position = sentence.indexOf(` ${line} `, cursor);
+    if (position < 0) return false;
+    cursor = position + line.length + 1;
+    return true;
+  });
 }

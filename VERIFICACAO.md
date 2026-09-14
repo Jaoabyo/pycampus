@@ -396,3 +396,44 @@ A verificação anterior falhou por limite de sessão, deixando 85 achados bruto
 - **A jornada automatizada passou a medir isso**: cartões empilhados com menos de 6 px de folga viram problema, em todas as abas. O detector foi provado contra a versão publicada com o defeito — acusou os 5 cartões com folga 0 — e contra a corrigida, onde não acusa nada. Um detector que nunca dispara não vale nada.
 - A jornada também passou a visitar as abas novas, Modo prova e Sobre e limites, que não estavam cobertas.
 - Corrigido no caminho: a página ainda dizia que o progresso é só do aparelho, o que deixou de ser verdade quando a nuvem entrou.
+# Revisão para estudar · 14/09/2026
+
+Conferência do estado atual após as mudanças feitas com Claude. Os testes de navegador usaram
+perfis temporários: não editaram o armazenamento nem a conta do estudante.
+
+- `npm test`: **215 testes aprovados**; `npm run build`: compilação aprovada.
+- `npm run test:curriculum`: **143 programas** executados no Pyodide e jornada de aula aprovada.
+- `node scripts/check-study-flow.mjs`: **13 telas em 1440 e 390 px**, sem erros React ou
+  transbordo horizontal; miniprojeto completo com previsão incorreta, erro Python, correção,
+  rejeição de resposta sem conversão, confirmação animada, prova, XP e retomada após recarga.
+- `node scripts/check-project-study.mjs`: oito estúdios, edição/baixar README, guia de GitHub,
+  entrada pré-preenchida do passo retomado sem isolamento e callback de interrupção único.
+- `node scripts/check-published-study.mjs`: build servido sem COOP/COEP; service worker isolou
+  a página, input perguntou e a resposta 21 produziu 22. Não foi uma publicação no GitHub Pages.
+- Lumi local `qwen2.5-coder:14b`: os três casos de leitura de explicação passaram em uma rodada.
+  Isso não garante acerto em toda resposta, nem verifica o túnel da IA para o celular.
+
+Correções: ordem visual da oficina; prova final após Mude e Crie; acerto antigo não permanece
+depois de editar/errar; número parcial não vale como previsão; etiqueta exige conversão; XP
+conquistado não some durante revisão; posição salva; instruções honestas de entradas automáticas;
+retomada de entradas no projeto; interrupção resolve quem aguarda a execução do Python.
+
+Limites: saída e requisitos medidos não provam todos os comportamentos nem domínio do aluno.
+Não houve publicação, envio de repositório, sincronização com Gist ou alteração das credenciais.
+As capturas locais ficam em `artifacts/study/`.
+
+## Acabamento visual · 14/09/2026
+
+- O **Modo prova** ganhou uma abertura visual com propósito, regras e ação principal bem separados.
+- O **Treino dirigido** usa duas colunas no computador e expande o cartão aberto para facilitar a prática; no celular, mantém uma coluna.
+- **Configurações** aproveita melhor a largura do computador, preservando a ordem e a leitura vertical no celular.
+- `npm test`: **215 testes aprovados**; `npm run build`: aprovado.
+- `node scripts/check-study-flow.mjs`: **26 capturas** em 1440 e 390 px, sem transbordo horizontal, além do miniprojeto real aprovado.
+
+## Segunda rodada de acabamento visual · 14/09/2026
+
+- A Oficina de prática distribui os cinco passos na mesma linha em telas largas; o layout muda para três, duas e uma coluna conforme a largura diminui.
+- O estado vazio do Diário orienta o primeiro uso com o fluxo “Escreva → Execute → Revise”.
+- O mapa de atividade do Perfil ganhou tamanho e contraste para tornar os dias estudados identificáveis.
+- A página Sobre usa duas colunas no computador para os blocos complementares e preserva leitura em uma coluna no celular.
+- `npm test`: **215 testes aprovados**; build e jornada visual em 1440 e 390 px aprovados.

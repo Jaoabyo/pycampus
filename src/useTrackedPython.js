@@ -15,6 +15,8 @@ export function faltaEntrada(code, stdin) {
 export const AVISO_ENTRADA = "Seu programa usa input(), e aqui as respostas são lidas do campo “Entradas para input()”, logo abaixo do editor. Escreva ali a resposta (uma por linha, na ordem em que o programa pergunta) e execute de novo. Não é erro no seu código: neste endereço o Python não consegue parar para perguntar.";
 export function usePython(options = {}) {
   const worker = useRef(null), timer = useRef(null), active = useRef(null), observer = useRef(options);
+  const callback = useRef(null);
+  const settle = result => { const pending = callback.current; callback.current = null; pending?.(result); };
   const inputBuffer = useRef(null);
   const awaitingReply = useRef(false);
   const [inputRequest, setInputRequest] = useState(null);
@@ -29,14 +31,17 @@ export function usePython(options = {}) {
   const stop = (message = 'Execução interrompida. Você pode editar e tentar novamente.', status = 'interrupted') => {
     clearTimeout(timer.current); worker.current?.terminate(); worker.current = null;
     finish(status, message); awaitingReply.current = false; setInputRequest(null); inputBuffer.current = null; setBusy(false); setSuccess(false); setOutput(message);
+    settle({ ok: false, output: message, kind: status });
   };
   useEffect(() => () => {
     clearTimeout(timer.current); worker.current?.terminate(); worker.current = null;
     finish('interrupted', 'Execução interrompida ao sair desta página.');
+    settle({ ok: false, output: 'Execução interrompida ao sair desta página.', kind: 'interrupted' });
   }, []);
   const run = (code, stdin = '', onResult) => {
     if (active.current) return;
     if (faltaEntrada(code, stdin)) { setOutput(AVISO_ENTRADA); setSuccess(false); setBusy(false); setInputRequest(null); onResult?.({ ok: false, output: AVISO_ENTRADA, kind: 'input' }); return; }
+    callback.current = onResult;
     active.current = { id: crypto.randomUUID(), startedAt: new Date().toISOString(), code, stdin, source: observer.current.source || 'playground', lessonId: observer.current.lessonId || '', title: observer.current.title || 'Laboratório livre', expected: observer.current.expected };
     observer.current.onRecord?.({ ...active.current, status: 'running', output: 'Execução iniciada; resultado ainda não recebido.' });
     setBusy(true); setSuccess(null); setOutput('Carregando o ambiente Python…');
@@ -50,7 +55,7 @@ export function usePython(options = {}) {
         if (data.type === 'input') { clearTimeout(timer.current); awaitingReply.current = true; setInputRequest(data.prompt || 'Digite uma resposta:'); setOutput(data.output || 'O programa está esperando sua resposta abaixo.'); }
         if (data.type === 'result') {
           clearTimeout(timer.current); finish(data.ok ? 'success' : data.kind === 'environment' ? 'environment' : 'error', data.output);
-          setInputRequest(null); inputBuffer.current = null; setOutput(data.output || '(O programa terminou sem saída.)'); setSuccess(data.ok); setBusy(false); onResult?.(data);
+          setInputRequest(null); inputBuffer.current = null; setOutput(data.output || '(O programa terminou sem saída.)'); setSuccess(data.ok); setBusy(false); settle(data);
         }
       };
       worker.current.onerror = () => stop('Não foi possível carregar o Python. Verifique a conexão e o acesso ao CDN jsDelivr.', 'environment');

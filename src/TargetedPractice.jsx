@@ -35,7 +35,7 @@ function CodeLevel({ patternId, level, done, onDone, update }) {
   });
   return <>
     <div className="expected"><span>SAÍDA ESPERADA</span><pre>{level.expected}</pre></div>
-    {level.stdin && <p className="small">Neste treino, responda <strong>{level.stdin.split('\n').join(', ')}</strong> quando o programa perguntar.</p>}
+    {level.stdin && <p className="small">Neste treino, as respostas <strong>{level.stdin.split('\n').join(', ')}</strong> são enviadas automaticamente aos input(). Você não precisa digitá-las.</p>}
     <CodeEditor code={code} onChange={value => { setCode(value); setFeedback(''); setMismatch(null); }} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} filename="treino.py" runLabel="Testar meu treino" emptyOutput="Escreva e teste. Este treino é curto de propósito." />
     {feedback && <p className="practice-feedback" role="status">{feedback}</p>}
     {python.success === false && <ErrorHelp output={python.output} />}
@@ -51,7 +51,7 @@ function PatternCard({ item, state, update, openLesson, open, setOpen }) {
   const [showLesson, setShowLesson] = useState(false);
   const isOpen = open === item.id;
   const finish = levelId => update(s => completeLevel(s, item.id, levelId, localDate()));
-  return <section className={`card targeted-card ${item.count ? '' : 'is-quiet'} ${mastery.mastered ? 'is-mastered' : ''}`}>
+  return <section className={`card targeted-card ${item.count ? '' : 'is-quiet'} ${mastery.mastered ? 'is-mastered' : ''} ${isOpen || showLesson ? 'is-open' : ''}`}>
     <div className="targeted-head">
       <div className={`icon-tile ${mastery.mastered ? 'teal' : item.count ? 'orange' : 'purple'}`}><Icon name={mastery.mastered ? 'Trophy' : item.count ? 'Flame' : 'Sprout'} size={22} /></div>
       <div>

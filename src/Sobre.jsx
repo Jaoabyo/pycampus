@@ -19,7 +19,7 @@ export default function Sobre({ navigate }) {
       </div>
     </div>
 
-    <div className="settings-list">
+    <div className="settings-list sobre-grid">
     <section className="card sobre-aviso">
       <div className="step-head"><span className="icon-tile yellow"><Icon name="Lightbulb" size={21} /></span>
         <div><div className="eyebrow">ANTES DE MAIS NADA</div><h3>Isto é material complementar</h3></div></div>
@@ -27,7 +27,7 @@ export default function Sobre({ navigate }) {
       <p>Não há diploma, certificado nem correção docente. As conferências automáticas comparam a saída do seu programa com a esperada — isso mostra que um caso funciona, não que você domina o assunto.</p>
     </section>
 
-    <section className="card">
+    <section className="card sobre-historico">
       <div className="step-head"><span className="icon-tile blue"><Icon name="SquareTerminal" size={21} /></span>
         <div><div className="eyebrow">O AMBIENTE</div><h3>Qual Python roda aqui</h3></div></div>
       <ul className="sobre-lista">

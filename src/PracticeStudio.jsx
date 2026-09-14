@@ -14,6 +14,7 @@ import FunctionBridges from './FunctionBridges.jsx';
 import { ErrorHelp, StyleTips, OutputCompare } from './RunFeedback.jsx';
 import CodeReview from './CodeReview.jsx';
 import { requisitosFaltando } from './requisitos.js';
+import { canReviewPractice, practicePosition } from './practice-flow.js';
 import './practice.css';
 
 const stages = [['read', '1 · Preveja', 'Eye'], ['investigate', '2 · Investigue', 'Search'], ['modify', '3 · Mude', 'Pencil'], ['create', '4 · Crie', 'Sparkles'], ['review', '5 · Confira', 'CheckCircle2']];
@@ -21,6 +22,17 @@ const brDate = value => value.split('-').reverse().join('/');
 const stageOf = project => modules.find(m => m.id === lessons.find(l => l.id === project.prerequisite)?.moduleId);
 const stageColor = project => stageOf(project)?.color || 'purple';
 const stageCategory = project => stageOf(project)?.category || 'Prática';
+
+function PracticeSuccess({ onClose }) {
+  const dialog = useRef(null);
+  useEffect(() => { const element = dialog.current; const previous = document.activeElement; element.showModal(); return () => { element.close(); if (previous?.isConnected) previous.focus(); }; }, []);
+  return <dialog ref={dialog} className="practice-success-dialog" aria-labelledby="practice-success-title" onCancel={onClose}>
+    <div className="practice-success-mark" aria-hidden="true"><Icon name="Sparkles" size={38} /></div>
+    <div className="eyebrow">VOCÊ CONSTRUIU</div><h2 id="practice-success-title">Seu código passou neste teste!</h2>
+    <p>Agora vá para <strong>Confira</strong>, explique uma parte do que escreveu e responda à prova rápida para concluir o miniprojeto.</p>
+    <button autoFocus className="button primary full" onClick={onClose}>Entendi, continuar <Icon name="ArrowRight" size={16} /></button>
+  </dialog>;
+}
 
 // Ilustração da oficina, na mesma família da arte do painel: órbitas, peça de vidro e sinais flutuantes.
 function PracticeArt() {
@@ -105,7 +117,8 @@ export default function PracticeStudio({ state, update, openLesson }) {
 }
 
 function Practice({ project: p, state, update, back, openLesson, proximo, irPara }) {
-  const [stage, setStage] = useState('read'), [hint, setHint] = useState(false), [feedback, setFeedback] = useState(''), [ran, setRan] = useState(false), [mismatch, setMismatch] = useState(null), [fails, setFails] = useState(0), [predicted, setPredicted] = useState(''), [puzzle, setPuzzle] = useState(false), [celebrate, setCelebrate] = useState(0);
+  const [successNotice, setSuccessNotice] = useState(false);
+  const [stage, setStage] = useState(() => practicePosition(state.learning?.[p.id])), [hint, setHint] = useState(false), [feedback, setFeedback] = useState(''), [ran, setRan] = useState(false), [mismatch, setMismatch] = useState(null), [fails, setFails] = useState(0), [predicted, setPredicted] = useState(''), [puzzle, setPuzzle] = useState(false), [celebrate, setCelebrate] = useState(0);
   const item = state.learning?.[p.id] || {};
   const save = patch => update(s => recordPractice({ ...s, learning: { ...s.learning, [p.id]: { ...s.learning?.[p.id], ...patch } } }, p.id));
   const reading = stage === 'read' || stage === 'investigate';
@@ -116,7 +129,7 @@ function Practice({ project: p, state, update, back, openLesson, proximo, irPara
   const expected = reading ? p.output : stage === 'modify' ? p.modified : p.expected;
   const python = usePython({ source: 'playground', title: `Oficina: ${p.title} · ${stage}`, expected, onRecord: attempt => update(s => appendAttempt(s, attempt)) });
   const [saidaOk, setSaidaOk] = useState(false), [faltando, setFaltando] = useState([]), [aprovacao, setAprovacao] = useState(null);
-  const changeStage = value => { setSaidaOk(false); setFaltando([]); setStage(value); setFeedback(''); setHint(false); setMismatch(null); setPredicted(''); setPuzzle(false); python.reset(); };
+  const changeStage = value => { if (value === 'review' && !canReviewPractice(item)) return; save({ position: value }); setSaidaOk(false); setFaltando([]); setStage(value); setFeedback(''); setHint(false); setMismatch(null); setPredicted(''); setPuzzle(false); python.reset(); };
   const changeCode = value => { setSaidaOk(false); setFaltando([]); save({ codes: { ...item.codes, [stage]: value }, passed: (item.passed || []).filter(k => k !== stage) }); setFeedback(''); setMismatch(null); };
   const run = () => python.run(code, '', result => {
     if (stage === 'read') setRan(true);
@@ -128,19 +141,21 @@ function Practice({ project: p, state, update, back, openLesson, proximo, irPara
     setMismatch(result.ok && !match ? result.output : null);
     setFeedback(!result.ok ? 'A tentativa ficou no diário. Leia a última linha do erro; a explicação abaixo mostra o que esse tipo costuma significar.' : stage === 'read' ? (guessed ? 'Você previu certo! Agora vá para Investigue e explique qual linha produziu essa saída.' : item.prediction ? 'Sua previsão ficou diferente da saída — e isso é exatamente o que faz o aprendizado grudar. Compare as duas abaixo e procure a linha que explica a diferença.' : 'Escreva sua previsão antes de executar: prever e comparar ensina mais do que só ler o resultado.') : match ? 'A saída corresponde ao caso proposto. Agora explique como chegou nela; isso ainda não verifica todas as possibilidades do programa.' : 'Executou, mas a saída ficou diferente. A comparação abaixo mostra em qual linha.');
     setFails(n => match ? 0 : n + 1);
-    if (stage === 'read' ? guessed : match) setCelebrate(n => n + 1);
     // Só a etapa Criar cobra o objetivo: em Modificar o estudante parte do exemplo, então a
     // resposta aparecer no código é o ponto de partida dele, não um atalho.
     const pendentes = match && stage === 'create' ? requisitosFaltando({ id: p.id, expected, solution: p.solution, puzzle: p.puzzle }, code) : [];
     const liberado = aprovacao?.cumpre === true && aprovacao.codigo === code;
     const cumpriu = match && (!pendentes.length || liberado);
+    if (stage === 'create' && cumpriu && !item.passed?.includes('create')) setSuccessNotice(true);
+    if (stage === 'read' ? guessed : stage === 'create' ? cumpriu : match) setCelebrate(n => n + 1);
     setSaidaOk(match && stage === 'create'); setFaltando(pendentes);
     if (stage === 'modify' || stage === 'create') save({ passed: [...new Set([...(item.passed || []).filter(k => k !== stage), ...((stage === 'create' ? cumpriu : match) ? [stage] : [])])] });
   });
   return <>
+    {successNotice && <PracticeSuccess onClose={() => setSuccessNotice(false)} />}
     <button className="text-button back" disabled={python.busy} onClick={back}><Icon name="ArrowLeft" size={16} /> Voltar para a oficina</button>
     <div className="page-heading"><div className="practice-title"><div className={`icon-tile ${color}`}><Icon name={p.icon} size={25} /></div><div><div className="eyebrow">MINIPROJETO · +{practiceXp} XP</div><h1>{p.title}</h1><p>{p.story}</p></div></div><button className="button outline" disabled={python.busy} onClick={() => openLesson(p.prerequisite)}><Icon name="BookOpen" size={16} /> Aula de apoio</button></div>
-    <div className="tab-row practice-stage-tabs">{stages.map(([id, label, icon]) => <button key={id} disabled={python.busy} aria-pressed={stage === id} className={stage === id ? 'active' : ''} onClick={() => changeStage(id)}><Icon name={done[id] ? 'CheckCircle2' : icon} size={14} className={done[id] ? 'step-check' : ''} />{label}</button>)}</div>
+    <div className="tab-row practice-stage-tabs" aria-label="Passos do miniprojeto">{stages.map(([id, label, icon]) => <button key={id} disabled={python.busy || id === 'review' && !canReviewPractice(item)} title={id === 'review' && !canReviewPractice(item) ? 'Primeiro execute corretamente as etapas Mude e Crie.' : undefined} aria-current={stage === id ? 'step' : undefined} aria-pressed={stage === id} className={stage === id ? 'active' : ''} onClick={() => changeStage(id)}><Icon name={done[id] ? 'CheckCircle2' : icon} size={14} className={done[id] ? 'step-check' : ''} />{label}</button>)}</div>
     {working ? <section className="card practice-work">
       <section className="challenge practice-task">
         <div className="eyebrow"><Icon name={stage === 'read' ? 'Eye' : stage === 'investigate' ? 'Search' : stage === 'modify' ? 'Pencil' : 'Sparkles'} size={16} /> {stage === 'read' ? 'ETAPA 1 · SEM EXECUTAR AINDA' : stage === 'investigate' ? 'ETAPA 2 · ENTENDA O MECANISMO' : stage === 'modify' ? 'ETAPA 3 · MUDE UMA PARTE' : 'ETAPA 4 · AGORA É SUA VEZ'}</div>
@@ -151,10 +166,11 @@ function Practice({ project: p, state, update, back, openLesson, proximo, irPara
       {/* Na etapa Crie o exemplo sai da tela, mas alguns enunciados mandam reaproveitá-lo —
           o do cofre pede a classe inteira. Deixar o exemplo consultável evita decorar. */}
       {stage === 'create' && <details className="guided-example"><summary>Ver o exemplo de novo</summary><pre className="example-code">{p.example}</pre></details>}
+      {reading && <div className="practice-reading"><span className="eyebrow">EXEMPLO PARA EXPLORAR</span><pre className="example-code">{p.example}</pre></div>}
       {stage === 'read' && <label className="practice-field">Minha previsão<textarea maxLength={1000} value={item.prediction || ''} onChange={e => save({ prediction: e.target.value })} placeholder="Acho que vai mostrar…" /></label>}
       {stage === 'investigate' && <label className="practice-field">Explique esta linha com suas palavras, sem consultar: <code>{p.investigate.line}</code><textarea maxLength={1500} value={item.notes || ''} onChange={e => save({ notes: e.target.value })} placeholder="Essa linha…" /></label>}
       {stage === 'investigate' && <ExplainReview subject={`Explicar a linha ${p.investigate.line} do miniprojeto ${p.title}`} reference={p.example} enunciado={p.investigate.question} explanation={item.notes} />}
-      <CodeEditor aoVivo={reading ? null : { inicial: stage === 'modify' ? p.example : '', lessonId: p.prerequisite, challenge: stage === 'modify' ? p.modify : p.create }} code={code} onChange={changeCode} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} readOnly={reading} filename={reading ? `exemplo_${p.id}.py` : `meu_${p.id}.py`} runLabel={reading ? 'Executar o exemplo' : 'Executar meu código'} emptyOutput={reading ? 'Escreva sua previsão e execute para comparar.' : 'Execute para ver a saída do seu código.'} />
+      {reading ? <div className="practice-example-run"><button className={`button ${python.busy ? 'danger' : 'primary'}`} onClick={python.busy ? () => python.stop() : run}><Icon name={python.busy ? 'Square' : 'Play'} size={16} />{python.busy ? 'Interromper' : 'Executar o exemplo'}</button><pre className="example-code" aria-live="polite">{python.output || 'O resultado do exemplo aparecerá aqui.'}</pre></div> : <CodeEditor aoVivo={{ inicial: stage === 'modify' ? p.example : '', lessonId: p.prerequisite, challenge: stage === 'modify' ? p.modify : p.create }} code={code} onChange={changeCode} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} filename={`meu_${p.id}.py`} runLabel="Executar meu código" emptyOutput="Execute para ver a saída do seu código." />}
       {feedback && <p className="practice-feedback" role="status">{feedback}</p>}
       {predicted && item.prediction && <div className={`prediction-compare is-${predicted}`}>
         <div><span>SUA PREVISÃO</span><pre>{item.prediction}</pre></div>
@@ -163,10 +179,11 @@ function Practice({ project: p, state, update, back, openLesson, proximo, irPara
       {python.success === false && <ErrorHelp output={python.output} code={code} />}
       {saidaOk && <CodeReview lesson={{ id: p.id, title: p.title, objective: p.story, challenge: p.create }} codigo={code} saida={python.output} faltando={faltando} aprovacao={aprovacao} onAprovacao={setAprovacao} />}
       {mismatch !== null && <OutputCompare actual={mismatch} expected={expected} />}
-      {<Mentor attempts={fails} history={state.history} title={p.title} challenge={stage === 'modify' ? p.modify : p.create} expected={expected} code={code} output={python.output} lessonId={p.prerequisite} />}
+      {!reading && <Mentor attempts={fails} history={state.history} title={p.title} challenge={stage === 'modify' ? p.modify : p.create} expected={expected} code={code} output={python.output} lessonId={p.prerequisite} />}
       <StyleTips code={code} show={python.success === true && !reading} />
       {stage === 'read' && ran && <p className="practice-next"><Icon name="ArrowRight" size={15} /> Agora vá para <strong>Investigue</strong> e explique por que essa saída apareceu.</p>}
-      <div className="button-row">{stage !== 'read' && <button className="button outline" disabled={python.busy} onClick={() => changeStage(stages[stages.findIndex(([id]) => id === stage) - 1][0])}>← Etapa anterior</button>}<button className="button primary" disabled={python.busy} onClick={() => changeStage(stages[stages.findIndex(([id]) => id === stage) + 1][0])}>Próxima etapa →</button></div>
+      <div className="button-row">{stage !== 'read' && <button className="button outline" disabled={python.busy} onClick={() => changeStage(stages[stages.findIndex(([id]) => id === stage) - 1][0])}>← Etapa anterior</button>}<button className="button primary" disabled={python.busy || stage === 'create' && !canReviewPractice(item)} onClick={() => changeStage(stages[stages.findIndex(([id]) => id === stage) + 1][0])}>{stage === 'create' ? 'Conferir o que aprendi →' : 'Próxima etapa →'}</button></div>
+      {stage === 'create' && !canReviewPractice(item) && <p className="small">A prova final abre depois que você executar corretamente Mude e Crie. Seu código fica salvo enquanto você tenta.</p>}
       <div className="practice-tools">
         <button className="text-button" onClick={() => setHint(!hint)}><Icon name="Lightbulb" size={15} /> {hint ? 'Esconder a pista' : 'Preciso de uma pista'}</button>
         {stage === 'create' && <button className="button outline" onClick={() => setPuzzle(!puzzle)}><Icon name="Boxes" size={16} /> {puzzle ? 'Fechar o quebra-cabeça' : 'Travou? Monte o código embaralhado'}</button>}
@@ -179,7 +196,7 @@ function Practice({ project: p, state, update, back, openLesson, proximo, irPara
       <p className="practice-question">{p.investigate.question}</p>
       {p.investigate.options.map((option, i) => <label className={`answer ${item.answered === i ? 'selected' : ''}`} key={option}><input type="radio" name={`investigate-${p.id}`} checked={item.answered === i} onChange={() => save({ answered: i })} /><span>{String.fromCharCode(65 + i)}</span>{option}</label>)}
       {item.answered != null && <p className={item.answered === p.investigate.answer ? 'success-text' : 'error-text'} role="status">{item.answered === p.investigate.answer ? `Isso mesmo. ${p.investigate.why}` : 'Ainda não. Volte à etapa Investigue, percorra o código com os valores concretos e tente outra alternativa.'}</p>}
-      <div className="step-head" style={{ marginTop: 22 }}><span className="icon-tile blue"><Icon name="Code2" size={21} /></span><div><div className="eyebrow">SEU CÓDIGO, LOGO ACIMA</div><h3>O que você escreveu na etapa Crie</h3></div></div>
+      <div className="step-head" style={{ marginTop: 22 }}><span className="icon-tile blue"><Icon name="Code2" size={21} /></span><div><div className="eyebrow">SUA CONSTRUÇÃO</div><h3>O que você escreveu na etapa Crie</h3></div></div>
       <pre className="example-code">{item.codes?.create || '# Você ainda não escreveu nada na etapa 4 · Crie.'}</pre>
       <label className="practice-field">Escolha uma linha do código acima e explique o que ela faz. O que mudaria na saída se você trocasse um valor?<textarea maxLength={1500} value={item.reflection || ''} onChange={e => save({ reflection: e.target.value })} placeholder="Nesta linha eu… Se eu mudar…" /></label>
       <ExplainReview subject={`Reflexão sobre o miniprojeto ${p.title}`} reference={item.codes?.create || p.example} enunciado={p.create} explanation={item.reflection} />

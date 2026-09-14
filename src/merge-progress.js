@@ -1,5 +1,6 @@
 import { normalizeState, doneProjects, donePractices, xpTotal } from './progress.js';
 import { HISTORY_LIMIT } from './history.js';
+import { practiceAchievement, practiceProjects } from './practice-content.js';
 
 // Estudar no celular e no computador cria duas jornadas separadas, e importar um backup
 // substituía uma pela outra — apagando o que foi feito no outro aparelho. Aqui elas se juntam.
@@ -20,12 +21,12 @@ const juntarTextos = (a = {}, b = {}) => {
   return saida;
 };
 
-function juntarPratica(a = {}, b = {}) {
+function juntarPratica(a = {}, b = {}, project) {
   const passed = uniao(a.passed, b.passed);
   // O registro com mais etapas passadas manda nos campos de revisão: é o que foi mais longe.
   const principal = (b.passed?.length || 0) > (a.passed?.length || 0) ? b : a;
   return {
-    ...a, ...b, passed,
+    ...a, ...b, passed, achievement: practiceAchievement(a, project) || practiceAchievement(b, project),
     codes: juntarTextos(a.codes, b.codes),
     prediction: maisLongo(a.prediction, b.prediction),
     notes: maisLongo(a.notes, b.notes),
@@ -80,7 +81,7 @@ export function mergeProgress(atual, entrada) {
 
   base.learning = {};
   for (const id of chaves(atual.learning, entrada.learning)) {
-    base.learning[id] = juntarPratica(atual.learning?.[id], entrada.learning?.[id]);
+    base.learning[id] = juntarPratica(atual.learning?.[id], entrada.learning?.[id], practiceProjects.find(p => p.id === id));
   }
 
   base.functionBridges = {};

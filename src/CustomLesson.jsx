@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon } from './ui.jsx';
 import { LumiArt } from './Mentor.jsx';
 import { mentorAvailable } from './mentor.js';
@@ -21,6 +21,7 @@ export default function CustomLesson({ weakness, evidence, lessonId, state, upda
   const [passed, setPassed] = useState(false);
   const [puzzle, setPuzzle] = useState(false);
   const abort = useRef(null);
+  useEffect(() => () => abort.current?.abort(), []);
 
   // Um executor separado, sem gravar no diário: conferir a lição não é tentativa do estudante.
   const checker = usePython({});
@@ -102,7 +103,7 @@ export default function CustomLesson({ weakness, evidence, lessonId, state, upda
         <span className="custom-label">AGORA VOCÊ</span>
         <p>{lesson.desafio}</p>
         <div className="expected"><span>SAÍDA ESPERADA</span><pre>{lesson.saidaDesafio}</pre></div>
-        {lesson.entradasDesafio?.length > 0 && <p className="small">Ao executar, responda <strong>{lesson.entradasDesafio.join(', ')}</strong> quando o programa perguntar.</p>}
+        {lesson.entradasDesafio?.length > 0 && <p className="small">Este teste usa automaticamente as respostas <strong>{lesson.entradasDesafio.join(', ')}</strong>, na ordem dos input(). Você não precisa digitá-las durante a execução.</p>}
       </div>
       <CodeEditor code={code} onChange={value => { setCode(value); setPassed(false); }} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} filename="licao_do_lumi.py" runLabel="Testar minha resposta" emptyOutput="Escreva sua resposta e execute." />
       {passed && <p className="success-text" role="status"><Icon name="CheckCircle2" size={16} /> Saída certa. Agora explique em voz alta por que funciona — é isso que fixa.</p>}

@@ -1,5 +1,16 @@
 # Testes · o que cada um protege
 
+## Conferência de estudo · 14/09/2026
+
+- `tests/study-flow.test.js`: prova final depois de programar, previsão sem falsos acertos numéricos,
+  conversão obrigatória na etiqueta e conquista preservada durante revisão/backup/junção.
+- `scripts/check-study-flow.mjs`: 13 telas em 1440 e 390 px, mais um miniprojeto real com erro,
+  correção, animação, prova, XP e retomada. Capturas em `artifacts/study/`, ignoradas pelo Git.
+- `scripts/check-project-study.mjs`: os oito estúdios, README, guia de publicação, entradas do
+  passo retomado sem isolamento e callback único de interrupção do executor.
+- `scripts/check-published-study.mjs`: serve `dist` sem COOP/COEP e verifica o input após o
+  service worker assumir. Execute `npm run build` antes. Não publica nem usa o perfil do estudante.
+
 `npm test` roda 20 arquivos. Eles não existem por ritual: cada um guarda uma regra que já foi
 quebrada uma vez.
 

@@ -5,4 +5,8 @@
 .sobre-mudancas{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
 .sobre-mudancas>li{display:flex;gap:13px;align-items:flex-start;padding:11px 13px;border-radius:9px;background:#faf8fe;border:1px solid #ece6f8;font-size:12.5px;line-height:1.75;color:#544a68}
 .sobre-data{flex-shrink:0;min-width:74px;font-family:Consolas,monospace;font-size:11.5px;color:#8a7da3}
+.settings-list.sobre-grid{width:min(1120px,100%);max-width:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:18px}
+.sobre-grid>.card{height:100%;margin:0;box-shadow:0 9px 28px #4a355f07}
+.sobre-grid>.sobre-aviso,.sobre-grid>.sobre-historico{grid-column:1/-1}
+@media(max-width:860px){.settings-list.sobre-grid{grid-template-columns:1fr}.sobre-grid>.sobre-aviso,.sobre-grid>.sobre-historico{grid-column:auto}}
 @media(max-width:760px){.sobre-mudancas>li{flex-direction:column;gap:4px}}

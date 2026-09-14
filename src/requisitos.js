@@ -26,6 +26,7 @@ const chama = (codigo, nome) => new RegExp('(?<![\\w.])' + nome + '\\s*\\(').tes
 // Aulas cujo assunto é a própria conversão: sem ela o exercício perde o sentido, mesmo que a
 // saída batesse por outro caminho. Só entra aqui o que a solução guardada comprovadamente usa.
 const EXIGE_CHAMADA = {
+  etiqueta: [['int', 'converter o texto da etiqueta em inteiro, como pede o exercício']],
   entrada: [['int', 'transformar em número o texto que veio do input()']],
   arquivos: [['open', 'abrir o arquivo']],
   tcc: [['all', 'verificar de uma vez se todos os requisitos foram atendidos']]

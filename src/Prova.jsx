@@ -88,9 +88,11 @@ export default function Prova({ state, update, openLesson }) {
   if (!questoes) return <>
     <Cabecalho state={state} />
     <section className="card prova-abertura">
-      <p>{QUESTOES_PADRAO} questões sorteadas entre as {state.completed.length} aulas que você concluiu. <strong>Editor vazio, sem dicas, sem quebra-cabeça e sem o Lumi.</strong> O relógio corre, mas não reprova ninguém — ele entra no relatório.</p>
-      <p className="small">É o mais perto que a plataforma chega de uma prova: escrever do zero, sem consultar.</p>
-      <button className="button primary" onClick={começar}><Icon name="Play" size={16} fill="currentColor" /> Começar a prova</button>
+      <div className="prova-abertura-copy"><div className="eyebrow">SEU TREINO DE MEMÓRIA</div><h2>Você consegue escrever sem consultar?</h2>
+        <p>{QUESTOES_PADRAO} questões sorteadas entre as {state.completed.length} aulas que você concluiu. O relógio registra seu ritmo, sem reprovar.</p>
+        <button className="button primary" onClick={começar}><Icon name="Play" size={16} fill="currentColor" /> Começar a prova</button>
+      </div>
+      <div className="prova-regras" aria-label="Como funciona"><span><Icon name="SquareTerminal" size={17} /> Editor vazio</span><span><Icon name="ShieldCheck" size={17} /> Sem consulta</span><span><Icon name="Clock3" size={17} /> No seu ritmo</span><span><Icon name="BookOpenCheck" size={17} /> Resultado no diário</span></div>
     </section>
     {state.provas?.length > 0 && <section className="card">
       <h3>Suas provas anteriores</h3>
@@ -130,7 +132,7 @@ export default function Prova({ state, update, openLesson }) {
 }
 
 function Cabecalho({ state }) {
-  return <div className="page-heading">
+  return <div className="page-heading prova-heading">
     <div className="lesson-title">
       <span className="icon-tile pink"><Icon name="Target" size={25} /></span>
       <div><div className="eyebrow">RECALL SEM CONSULTA</div><h1>Modo prova</h1>

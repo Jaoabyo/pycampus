@@ -1,7 +1,6 @@
 # Conteúdo · Oficina de prática
 
-24 miniprojetos curtos, um por assunto. Arquivos: `src/practice-content.js` e
-`src/additional-practices.js`. Tela: `src/PracticeStudio.jsx`.
+35 miniprojetos em `src/practice-content.js`. Tela: `src/PracticeStudio.jsx`.
 
 ## As cinco etapas (método PRIMM)
 
@@ -19,8 +18,18 @@
 
 ## O que concede os 40 XP
 
-`practiceDone`: a pergunta da etapa 2 correta **e** as etapas 3 e 4 com a saída esperada.
+`practiceDone`: a prova da etapa 5 correta **e** as etapas 3 e 4 com a saída esperada e os requisitos aplicáveis.
 Acertar só a saída não basta — a ideia é saber explicar.
+
+## Revisão de experiência · 14/09/2026
+
+- O exemplo aparece antes do campo de previsão e da investigação, sem repetir uma IDE alta só para leitura.
+- A etapa Confira só abre depois de Mude e Crie passarem. As outras etapas continuam consultáveis.
+- Criar com sucesso abre uma confirmação animada, sem avançar sozinha nem dar XP antes da prova.
+- O passo atual fica salvo em `position`; uma conferência salva sem execuções válidas volta para Crie.
+- A previsão respeita números inteiros e ordem: `312` não vale como previsão de `12`.
+- A etiqueta exige `int()`: imprimir `30` diretamente não cumpre a conversão pedida.
+- Conclusões guardam `achievement`, uma cópia das três conferências já obtidas. Revisar código não apaga XP. Ver [[Estado e progresso]].
 
 ## Revisão espaçada
 

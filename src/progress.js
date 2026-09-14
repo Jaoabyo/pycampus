@@ -1,6 +1,6 @@
 import { lessons, projects } from './curriculum.js';
 import { normalizeHistory } from './history.js';
-import { normalizeLearning, practiceProjects, practiceDone, practiceXp } from './practice-content.js';
+import { normalizeLearning, practiceProjects, practiceDone, practiceAttemptDone, practiceAchievement, practiceXp } from './practice-content.js';
 import { normalizeProjectWork } from './project-steps.js';
 import { normalizeMastery, patterns } from './diagnosis.js';
 import { normalizeBridges } from './function-bridges.js';
@@ -86,10 +86,11 @@ export const donePractices = state => practiceProjects.filter(p => practiceDone(
 export const xpTotal = state => state.completed.length * 100 + doneProjects(state).length * 250 + donePractices(state).length * practiceXp;
 export function recordPractice(state, id, date = localDate()) {
   const project = practiceProjects.find(p => p.id === id);
-  if (!project || !practiceDone(state.learning?.[id], project)) return state;
+  if (!project || !practiceAttemptDone(state.learning?.[id], project)) return state;
+  const earned = practiceAttemptDone(state.learning[id].achievement, project);
   const key = `practice:${id}`;
-  if (state.activities[date]?.includes(key)) return state;
-  return { ...state, activities: { ...state.activities, [date]: [...new Set([...(state.activities[date] || []), key])] } };
+  if (earned && state.activities[date]?.includes(key)) return state;
+  return { ...state, learning: { ...state.learning, [id]: { ...state.learning[id], achievement: practiceAchievement(state.learning[id], project), earned: true } }, activities: { ...state.activities, [date]: [...new Set([...(state.activities[date] || []), key])] } };
 }
 export const levelInfo = state => { const xp = xpTotal(state); return { xp, level: Math.floor(xp / 500) + 1, current: xp % 500, next: 500, title: xp < 500 ? 'Explorador de Python' : xp < 2000 ? 'Aprendiz de código' : xp < 4000 ? 'Desenvolvedor em evolução' : 'Construtor de sistemas' }; };
 export function streak(state, today = localDate()) {

@@ -30,7 +30,7 @@ export default function ProjectStudio({ project, state, update, back, openLesson
     const next = steps.findIndex(s => !state.projectStepsDone?.[project.id]?.includes(s.id));
     return next < 0 ? steps.length - 1 : next;
   });
-  const [feedback, setFeedback] = useState(''), [mismatch, setMismatch] = useState(null), [hints, setHints] = useState(0), [fails, setFails] = useState(0), [saidaOk, setSaidaOk] = useState(false), [stdin, setStdin] = useState(() => interativo ? '' : respostasDoPasso(steps[0])), [checkedRun, setCheckedRun] = useState(false), [manualCheck, setManualCheck] = useState(false), [celebrate, setCelebrate] = useState(0);
+  const [feedback, setFeedback] = useState(''), [mismatch, setMismatch] = useState(null), [hints, setHints] = useState(0), [fails, setFails] = useState(0), [saidaOk, setSaidaOk] = useState(false), [stdin, setStdin] = useState(() => interativo ? '' : respostasDoPasso(steps[current])), [checkedRun, setCheckedRun] = useState(false), [manualCheck, setManualCheck] = useState(false), [celebrate, setCelebrate] = useState(0);
   const [aprovacao, setAprovacao] = useState(null);
   const step = steps[current], done = state.projectStepsDone?.[project.id] || [];
   const file = fileNameFor(project.id);

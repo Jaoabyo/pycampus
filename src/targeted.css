@@ -1,8 +1,10 @@
 .targeted-intro{display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.8;color:#7b6f8c;background:#faf8fe;border:1px solid #ece6f8;border-radius:10px;padding:14px 16px;margin:0 0 22px}
 .targeted-intro>svg{flex-shrink:0;margin-top:2px;color:#a48ed4}
 .targeted-empty{font-size:13px;color:#7e8091}
-.targeted-list{display:flex;flex-direction:column;gap:20px}
-.targeted-card{padding:24px}
+.targeted-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.targeted-card{padding:24px;min-height:245px;box-shadow:0 9px 28px #4a355f08;transition:border-color .2s,box-shadow .2s,transform .2s}
+.targeted-card:hover{border-color:#ded3ed;box-shadow:0 14px 34px #4a355f0d;transform:translateY(-2px)}
+.targeted-card.is-open{grid-column:1/-1;min-height:0;border-color:#d9c9ef;box-shadow:0 16px 42px #4a355f0e;transform:none}
 .targeted-card.is-quiet{background:#fcfbfe}
 .targeted-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:12px}
 .targeted-head h2{font-size:19px;margin:6px 0 0}
@@ -15,6 +17,7 @@
 .targeted-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .targeted-actions .button.outline,.targeted-actions .text-button{gap:8px}
 @media(max-width:760px){
+  .targeted-list{grid-template-columns:1fr}.targeted-card.is-open{grid-column:auto}
   .targeted-card{padding:18px}
   .targeted-head{gap:11px}
   .targeted-head h2{font-size:16px}

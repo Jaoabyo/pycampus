@@ -13,3 +13,8 @@
 .ia-ajuda .guided-actions{margin-top:10px}
 .relatorio-vencido{border-color:#f0dfb6;background:#fffdf7}
 .relatorio-texto{margin:14px 0 0;padding:14px 16px;border-radius:10px;background:#faf8ff;border:1px solid #ece4fb;font-family:Consolas,monospace;font-size:11.5px;line-height:1.75;color:#4a4060;white-space:pre-wrap;overflow-wrap:anywhere;max-height:340px;overflow-y:auto}
+.settings-list:has(.relatorio-texto){width:min(1120px,100%);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.settings-list:has(.relatorio-texto)>.card{margin:0;height:100%;box-shadow:0 9px 28px #4a355f07}
+.settings-list:has(.relatorio-texto)>.card:has(.relatorio-texto),.settings-list:has(.relatorio-texto)>.card:last-child{grid-column:1/-1}
+.settings-list:has(.relatorio-texto)>.card:hover{border-color:#ded5e9}
+@media(max-width:860px){.settings-list:has(.relatorio-texto){grid-template-columns:1fr}.settings-list:has(.relatorio-texto)>.card:has(.relatorio-texto),.settings-list:has(.relatorio-texto)>.card:last-child{grid-column:auto}}

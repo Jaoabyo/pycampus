@@ -32,10 +32,15 @@ export function taughtTextUpTo(lessonId) {
     .join('\n');
 }
 
+// O que o filtro aceita, dito ao modelo antes de ele escrever: pedir e depois recusar gasta
+// uma tentativa do estudante à toa.
+const COMUNS = ['print', 'input', 'int', 'float', 'str', 'len', 'range', 'sum', 'sorted', 'list', 'set', 'dict', 'abs', 'round', 'type', 'open', 'all', 'any', 'enumerate', 'zip', 'append', 'items', 'keys', 'values', 'strip', 'upper', 'lower', 'split', 'join', 'replace', 'format', 'get', 'add', 'remove', 'sort'];
+export const funcoesEnsinadas = taught => COMUNS.filter(nome => new RegExp("\\b" + nome + "\\b").test(taught));
+
 export const untaughtCallables = (code, taught) =>
   callablesIn(code).filter(name => !new RegExp(`\\b${name}\\b`).test(taught));
 
-export function customLessonPrompt({ weakness, evidence, taughtTitles }) {
+export function customLessonPrompt({ weakness, evidence, taughtTitles, permitidas = [] }) {
   const system = [
     'Você é o Lumi e vai escrever uma lição curta de Python para um estudante brasileiro iniciante.',
     'A lição trata de um engano específico que ele cometeu de verdade. Escreva em português do Brasil, com frases curtas.',
@@ -50,7 +55,10 @@ export function customLessonPrompt({ weakness, evidence, taughtTitles }) {
     'Se usar input(), escreva em entradasExemplo e entradasDesafio as respostas que o programa vai receber, uma por item.',
     'Responda APENAS um JSON:',
     '{"titulo":"até 6 palavras","explicacao":["frase 1","frase 2"],"exemplo":"código completo","entradasExemplo":[],"saidaExemplo":"saída exata do exemplo","desafio":"o que o estudante deve fazer","solucao":"código completo que resolve o desafio","entradasDesafio":[],"saidaDesafio":"saída exata da solução"}',
-    'As saídas precisam ser exatamente o que o Python imprime, incluindo o texto das perguntas do input(), sem aspas em volta e sem explicação.'
+    'As saídas precisam ser exatamente o que o Python imprime, incluindo o texto das perguntas do input(), sem aspas em volta e sem explicação.',
+    'ATENÇÃO ao formato da saída com input(): aqui a pergunta do input() NÃO pula linha. A resposta digitada não aparece, e o que vier depois continua na MESMA linha da pergunta.',
+    'Exemplo do formato: para o programa   nome = input("Seu nome: ")   seguido de   print(nome)   com a entrada Ana, saidaExemplo é exatamente: Seu nome: Ana',
+    `Funções que ele pode ver: ${permitidas.join(', ')}. Qualquer outra faz a lição ser descartada, mesmo que deixe o código mais curto.`
   ].join('\n');
   // O padrão já traz um programa quebrado que representa o engano: dar isso ao modelo evita
   // que ele escreva sobre um assunto parecido, que foi o que aconteceu sem essa âncora.
@@ -103,7 +111,7 @@ export async function requestCustomLesson({ weakness, evidence, lessonId, signal
   const taught = taughtTextUpTo(lessonId);
   const index = lessons.findIndex(lesson => lesson.id === lessonId);
   const taughtTitles = (index < 0 ? lessons : lessons.slice(0, index + 1)).map(lesson => lesson.title);
-  const { system, user } = customLessonPrompt({ weakness, evidence, taughtTitles });
+  const { system, user } = customLessonPrompt({ weakness, evidence, taughtTitles, permitidas: funcoesEnsinadas(taught) });
   const response = await fetch(`${ollamaUrl()}/api/chat`, {
     method: 'POST', signal,
     headers: { 'Content-Type': 'application/json' },

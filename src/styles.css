@@ -15,3 +15,14 @@
 .import-substituir{margin-top:16px}
 .import-substituir>summary{cursor:pointer;font-size:12.5px;color:#8a7da3}
 .import-substituir>p{font-size:12px}
+
+/* O histórico de atividade deve poder ser lido de relance, mesmo com poucos dias estudados. */
+.heatmap{grid-template-rows:repeat(7,18px);gap:6px;padding:17px;margin-top:3px;border:1px solid #eee8f5;border-radius:12px;background:#faf8fd;box-shadow:inset 0 1px 0 #fff}
+.heatmap>span{width:18px;height:18px;border-radius:4px;background:#e9e3f1;box-shadow:inset 0 0 0 1px #ffffff80}
+.heatmap>span.active{background:#8b68d0}
+
+/* Mantém a orientação do diário visível mesmo depois do estilo genérico de estado vazio. */
+.empty.history-empty{position:relative;overflow:hidden;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:22px;text-align:left;padding:30px 34px;color:#604b78;background:linear-gradient(120deg,#fff 20%,#faf7ff)}
+.empty.history-empty:after{content:'{ }';position:absolute;right:26px;bottom:-31px;font:800 92px/1 Consolas,monospace;color:#efe8fa;z-index:0}
+.empty.history-empty>div,.empty.history-empty>span{position:relative;z-index:1}.empty.history-empty .history-empty-icon{width:58px;height:58px;border-radius:17px;display:grid;place-items:center;background:#efe8fb;color:#7b57d2;box-shadow:0 8px 22px #6e4bb418}.empty.history-empty .eyebrow{margin-bottom:7px}.empty.history-empty h3{font-size:17px;margin:0;color:#42344f}.empty.history-empty p{max-width:650px;margin:6px 0 0}.empty.history-empty .history-empty-steps{display:flex;gap:7px}.empty.history-empty .history-empty-steps span{display:flex;align-items:center;gap:6px;border:1px solid #e7ddf3;background:#fff;padding:9px 11px;border-radius:9px;font-size:10px;white-space:nowrap}.empty.history-empty .history-empty-steps strong{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#eee7fa;color:#7552c8;font-size:9px}
+@media(max-width:900px){.empty.history-empty{grid-template-columns:auto 1fr}.empty.history-empty .history-empty-steps{grid-column:1/-1}}@media(max-width:520px){.empty.history-empty{grid-template-columns:1fr;padding:24px;text-align:center}.empty.history-empty .history-empty-icon{margin:auto}.empty.history-empty .history-empty-steps{display:grid;grid-template-columns:repeat(3,1fr);width:100%}.empty.history-empty .history-empty-steps span{justify-content:center;padding:8px 5px}.empty.history-empty:after{right:-8px}}

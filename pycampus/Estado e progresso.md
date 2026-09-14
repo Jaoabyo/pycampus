@@ -31,6 +31,18 @@ pode ser confiado**.
 
 ## XP e emblemas
 
+### Revisar sem perder a conquista · 14/09/2026
+
+`learning[id].achievement` conserva a resposta conceitual e os dois passos aprovados no momento
+da conclusão. `practiceDone` aceita essa evidência anterior ou a tentativa atual completa.
+`earned` é derivado dessa evidência: um booleano isolado é descartado na normalização.
+Backups antigos com as três conferências válidas recebem a evidência automaticamente.
+`mergeProgress` conserva a conquista de qualquer um dos aparelhos. Uma tentativa errada durante
+a revisão não acrescenta atividade ao calendário só porque já existia uma conquista.
+
+Isso não autentica backups nem certifica domínio: os registros são locais e a comparação de
+código não é uma análise completa de todos os caminhos possíveis.
+
 ```
 xpTotal = aulas × 100 + projetos × 250 + miniprojetos × 40
 ```

@@ -16,6 +16,18 @@ python.run(codigo, entradas, resultado => { /* resultado.ok, resultado.output */
   é registrada — é assim que a verificação de [[Lumi · Lições personalizadas]] roda sem sujar
   o diário do estudante.
 - Limite de 15 s por execução e 90 s para carregar o ambiente.
+- O callback de `run` também recebe interrupções, falhas de ambiente e timeout, uma única vez.
+  Assim, uma lição do Lumi aguardando a conferência do Python não fica numa Promise pendente.
+
+## Interface conferida em 14/09/2026
+
+- O selo de acerto do editor só corresponde ao código e ao resultado que o geraram. Editar,
+  iniciar outra execução ou receber um erro esconde a celebração anterior.
+- Retomar um projeto sem isolamento prepara as entradas do passo salvo, não do primeiro passo.
+- Pontes, treino dirigido e lições do Lumi que passam `stdin` automaticamente dizem isso na tela.
+- Na hospedagem estática, o service worker tenta acrescentar os cabeçalhos de isolamento.
+  `scripts/check-published-study.mjs` confirmou a pergunta interativa após a recarga, sem os
+  cabeçalhos do Vite. Navegadores sem esse suporte continuam usando entradas preparadas.
 
 ## O detalhe que mais causa bug
 

@@ -77,7 +77,7 @@ function Bridge({ bridge, state, update, back, proxima, irPara }) {
       <div className="step-head"><span className={`icon-tile ${record.passed ? 'teal' : 'orange'}`}><Icon name={record.passed ? 'CheckCircle2' : 'SquareTerminal'} size={21} /></span><div><div className="eyebrow">SUA VEZ</div><h3>Escreva você</h3></div></div>
       <p className="bridge-challenge">{bridge.challenge}</p>
       <div className="expected"><span>SAÍDA ESPERADA</span><pre>{bridge.expected}</pre></div>
-      {bridge.stdin && <p className="small">Neste teste, responda <strong>{bridge.stdin.split('\n').join(', ')}</strong> quando o programa perguntar.</p>}
+      {bridge.stdin && <p className="small">Neste teste, as respostas <strong>{bridge.stdin.split('\n').join(', ')}</strong> são enviadas automaticamente aos input(). Você não precisa digitá-las.</p>}
       <CodeEditor aoVivo={{ inicial: bridge.starter, lessonId: bridge.lessonId, challenge: bridge.challenge }} code={code} onChange={value => { setCode(value); setFeedback(''); setMismatch(null); setSaidaOk(false); setFaltando([]); }} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} filename="ponte.py" runLabel="Testar minha ponte" emptyOutput="Escreva e teste. Esta ponte é curta de propósito." />
       {feedback && <p className="practice-feedback" role="status">{feedback}</p>}
       {python.success === false && <ErrorHelp output={python.output} code={code} />}
