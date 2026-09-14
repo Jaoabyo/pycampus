@@ -46,7 +46,9 @@ export function EnderecoDaIA() {
         ? <>Conectado. O Lumi vai conversar normalmente.</>
         : estado.reason === 'modelo'
           ? <>Respondeu, mas falta o modelo <code>{MENTOR_MODEL}</code>. No computador: <code>ollama pull {MENTOR_MODEL}</code>.</>
-          : <>Sem resposta neste endereço. As dicas escritas continuam funcionando em qualquer aparelho.</>}</span>
+          : estado.reason === 'mistura'
+            ? <>Nem cheguei a tentar: esta página é https e este endereço é http, e o navegador bloqueia essa mistura. Veja abaixo como resolver.</>
+            : <>Sem resposta neste endereço. As dicas escritas continuam funcionando em qualquer aparelho.</>}</span>
     </p>}
 
     {misto && <p className="ia-aviso"><Icon name="TriangleAlert" size={15} /> <span>Esta página é <strong>https</strong> e este endereço é <strong>http</strong>. O navegador bloqueia essa mistura antes mesmo de tentar. Para usar o Lumi aqui, o endereço precisa ser https — veja abaixo.</span></p>}

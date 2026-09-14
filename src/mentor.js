@@ -129,7 +129,14 @@ export function sanitizeReply(text, level) {
   return level === 1 ? onlyQuestion(clean) : clean;
 }
 
+// Página https falando com endereço http é bloqueado pelo navegador antes de sair da máquina.
+// Tentar mesmo assim só enche o console de erro vermelho e demora para dizer o óbvio: aqui a
+// resposta sai na hora, e a tela de configurações já explica o que fazer.
+export const misturaBloqueada = (pagina = typeof location !== "undefined" ? location.protocol : "", endereco = ollamaUrl()) =>
+  pagina === "https:" && String(endereco).startsWith("http://");
+
 export async function mentorAvailable(signal) {
+  if (misturaBloqueada()) return { ok: false, reason: "mistura" };
   try {
     const response = await fetch(`${ollamaUrl()}/api/tags`, { signal });
     if (!response.ok) return { ok: false, reason: 'erro' };
