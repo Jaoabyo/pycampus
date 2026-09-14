@@ -6,6 +6,8 @@ import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
 import CodeEditor from './CodeEditor.jsx';
 import { ErrorHelp, OutputCompare } from './RunFeedback.jsx';
+import CodeReview from './CodeReview.jsx';
+import { requisitosFaltando } from './requisitos.js';
 import ParsonsPuzzle from './ParsonsPuzzle.jsx';
 import Mentor from './Mentor.jsx';
 import './bridges.css';
@@ -20,14 +22,23 @@ function Bridge({ bridge, state, update, back }) {
   const record = state.functionBridges?.[bridge.id] || {};
   const [code, setCode] = useState(record.code ?? bridge.starter);
   const [feedback, setFeedback] = useState(''), [mismatch, setMismatch] = useState(null), [hints, setHints] = useState(0), [fails, setFails] = useState(0), [puzzle, setPuzzle] = useState(false), [celebrate, setCelebrate] = useState(0);
+  const [saidaOk, setSaidaOk] = useState(false), [faltando, setFaltando] = useState([]), [aprovacao, setAprovacao] = useState(null);
   const python = usePython({ source: 'playground', title: `Ponte de função: ${bridge.title}`, expected: bridge.expected, onRecord: attempt => update(s => appendAttempt(s, attempt)) });
   const save = patch => update(s => ({ ...s, functionBridges: { ...s.functionBridges, [bridge.id]: { ...s.functionBridges?.[bridge.id], ...patch } } }));
+  // Saída certa é pré-condição, não aprovação: a resposta escrita à mão produz a mesma saída
+  // sem usar a função que a ponte existe para ensinar.
   const run = () => python.run(code, bridge.stdin, result => {
-    const match = result.ok && result.output.trim() === bridge.expected.trim();
-    setMismatch(result.ok && !match ? result.output : null);
-    setFeedback(!result.ok ? 'Leia a última linha do erro e mude uma coisa por vez.' : match ? 'Saída correta. Agora responda a pergunta para fechar a ponte.' : 'Executou, mas a saída ficou diferente.');
-    setFails(n => match ? 0 : n + 1);
-    if (match) { save({ passed: true, code }); setCelebrate(n => n + 1); }
+    const bate = result.ok && result.output.trim() === bridge.expected.trim();
+    const pendentes = bate ? requisitosFaltando(bridge, code) : [];
+    const cumpriu = bate && (!pendentes.length || (aprovacao?.cumpre === true && aprovacao.codigo === code));
+    setSaidaOk(bate); setFaltando(pendentes);
+    setMismatch(result.ok && !bate ? result.output : null);
+    setFeedback(!result.ok ? 'Leia a última linha do erro e mude uma coisa por vez.'
+      : cumpriu ? 'Saída correta e objetivo cumprido. Agora responda a pergunta para fechar a ponte.'
+      : bate ? 'A saída está certa, mas o objetivo da ponte ainda não foi cumprido — veja abaixo.'
+      : 'Executou, mas a saída ficou diferente.');
+    setFails(n => cumpriu ? 0 : n + 1);
+    if (cumpriu) { save({ passed: true, code }); setCelebrate(n => n + 1); }
   });
   const answered = Number.isInteger(record.answered) ? record.answered : null;
   return <>
@@ -47,9 +58,10 @@ function Bridge({ bridge, state, update, back }) {
       <p className="bridge-challenge">{bridge.challenge}</p>
       <div className="expected"><span>SAÍDA ESPERADA</span><pre>{bridge.expected}</pre></div>
       {bridge.stdin && <p className="small">Neste teste, responda <strong>{bridge.stdin.split('\n').join(', ')}</strong> quando o programa perguntar.</p>}
-      <CodeEditor code={code} onChange={value => { setCode(value); setFeedback(''); setMismatch(null); }} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} filename="ponte.py" runLabel="Testar minha ponte" emptyOutput="Escreva e teste. Esta ponte é curta de propósito." />
+      <CodeEditor code={code} onChange={value => { setCode(value); setFeedback(''); setMismatch(null); setSaidaOk(false); setFaltando([]); }} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} filename="ponte.py" runLabel="Testar minha ponte" emptyOutput="Escreva e teste. Esta ponte é curta de propósito." />
       {feedback && <p className="practice-feedback" role="status">{feedback}</p>}
       {python.success === false && <ErrorHelp output={python.output} code={code} />}
+      {saidaOk && <CodeReview lesson={{ ...bridge, objective: bridge.concept }} codigo={code} saida={python.output} faltando={faltando} aprovacao={aprovacao} onAprovacao={setAprovacao} />}
       {mismatch !== null && <OutputCompare actual={mismatch} expected={bridge.expected} />}
       {fails > 0 && <Mentor attempts={fails} title={`Ponte de função: ${bridge.title}`} challenge={bridge.challenge} expected={bridge.expected} code={code} output={python.output} lessonId="funcoes" />}
       <button className="text-button" disabled={hints >= bridge.hints.length} onClick={() => setHints(n => n + 1)}><Icon name="Lightbulb" size={15} /> {hints ? 'Preciso de mais uma pista' : 'Me dê uma pista'}</button>

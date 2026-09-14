@@ -7,6 +7,7 @@ import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
 import CodeEditor, { interativo } from './CodeEditor.jsx';
 import { ErrorHelp, OutputCompare } from './RunFeedback.jsx';
+import CodeReview from './CodeReview.jsx';
 import { ProjectPreparation } from './LessonGuidance.jsx';
 import ProjectDelivery from './ProjectDelivery.jsx';
 import Mentor from './Mentor.jsx';
@@ -29,7 +30,8 @@ export default function ProjectStudio({ project, state, update, back, openLesson
     const next = steps.findIndex(s => !state.projectStepsDone?.[project.id]?.includes(s.id));
     return next < 0 ? steps.length - 1 : next;
   });
-  const [feedback, setFeedback] = useState(''), [mismatch, setMismatch] = useState(null), [hints, setHints] = useState(0), [fails, setFails] = useState(0), [stdin, setStdin] = useState(() => interativo ? '' : respostasDoPasso(steps[0])), [checkedRun, setCheckedRun] = useState(false), [manualCheck, setManualCheck] = useState(false), [celebrate, setCelebrate] = useState(0);
+  const [feedback, setFeedback] = useState(''), [mismatch, setMismatch] = useState(null), [hints, setHints] = useState(0), [fails, setFails] = useState(0), [saidaOk, setSaidaOk] = useState(false), [stdin, setStdin] = useState(() => interativo ? '' : respostasDoPasso(steps[0])), [checkedRun, setCheckedRun] = useState(false), [manualCheck, setManualCheck] = useState(false), [celebrate, setCelebrate] = useState(0);
+  const [aprovacao, setAprovacao] = useState(null);
   const step = steps[current], done = state.projectStepsDone?.[project.id] || [];
   const file = fileNameFor(project.id);
   const code = state.projectCodes?.[project.id] ?? `# ${project.title}\n# Escreva uma instrução de cada vez.\n`;
@@ -47,6 +49,7 @@ export default function ProjectStudio({ project, state, update, back, openLesson
     setMismatch(result.ok && exact && !match ? result.output : null);
     setFeedback(!result.ok ? 'Vamos olhar o erro. A ajuda abaixo indica por onde começar.' : match ? exact ? 'A saída corresponde a este caso. Agora me conte como você chegou nela.' : 'O código executou. Faça a conferência indicada abaixo antes de registrar o passo.' : 'A saída ficou diferente. Confira os valores e tente uma mudança por vez.');
     if (match) setCelebrate(n => n + 1);
+    setSaidaOk(match && inBrowser);
   }); };
   const register = () => {
     if (!note.trim() || !manualCheck || inBrowser && !checkedRun || python.busy) return;
@@ -69,7 +72,7 @@ export default function ProjectStudio({ project, state, update, back, openLesson
       {exact && <details className="coach-expected"><summary>Conferir a saída deste teste</summary><pre className="example-code">{step.expected}</pre></details>}
       {step.stdin ? <p className="hint">{interativo ? <>Neste teste, responda <strong>{step.stdin.split(String.fromCharCode(10)).join(', ')}</strong> quando o programa perguntar.</> : <>Já deixei <strong>{step.stdin.split(String.fromCharCode(10)).join(', ')}</strong> preenchido em “Entradas para input()”, abaixo do editor.</>} Use ponto para centavos.</p> : (!interativo && inBrowser && <p className="hint">Se o seu código usar <code>input()</code>, escreva as respostas do teste em “Entradas para input()”, abaixo do editor, uma por linha. Neste endereço o Python não consegue parar para perguntar.</p>)}
       <CodeEditor code={code} onChange={setCode} stdin={stdin} setStdin={setStdin} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} filename={file} runDisabled={!inBrowser} runLabel={inBrowser ? 'Testar o que escrevi' : 'Este passo é conferido fora do executor'} emptyOutput="Seu resultado aparece aqui depois de executar." />
-      {feedback && <p role="status" className="practice-feedback">{feedback}</p>}{python.success === false && <ErrorHelp output={python.output} code={code} />}{mismatch !== null && <OutputCompare actual={mismatch} expected={step.expected} />}
+      {feedback && <p role="status" className="practice-feedback">{feedback}</p>}{python.success === false && <ErrorHelp output={python.output} code={code} />}{saidaOk && <CodeReview lesson={{ id: step.id, title: step.title, objective: step.why || step.instruction, challenge: step.instruction }} codigo={code} saida={python.output} faltando={[]} aprovacao={aprovacao} onAprovacao={setAprovacao} />}{mismatch !== null && <OutputCompare actual={mismatch} expected={step.expected} />}
       {fails > 0 && <Mentor attempts={fails} title={`${project.title} · ${step.title}`} challenge={step.instruction} expected={step.expected} code={code} output={python.output} lessonId={lastLessonOfModule(project.module)} />}
       <section className="coach-check"><h3>Vamos conferir juntos</h3><p>{step.check}</p><label className="practice-field">{step.question}<textarea aria-label="Minha explicação do passo" maxLength={2000} value={note} onChange={e => saveNote(e.target.value)} placeholder="Eu pensei assim…" /></label><ExplainReview subject={`${step.title} — ${step.question}`} reference={code} explanation={note} /><label className="coach-confirm"><input type="checkbox" checked={manualCheck} onChange={e => setManualCheck(e.target.checked)} /> Fiz a conferência indicada e registrei o que entendi.</label><p className="small">Sua explicação fica guardada para avaliação posterior. A plataforma não julga automaticamente se o texto demonstra domínio.</p><button className="button primary" disabled={python.busy || !note.trim() || !manualCheck || inBrowser && !checkedRun} onClick={register}>Registrar este passo</button></section>
       <div className="button-row"><button className="button outline" disabled={current === 0 || python.busy} onClick={() => go(current - 1)}>← Passo anterior</button>{current < steps.length - 1 ? <button className="button primary" disabled={python.busy} onClick={() => go(current + 1)}>Próximo passo →</button> : <button className="button primary" disabled={python.busy} onClick={() => setPhase('deliver')}>Ir para a entrega →</button>}</div><p className="small">As marcações registram sua prática. Os requisitos finais continuam na autoavaliação; passar por uma tela não concede pontos por si só.</p>

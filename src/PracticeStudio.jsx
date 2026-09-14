@@ -12,6 +12,8 @@ import Mentor from './Mentor.jsx';
 import ExplainReview from './ExplainReview.jsx';
 import FunctionBridges from './FunctionBridges.jsx';
 import { ErrorHelp, StyleTips, OutputCompare } from './RunFeedback.jsx';
+import CodeReview from './CodeReview.jsx';
+import { requisitosFaltando } from './requisitos.js';
 import './practice.css';
 
 const stages = [['read', '1 · Preveja', 'Eye'], ['investigate', '2 · Investigue', 'Search'], ['modify', '3 · Mude', 'Pencil'], ['create', '4 · Crie', 'Sparkles'], ['review', '5 · Confira', 'CheckCircle2']];
@@ -107,8 +109,9 @@ function Practice({ project: p, state, update, back, openLesson }) {
   const code = reading ? p.example : item.codes?.[stage] ?? (stage === 'modify' ? p.example : '# Escreva sua versão aqui.\n');
   const expected = reading ? p.output : stage === 'modify' ? p.modified : p.expected;
   const python = usePython({ source: 'playground', title: `Oficina: ${p.title} · ${stage}`, expected, onRecord: attempt => update(s => appendAttempt(s, attempt)) });
-  const changeStage = value => { setStage(value); setFeedback(''); setHint(false); setMismatch(null); setPredicted(''); setPuzzle(false); python.reset(); };
-  const changeCode = value => { save({ codes: { ...item.codes, [stage]: value }, passed: (item.passed || []).filter(k => k !== stage) }); setFeedback(''); setMismatch(null); };
+  const [saidaOk, setSaidaOk] = useState(false), [faltando, setFaltando] = useState([]), [aprovacao, setAprovacao] = useState(null);
+  const changeStage = value => { setSaidaOk(false); setFaltando([]); setStage(value); setFeedback(''); setHint(false); setMismatch(null); setPredicted(''); setPuzzle(false); python.reset(); };
+  const changeCode = value => { setSaidaOk(false); setFaltando([]); save({ codes: { ...item.codes, [stage]: value }, passed: (item.passed || []).filter(k => k !== stage) }); setFeedback(''); setMismatch(null); };
   const run = () => python.run(code, '', result => {
     if (stage === 'read') setRan(true);
     const match = result.ok && result.output.trim() === expected.trim();
@@ -120,7 +123,13 @@ function Practice({ project: p, state, update, back, openLesson }) {
     setFeedback(!result.ok ? 'A tentativa ficou no diário. Leia a última linha do erro; a explicação abaixo mostra o que esse tipo costuma significar.' : stage === 'read' ? (guessed ? 'Você previu certo! Agora vá para Investigue e explique qual linha produziu essa saída.' : item.prediction ? 'Sua previsão ficou diferente da saída — e isso é exatamente o que faz o aprendizado grudar. Compare as duas abaixo e procure a linha que explica a diferença.' : 'Escreva sua previsão antes de executar: prever e comparar ensina mais do que só ler o resultado.') : match ? 'A saída corresponde ao caso proposto. Agora explique como chegou nela; isso ainda não verifica todas as possibilidades do programa.' : 'Executou, mas a saída ficou diferente. A comparação abaixo mostra em qual linha.');
     setFails(n => match ? 0 : n + 1);
     if (stage === 'read' ? guessed : match) setCelebrate(n => n + 1);
-    if (stage === 'modify' || stage === 'create') save({ passed: [...new Set([...(item.passed || []).filter(k => k !== stage), ...(match ? [stage] : [])])] });
+    // Só a etapa Criar cobra o objetivo: em Modificar o estudante parte do exemplo, então a
+    // resposta aparecer no código é o ponto de partida dele, não um atalho.
+    const pendentes = match && stage === 'create' ? requisitosFaltando({ id: p.id, expected, solution: p.solution, puzzle: p.puzzle }, code) : [];
+    const liberado = aprovacao?.cumpre === true && aprovacao.codigo === code;
+    const cumpriu = match && (!pendentes.length || liberado);
+    setSaidaOk(match && stage === 'create'); setFaltando(pendentes);
+    if (stage === 'modify' || stage === 'create') save({ passed: [...new Set([...(item.passed || []).filter(k => k !== stage), ...((stage === 'create' ? cumpriu : match) ? [stage] : [])])] });
   });
   return <>
     <button className="text-button back" disabled={python.busy} onClick={back}><Icon name="ArrowLeft" size={16} /> Voltar para a oficina</button>
@@ -146,6 +155,7 @@ function Practice({ project: p, state, update, back, openLesson }) {
         <div><span>O QUE O PYTHON MOSTROU</span><pre>{python.output}</pre></div>
       </div>}
       {python.success === false && <ErrorHelp output={python.output} code={code} />}
+      {saidaOk && <CodeReview lesson={{ id: p.id, title: p.title, objective: p.story, challenge: p.create }} codigo={code} saida={python.output} faltando={faltando} aprovacao={aprovacao} onAprovacao={setAprovacao} />}
       {mismatch !== null && <OutputCompare actual={mismatch} expected={expected} />}
       {fails > 0 && <Mentor attempts={fails} title={p.title} challenge={stage === 'modify' ? p.modify : p.create} expected={expected} code={code} output={python.output} lessonId={p.prerequisite} />}
       <StyleTips code={code} show={python.success === true && !reading} />

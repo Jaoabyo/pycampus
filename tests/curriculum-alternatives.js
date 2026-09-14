@@ -36,7 +36,34 @@ const alternativas = {
   arquitetura: 'def total_com_desconto(subtotal, taxa):\n    desconto = subtotal * taxa\n    return subtotal - desconto\n\nprint(total_com_desconto(200, 0.25))',
   geradores: 'def pares():\n    for valor in range(0, 6, 2):\n        yield valor\n\nprint(list(pares()))',
   decoradores: 'def em_maiusculas(funcao):\n    def interna():\n        return funcao().upper()\n    return interna\n\n@em_maiusculas\ndef linguagem():\n    return "python"\n\nprint(linguagem())',
-  async: 'import asyncio\n\nasync def elevar(base):\n    return base * base\n\nprint(await asyncio.gather(elevar(3), elevar(4)))'
+  async: 'import asyncio\n\nasync def elevar(base):\n    return base * base\n\nprint(await asyncio.gather(elevar(3), elevar(4)))',
+
+  variaveis: 'nome_da_linguagem = "Python"\nprint(nome_da_linguagem)',
+  // Mesma regra, testada do menor para o maior: a ordem dos ramos é escolha de quem escreve.
+  condicoes: 'media_final = 6\nif media_final < 5:\n    print("Reprovado")\nelif media_final < 7:\n    print("Recuperação")\nelse:\n    print("Aprovado")',
+  booleanos: 'anos = 20\ningresso_na_mao = True\nprint(anos >= 18 and ingresso_na_mao)',
+  complexidade: 'valores = [2, 1, 2, 3, 2, 4]\naparicoes = 0\nfor atual in valores:\n    if atual == 2:\n        aparicoes += 1\nprint(aparicoes)',
+  classes: 'class Aluno:\n    def estudar(self):\n        return "Estudando Python"\n\nmeu_aluno = Aluno()\nprint(meu_aluno.estudar())',
+  construtor: 'class Produto:\n    def __init__(self, nome):\n        self.nome = nome\n\nteclado = Produto("Teclado")\nprint(teclado.nome)',
+  heranca: 'class Animal:\n    def som(self):\n        return "..."\n\nclass Cachorro(Animal):\n    def som(self):\n        return "Au au"\n\nmeu_pet = Cachorro()\nprint(meu_pet.som())',
+  dataclasses: 'from dataclasses import dataclass\n\n@dataclass\nclass Produto:\n    nome: str\n    preco: float\n\nmouse = Produto("Mouse", 80)\nprint(mouse.preco)',
+  excecoes: 'try:\n    resultado = 10 / 0\n    print(resultado)\nexcept ZeroDivisionError:\n    print("Divisão inválida")',
+  arquivos: 'caminho = "meta.txt"\nwith open(caminho, "w", encoding="utf-8") as saida:\n    saida.write("Aprender todos os dias")\nwith open(caminho, encoding="utf-8") as entrada:\n    conteudo = entrada.read()\nprint(conteudo)',
+  json: 'import json\nbruto = \'{"linguagem": "Python", "versao": 3}\'\nprint(json.loads(bruto)["linguagem"])',
+  sql: 'import sqlite3\ncon = sqlite3.connect(":memory:")\ncon.execute("CREATE TABLE produtos (nome TEXT)")\ncon.executemany("INSERT INTO produtos VALUES (?)", [("Livro",)])\nlinha = con.execute("SELECT nome FROM produtos").fetchone()\nprint(linha[0])\ncon.close()',
+  crud: 'import sqlite3\ncon = sqlite3.connect(":memory:")\ncon.execute("CREATE TABLE produtos (id INTEGER, estoque INTEGER)")\ncon.execute("INSERT INTO produtos VALUES (?, ?)", (1, 10))\nnovo_estoque = 15\ncon.execute("UPDATE produtos SET estoque = ? WHERE id = ?", (novo_estoque, 1))\nlinha = con.execute("SELECT estoque FROM produtos WHERE id = ?", (1,)).fetchone()\nprint(linha[0])\ncon.close()',
+  http: 'criado = 201\nresposta = {"status": criado}\nprint(resposta["status"])',
+  rest: 'tarefas = [{"id": 1, "titulo": "Ler"}, {"id": 2, "titulo": "Praticar"}]\n\ndef buscar_tarefa(tarefa_id):\n    encontradas = [item for item in tarefas if item["id"] == tarefa_id]\n    return encontradas[0] if encontradas else None\n\nprint(buscar_tarefa(2)["titulo"])',
+  // Imprime a própria mensagem do erro em vez de repetir o texto: outro caminho, mesma saída.
+  validacao: 'def validar_preco(preco):\n    if preco < 0:\n        raise ValueError("Preço inválido")\n    return preco\n\ntry:\n    validar_preco(-5)\nexcept ValueError as erro:\n    print(erro)',
+  autenticacao: 'def pode_editar(usuario_id, dono_id, admin=False):\n    if admin:\n        return True\n    return usuario_id == dono_id\n\nprint(pode_editar(2, 1, True))',
+  servicos: 'def criar_tarefa(titulo):\n    tarefa = {"titulo": titulo}\n    tarefa["concluida"] = False\n    return tarefa\n\nprint(criar_tarefa("Estudar")["concluida"])',
+  testes: 'def dobro(numero):\n    return numero + numero\n\nfor entrada, esperado in [(0, 0), (4, 8)]:\n    assert dobro(entrada) == esperado\nprint("Testes passaram")',
+  git: 'comando_de_revisao = "git diff"\nprint(comando_de_revisao)',
+  logs: 'import logging\nlogging.basicConfig(level=logging.ERROR, format="%(message)s", force=True)\nregistrador = logging.getLogger("campus")\nregistrador.error("Falha na conexão")',
+  analise: 'import statistics\nvalores = [10, 20, 30, 40, 500]\nprint(statistics.median(valores))',
+  deploy: 'from os import environ\nmodo = environ.get("PYCAMPUS_MODO", "local")\nprint(modo)',
+  tcc: 'requisitos = [("cadastro", True), ("testes", True), ("documentacao", True)]\nprint(all(feito for _, feito in requisitos))'
 };
 
 export const aulasComAlternativa = Object.keys(alternativas);
