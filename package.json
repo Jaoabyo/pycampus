@@ -18,8 +18,9 @@
     "avaliar:telas": "node scripts/avaliar-lumi-telas.mjs",
     "test:jornada": "node scripts/jornada-de-estudo.mjs",
     "test:estudo": "node scripts/check-study-flow.mjs",
+    "test:lumi-chat": "node scripts/check-lumi-chat.mjs",
     "test:projetos": "node scripts/check-guided-projects.mjs",
-    "verificar": "npm test && npm run test:curriculum && npm run test:estudo && npm run test:projetos && npm run test:jornada",
+    "verificar": "npm test && npm run test:curriculum && npm run test:estudo && npm run test:lumi-chat && npm run test:projetos && npm run test:jornada",
     "lumi:fixo": "node scripts/lumi-fixo.mjs",
     "auditar:perguntas": "node scripts/auditar-perguntas.mjs"
   },

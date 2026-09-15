@@ -63,6 +63,25 @@ export function historicoDoEstudante(history, lessonId) {
   return linhas.join(NL);
 }
 
+// Uma conversa anterior só é útil se for da mesma atividade ou do mesmo assunto. Mandar o
+// diário inteiro deixaria o pedido enorme e faria o Lumi puxar uma dúvida antiga que não tem
+// relação com o que está na tela. Três resumos recentes bastam para ele continuar de onde a
+// pessoa parou, sem fingir que uma orientação é prova de que ela já aprendeu.
+export function orientacoesAnteriores(lumiNotes, activityId = '', lessonId = '') {
+  if (!Array.isArray(lumiNotes)) return '';
+  const relevantes = lumiNotes
+    .filter(note => note && typeof note === 'object' && note.tip
+      && (note.activityId === activityId || (lessonId && note.lessonId === lessonId)))
+    .sort((a, b) => String(a.at || '').localeCompare(String(b.at || '')))
+    .slice(-3);
+  if (!relevantes.length) return '';
+  return relevantes.map(note => [
+    `Orientação anterior no degrau ${note.level || '?'}:`,
+    `Pergunta: ${String(note.question || '').slice(0, 220)}`,
+    `Orientação: ${String(note.tip || '').slice(0, 420)}`
+  ].join(NL)).join(`${NL}${NL}`);
+}
+
 // Cada degrau era uma chamada isolada, então o degrau 2 recomeçava do zero e repetia o 1.
 // Passando o que já foi dito, a escada vira conversa: ele avança em vez de reformular.
 export function degrausAnteriores(replies = {}, level = 1) {

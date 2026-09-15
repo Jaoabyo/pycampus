@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { sanitizeReply, mentorPrompt, taughtUpTo } from '../src/mentor.js';
+import { orientacoesAnteriores } from '../src/contexto-do-lumi.js';
 
 const NL = String.fromCharCode(10);
 const codigo = ['texto = "30"', 'print(texto + 1)'].join(NL);
@@ -52,6 +53,20 @@ test('com pergunta do estudante, o prompt manda responder a ela', () => {
   const contexto = { title: 'T', lessonId: 'tipos', challenge: 'x', expected: '30', code: codigo, output: 'erro', taught: taughtUpTo('tipos'), history: [] };
   assert.match(mentorPrompt(contexto, 1, 'por que dá erro?').system, /Responda À PERGUNTA DELE/);
   assert.match(mentorPrompt(contexto, 1).system, /UMA ÚNICA pergunta/);
+});
+
+test('o Lumi recebe somente orientações recentes do mesmo assunto', () => {
+  const notas = [
+    { at: '2026-09-10T10:00:00.000Z', activityId: 'lesson:tipos', lessonId: 'tipos', level: 1, question: 'o que é int?', tip: 'Transforma texto numérico em número.' },
+    { at: '2026-09-11T10:00:00.000Z', activityId: 'lesson:strings', lessonId: 'strings', level: 2, question: 'o que upper faz?', tip: 'Cria texto em maiúsculas.' },
+    { at: '2026-09-12T10:00:00.000Z', activityId: 'lesson:strings', lessonId: 'strings', level: 3, question: 'e strip?', tip: 'Remove espaços nas pontas.' }
+  ];
+  const anteriores = orientacoesAnteriores(notas, 'lesson:strings', 'strings');
+  assert.match(anteriores, /upper faz/);
+  assert.match(anteriores, /strip/);
+  assert.doesNotMatch(anteriores, /o que é int/);
+  const contexto = { title: 'T', lessonId: 'strings', challenge: 'x', expected: 'BIA', code: codigo, output: 'erro', taught: taughtUpTo('strings'), history: [], previousGuidance: anteriores };
+  assert.match(mentorPrompt(contexto, 2, 'por quê?').user, /Continue a partir delas/);
 });
 
 // O painel abria disparando a dica sozinho, e o campo de pergunta ficava bloqueado enquanto

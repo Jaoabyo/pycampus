@@ -115,6 +115,7 @@ export function mentorPrompt(context, level, question = '') {
     aula,
     glossario && `Como a plataforma já explicou, para ele, o que aparece no código:${QUEBRA}${glossario}`,
     historico && `Fatos medidos sobre este estudante:${QUEBRA}${historico}`,
+    context.previousGuidance && `Orientações anteriores que ele pediu neste assunto:${QUEBRA}${context.previousGuidance}${QUEBRA}Continue a partir delas, sem repetir a mesma explicação.`,
     `Atividade: ${context.title}`,
     context.challenge && `O que foi pedido: ${context.challenge}`,
     context.expected && `Saída esperada:\n${context.expected}`,
