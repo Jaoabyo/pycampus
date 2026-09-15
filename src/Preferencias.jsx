@@ -193,7 +193,8 @@ export function ProgressoNaNuvem({ state, aoBaixar }) {
           <label className="form-label">Token do GitHub
             <input type="password" value={campo} onChange={event => setCampo(event.target.value)} placeholder="ghp_… ou github_pat_…" autoComplete="off" />
           </label>
-          <div className="button-row"><button className="button primary" disabled={!campo.trim() || Boolean(ocupado)} onClick={conectar}><Icon name="PlugZap" size={16} /> Conectar</button></div>
+          <div className="button-row"><button className="button primary" aria-describedby="nuvem-falta" disabled={!campo.trim() || Boolean(ocupado)} onClick={conectar}><Icon name="PlugZap" size={16} /> Conectar</button></div>
+          <p id="nuvem-falta" className="small">{campo.trim() ? 'O token fica só neste navegador; nada é enviado para outro lugar.' : 'Cole o token acima para liberar o botão Conectar.'}</p>
         </>}
 
     {ocupado && <p className="custom-status" role="status"><span className="custom-spin" /> {ocupado}</p>}

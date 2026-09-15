@@ -76,7 +76,7 @@ export default function Sobre({ navigate }) {
       <div className="step-head"><span className="icon-tile purple"><Icon name="Sparkles" size={21} /></span>
         <div><div className="eyebrow">O QUE MUDOU</div><h3>Histórico de melhorias</h3></div></div>
       <ul className="sobre-mudancas">{mudancas.map(item => (
-        <li key={item.data}>
+        <li key={item.texto}>
           <span className="sobre-data">{item.data.split('-').reverse().join('/')}</span>
           <span>{item.texto}</span>
         </li>

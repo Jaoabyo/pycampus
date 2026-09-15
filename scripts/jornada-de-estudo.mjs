@@ -43,9 +43,11 @@ const diaDoEstado = (() => {
 
 // Texto que só existe dentro de um molde de prompt. Se aparecer na tela, o modelo copiou o
 // exemplo e a plataforma imprimiu como se fosse conteúdo.
-const MOLDE = ['até duas frases', 'uma pergunta curta', '<frase sua>', '<sua pergunta>', 'undefined', 'NaN', '[object Object]'];
+const TELAS = ['Visão geral', 'Minha formação', 'Oficina de prática', 'Projetos', 'Laboratório Python', 'Treino dirigido', 'Modo prova', 'Diário de aprendizagem', 'Meu calendário', 'Conquistas', 'Meu perfil', 'Configurações', 'Sobre e limites'];
+const MOLDE = ['até duas frases', 'uma pergunta curta', '<frase sua>', '<sua pergunta>', 'undefined', 'NaN', '[object Object]', 'null'];
 
 const problemas = [];
+let conferidas = 0;
 const anotar = (tela, texto) => problemas.push(`${tela}: ${texto}`);
 
 // Um botão desabilitado precisa dizer, na tela, o que falta. Procurar por palavras soltas como
@@ -63,30 +65,68 @@ async function botoesMudos(page, tela) {
   for (const rotulo of mudos) anotar(tela, `botão desabilitado sem dizer o que falta: "${rotulo}"`);
 }
 
-// A folha dona da classe precisa ter chegado ao navegador. display:inline num campo de
-// formulário é a assinatura exata do defeito que o estudante viu.
+// A folha dona da classe precisa ter chegado ao navegador. Cada classe tem uma propriedade que
+// só ela define; de volta ao padrão do navegador significa folha ausente. Foi assim que o campo
+// de explicação apareceu espremido ao lado da pergunta, em vez de abaixo dela.
 async function estiloCaido(page, tela) {
   const caidos = await page.evaluate(() => {
-    const esperado = { 'practice-field': 'block', 'step-head': 'flex', 'practice-gate': 'block', 'coach-confirm': 'flex' };
-    return [...document.querySelectorAll('.practice-field, .step-head, .practice-gate, .coach-confirm')]
-      .filter(el => el.offsetParent !== null)
-      .filter(el => {
-        const classe = Object.keys(esperado).find(c => el.classList.contains(c));
-        return getComputedStyle(el).display !== esperado[classe];
-      })
-      .map(el => el.className);
+    const esperado = { 'practice-field': ['display', 'block'], 'step-head': ['display', 'flex'], 'coach-confirm': ['display', 'flex'], 'practice-gate': ['borderTopWidth', '1px'] };
+    const fora = [];
+    for (const el of document.querySelectorAll('.practice-field, .step-head, .practice-gate, .coach-confirm')) {
+      if (!el.getClientRects().length) continue;
+      const classe = Object.keys(esperado).find(nome => el.classList.contains(nome));
+      const [prop, valor] = esperado[classe];
+      if (getComputedStyle(el)[prop] !== valor) fora.push(`${classe} (${prop}=${getComputedStyle(el)[prop]})`);
+    }
+    return [...new Set(fora)];
   });
-  for (const classe of caidos) anotar(tela, `folha de estilo não chegou: .${classe} caiu no display padrão`);
+  for (const classe of caidos) anotar(tela, `folha de estilo não chegou: .${classe}`);
+}
+
+// Elemento fixo por cima de um controle. offsetParent é null em position:fixed, então filtrar
+// por ele esconde justamente o caso que importa.
+async function cobrindoControle(page, tela) {
+  const cobertos = await page.evaluate(() => {
+    const fora = [];
+    for (const fixo of document.querySelectorAll('body *')) {
+      const estilo = getComputedStyle(fixo);
+      if (estilo.position !== 'fixed' || estilo.pointerEvents === 'none' || !fixo.getClientRects().length) continue;
+      const r = fixo.getBoundingClientRect();
+      if (r.width > 300 || r.height > 300) continue;
+      for (const alvo of document.querySelectorAll('button:not([disabled]), a[href], input, textarea')) {
+        const q = alvo.getBoundingClientRect();
+        if (q.width < 5 || !alvo.getClientRects().length) continue;
+        if (r.left < q.right && r.right > q.left && r.top < q.bottom && r.bottom > q.top && !fixo.contains(alvo) && !alvo.contains(fixo))
+          fora.push(`${fixo.className || fixo.tagName} cobre "${(alvo.innerText || alvo.getAttribute('aria-label') || alvo.tagName).trim().slice(0, 30)}"`);
+      }
+    }
+    return [...new Set(fora)];
+  });
+  for (const caso of cobertos) anotar(tela, caso);
 }
 
 async function textoDeMolde(page, tela) {
-  const corpo = (await page.locator('body').innerText()).toLowerCase();
-  for (const termo of MOLDE) if (corpo.includes(termo.toLowerCase())) anotar(tela, `texto de molde na tela: "${termo}"`);
+  // Sem expressão regular: "[object Object]" vira classe de caracteres se escapar mal, e passa a
+  // casar com qualquer letra. A conta é por vizinhança: o termo cercado de não-letra.
+  const achados = await page.evaluate(molde => {
+    const corpo = document.body.innerText.toLowerCase();
+    const letra = c => c !== undefined && (c.toLowerCase() !== c.toUpperCase() || (c >= '0' && c <= '9'));
+    return molde.filter(termo => {
+      const alvo = termo.toLowerCase();
+      for (let i = corpo.indexOf(alvo); i !== -1; i = corpo.indexOf(alvo, i + 1)) {
+        if (!letra(corpo[i - 1]) && !letra(corpo[i + alvo.length])) return true;
+      }
+      return false;
+    });
+  }, MOLDE);
+  for (const termo of achados) anotar(tela, `texto de molde na tela: "${termo}"`);
 }
 
 async function conferirTela(page, tela) {
+  conferidas++;
   await botoesMudos(page, tela);
   await estiloCaido(page, tela);
+  await cobrindoControle(page, tela);
   await textoDeMolde(page, tela);
   const extra = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   if (extra > 0) anotar(tela, `rola ${extra}px na horizontal`);
@@ -112,7 +152,19 @@ for (const [nome, width, height] of [['desktop', 1440, 1000], ['celular', 390, 8
   if (dia === hoje && mostrado !== feitas.length) anotar(`${nome}/visão geral`, `meta do dia mostra ${mostrado}, mas o dia tem ${feitas.length} atividades registradas`);
   await conferirTela(page, `${nome}/visão geral`);
 
-  // 2. O passo de projeto onde ele parou.
+  // 2. Todas as telas do menu. Os defeitos de folha de estilo e de botão mudo não escolhem tela.
+  for (const alvo of TELAS) {
+    await abrirMenu();
+    const botao = page.locator('.sidebar nav button').filter({ hasText: alvo }).first();
+    if (!await botao.count()) { anotar(nome, `a tela "${alvo}" não está no menu`); continue; }
+    await botao.click();
+    await page.waitForTimeout(1300);
+    const titulo = await page.locator('main h1, main h2').first().innerText().catch(() => '');
+    if (!titulo.trim()) anotar(`${nome}/${alvo}`, 'a tela abriu sem título');
+    await conferirTela(page, `${nome}/${alvo}`);
+  }
+
+  // 3. O passo de projeto onde ele parou.
   await abrirMenu();
   await page.getByRole('button', { name: /^Projetos$/ }).first().click().catch(() => {});
   await page.waitForTimeout(1200);
@@ -124,7 +176,7 @@ for (const [nome, width, height] of [['desktop', 1440, 1000], ['celular', 390, 8
     await conferirTela(page, `${nome}/projeto`);
     if (SAIDA) await page.screenshot({ path: `${SAIDA}/jornada-projeto-${nome}.png`, fullPage: true }).catch(() => {});
 
-    // 3. Trocar de passo tem de levar ao topo, não deixar no rodapé.
+    // 4. Trocar de passo tem de levar ao topo, não deixar no rodapé.
     await page.locator('.studio-work .button-row').first().scrollIntoViewIfNeeded();
     const proximo = page.getByRole('button', { name: /Próximo passo/ });
     if (await proximo.count()) {
@@ -135,7 +187,14 @@ for (const [nome, width, height] of [['desktop', 1440, 1000], ['celular', 390, 8
     }
   }
 
-  // 4. Um miniprojeto, que é onde o dia dele foi gasto.
+  // A entrega é a segunda metade do estúdio e nunca tinha sido percorrida.
+  if (await page.getByRole('button', { name: /2 · Entregar/ }).count()) {
+    await page.getByRole('button', { name: /2 · Entregar/ }).click();
+    await page.waitForTimeout(1500);
+    await conferirTela(page, `${nome}/projeto · entrega`);
+  }
+
+  // 5. Um miniprojeto, que é onde o dia dele foi gasto.
   await abrirMenu();
   await page.getByRole('button', { name: /Oficina de prática/ }).first().click().catch(() => {});
   await page.waitForTimeout(1500);
@@ -151,7 +210,7 @@ for (const [nome, width, height] of [['desktop', 1440, 1000], ['celular', 390, 8
     if (depois > 4) anotar(`${nome}/miniprojeto`, `"Próxima etapa" deixou a página em ${depois}px, não no topo`);
   }
 
-  // 5. Uma aula, o caminho mais percorrido de todos.
+  // 6. Uma aula, o caminho mais percorrido de todos.
   await abrirMenu();
   await page.getByRole('button', { name: /Minha formação/ }).first().click().catch(() => {});
   await page.waitForTimeout(1200);
@@ -165,6 +224,6 @@ for (const [nome, width, height] of [['desktop', 1440, 1000], ['celular', 390, 8
 await browser.close();
 
 console.log(problemas.length
-  ? `${problemas.length} ${problemas.length === 1 ? 'problema' : 'problemas'} na jornada:${NL}${[...new Set(problemas)].join(NL)}`
-  : 'A jornada de estudo flui nas duas larguras.');
+  ? `${conferidas} telas conferidas · ${problemas.length} ${problemas.length === 1 ? 'problema' : 'problemas'} na jornada:${NL}${[...new Set(problemas)].join(NL)}`
+  : `${conferidas} telas conferidas: a jornada de estudo flui nas duas larguras.`);
 process.exitCode = problemas.length ? 1 : 0;
