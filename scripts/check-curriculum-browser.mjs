@@ -70,7 +70,7 @@ try {
   await page.screenshot({ path: 'curriculum-review-mobile.png', fullPage: true, animations: 'disabled' });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.screenshot({ path: 'curriculum-review-preview.png', fullPage: true, animations: 'disabled' });
-  await page.getByRole('button', { name: 'Próxima aula', exact: true }).click();
+  await page.getByRole('button', { name: /^Próxima aula: / }).click();
   assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), 'Contas e operadores');
   await page.locator('.sidebar nav button').filter({ hasText: 'Projetos' }).click();
   await page.getByRole('button', { name: 'Ver projeto', exact: true }).first().click();

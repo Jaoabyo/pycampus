@@ -9,3 +9,16 @@ export function Progress({ value, className = '' }) {
 // navegação em vez do enunciado novo. navigate() já sobe ao topo entre telas; aqui é a mesma
 // subida para as trocas que acontecem sem mudar de tela.
 export const irAoTopo = () => window.scrollTo({ top: 0, behavior: 'instant' });
+
+// Entrar num miniprojeto ou num projeto sem saber o que é foi a queixa: o botão só dizia
+// "avançar". Este cartão diz, antes do clique, o que vem e por que vem. As palavras saem de
+// explicaTrabalho, em progression.js, para as três telas dizerem a mesma coisa.
+export function ExplicaEtapa({ explica, onAbrir }) {
+  return <div className="proximo-da-etapa">
+    <div className="eyebrow">{explica.eyebrow}</div>
+    <strong>{explica.titulo}</strong>
+    <p>{explica.texto}</p>
+    <button className="button primary full" onClick={onAbrir}>{explica.botao}<Icon name="ArrowRight" size={17} /></button>
+  </div>;
+}
+

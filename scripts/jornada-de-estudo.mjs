@@ -261,9 +261,26 @@ for (const [nome, width, height] of [['desktop', 1440, 1000], ['celular', 390, 8
   await abrirMenu();
   await page.getByRole('button', { name: /Minha formação/ }).first().click().catch(() => {});
   await page.waitForTimeout(1200);
-  await page.getByText(lessons[6].title).first().click().catch(() => {});
+  const concluidas = JSON.parse(estado).completed || [];
+  const paraAbrir = lessons.find(item => item.id === concluidas.at(-1)) || lessons[6];
+  await page.getByText(paraAbrir.title).first().click().catch(() => {});
   await page.waitForTimeout(2000);
   await conferirTela(page, `${nome}/aula`);
+
+  // O fim de uma aula concluída não pode ser um beco: o botão mandava para a aula seguinte sem
+  // olhar se ela abria, e o estudante recebia "Esta aula ainda está travada" sem ter aonde ir.
+  const concluida = page.locator('.complete-box.is-complete');
+  if (!await concluida.count()) {
+    anotar(`${nome}/aula`, `abri "${paraAbrir.title}", que consta como concluída, e a caixa de fim de aula não apareceu`);
+  } else {
+    const seguir = concluida.getByRole('button').first();
+    const rotulo = (await seguir.innerText()).trim();
+    await seguir.click();
+    await page.waitForTimeout(1500);
+    const aviso = (await page.locator('.toast').innerText().catch(() => '')).toLowerCase();
+    if (/travad/.test(aviso)) anotar(`${nome}/aula`, `"${rotulo}" no fim da aula leva a uma tela travada: ${aviso.slice(0, 70)}`);
+    await fecharComemoracao(page, `${nome}/aula`);
+  }
 
   for (const erro of [...new Set(erros)]) anotar(nome, `erro no console: ${erro}`);
   await ctx.close();

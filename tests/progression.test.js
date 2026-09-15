@@ -5,7 +5,7 @@ import { lessons, modules, projects } from '../src/curriculum.js';
 import { practiceProjects } from '../src/practice-content.js';
 import { stepsFor } from '../src/project-steps.js';
 import { functionBridges } from '../src/function-bridges.js';
-import { lessonAllowed, missingSummary, blockingSummary, pendingStageWork } from '../src/progression.js';
+import { lessonAllowed, missingSummary, blockingSummary, pendingStageWork, explicaTrabalho } from '../src/progression.js';
 import { initialState } from '../src/progress.js';
 import {
   firstIncompleteModule, lessonIsOpen, moduleIndexForLesson, moduleIsOpen,
@@ -207,3 +207,42 @@ test('o herói e o cartão da visão geral leem a mesma fonte', () => {
   assert.match(fonte, /<ProximoPasso work=\{proximo\}/);
   assert.match(fonte, /onClick=\{abrirProximo\}/);
 });
+
+// No fim da etapa 02 o botão "Próxima aula" mandava para lessons[posição + 1] sem olhar se ela
+// estava aberta: o estudante recebia "Esta aula ainda está travada. Faltam 8 pontes de função,
+// 6 miniprojetos e 1 projeto na etapa 02" e ficava sem ter para onde ir — enquanto o botão da
+// Visão geral, que lê pendingStageWork, sabia o caminho. As duas telas leem a mesma fonte agora.
+test('o fim da aula nunca aponta para uma aula travada', () => {
+  const fonte = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(fonte, /openLesson\(lessons\[position \+ 1\]\.id\)/, 'voltou a mandar para a aula seguinte sem conferir se ela abre');
+  assert.match(fonte, /lessonIsOpen\(state, seguinte\.id\)/, 'a conferência de aula aberta sumiu');
+});
+
+// Entrar num miniprojeto, numa ponte ou num projeto sem saber o que é foi a queixa: o botão só
+// dizia "avançar". Cada tipo de trabalho precisa de um texto próprio, que diga o que vem.
+test('cada tipo de trabalho da etapa se explica antes do clique', () => {
+  const ponte = explicaTrabalho({ kind: 'practice', sub: 'ponte', label: 'Fazer as pontes de função' });
+  const mini = explicaTrabalho({ kind: 'practice', sub: 'miniprojeto', label: 'Treinar 6 miniprojetos da etapa' });
+  const projeto = explicaTrabalho({ kind: 'project', label: 'Construir o projeto: X' });
+  for (const [nome, explica] of [['ponte', ponte], ['miniprojeto', mini], ['projeto', projeto]]) {
+    assert.ok(explica.texto.length > 80, `${nome}: o texto não explica nada`);
+    assert.ok(explica.botao && explica.eyebrow && explica.titulo, `${nome}: falta parte do cartão`);
+  }
+  assert.notEqual(ponte.texto, mini.texto, 'ponte e miniprojeto são coisas diferentes e precisam de textos diferentes');
+  assert.match(ponte.botao, /ponte/i);
+  assert.match(mini.botao, /oficina/i);
+  assert.match(projeto.botao, /projeto/i);
+});
+
+// A etapa 02 do estudante: seis aulas feitas, nenhuma ponte. A aula 13 está fechada.
+test('com as aulas da etapa feitas e as pontes pendentes, o trabalho é a ponte', () => {
+  const estado = { ...initialState(), completed: lessons.slice(0, 12).map(l => l.id),
+    projectChecks: { calculadora: projects[0].requirements.map((_, i) => i) },
+    projectStepsDone: { calculadora: stepsFor('calculadora').map(s => s.id) },
+    learning: Object.fromEntries(practiceProjects.map(p => [p.id, { answered: p.investigate.answer, passed: ['modify', 'create'] }])) };
+  assert.equal(lessonIsOpen(estado, lessons[12].id), false, 'a aula 13 deveria estar fechada');
+  const work = pendingStageWork(estado);
+  assert.equal(work.kind, 'practice');
+  assert.equal(work.sub, 'ponte', JSON.stringify(work));
+});
+

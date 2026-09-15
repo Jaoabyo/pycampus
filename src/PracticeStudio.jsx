@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Icon, Progress, irAoTopo } from './ui.jsx';
+import { Icon, Progress, ExplicaEtapa, irAoTopo } from './ui.jsx';
 import { practiceProjects, nextReview, reviewInterval, soloIntervals, practiceSteps, practiceDone, practiceXp, predictionMatches } from './practice-content.js';
 import { lessons, modules } from './curriculum.js';
-import { practiceIsOpen, blockingSummary, moduleIndexForLesson } from './progression.js';
+import { practiceIsOpen, blockingSummary, moduleIndexForLesson, pendingStageWork, explicaTrabalho } from './progression.js';
 import { localDate, recordPractice } from './progress.js';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
@@ -53,7 +53,7 @@ function PracticeArt() {
   </div>;
 }
 
-export default function PracticeStudio({ state, update, openLesson }) {
+export default function PracticeStudio({ state, update, openLesson, openProject, navigate }) {
   const [selected, setSelected] = useState(null), [filter, setFilter] = useState('ready');
   const due = practiceProjects.filter(p => practiceIsOpen(state, p.id) && nextReview(state.learning?.[p.id]) && nextReview(state.learning[p.id]) <= localDate());
   const trained = practiceProjects.filter(p => practiceDone(state.learning?.[p.id], p));
@@ -66,7 +66,7 @@ export default function PracticeStudio({ state, update, openLesson }) {
     return depois.find(item => practiceIsOpen(state, item.id)) || null;
   };
   if (selected && practiceIsOpen(state, selected.id)) return <Practice key={selected.id} project={selected} state={state} update={update}
-    back={() => setSelected(null)} openLesson={openLesson} proximo={proximoDe(selected)} irPara={select} />;
+    back={() => setSelected(null)} openLesson={openLesson} openProject={openProject} navigate={navigate} proximo={proximoDe(selected)} irPara={select} />;
   return <>
     <section className="hero practice-hero">
       <div className="hero-copy">
@@ -121,7 +121,15 @@ export default function PracticeStudio({ state, update, openLesson }) {
   </>;
 }
 
-function Practice({ project: p, state, update, back, openLesson, proximo, irPara }) {
+function Practice({ project: p, state, update, back, openLesson, openProject, navigate, proximo, irPara }) {
+  // Sem próximo miniprojeto aberto, a etapa já pede outra coisa. Dizer qual, e levar até lá.
+  const aoProximoDaEtapa = () => {
+    const work = pendingStageWork(state);
+    if (work.kind === 'lesson') openLesson(work.id);
+    else if (work.kind === 'project') openProject?.(work.id);
+    else if (work.kind === 'practice') back();
+    else navigate?.('badges');
+  };
   const [successNotice, setSuccessNotice] = useState(false);
   const [stage, setStage] = useState(() => practicePosition(state.learning?.[p.id])), [hint, setHint] = useState(false), [feedback, setFeedback] = useState(''), [ran, setRan] = useState(false), [mismatch, setMismatch] = useState(null), [fails, setFails] = useState(0), [predicted, setPredicted] = useState(''), [puzzle, setPuzzle] = useState(false), [celebrate, setCelebrate] = useState(0);
   const item = state.learning?.[p.id] || {};
@@ -258,6 +266,7 @@ function Practice({ project: p, state, update, back, openLesson, proximo, irPara
       <p className="small">Cada acerto sem consultar afasta a próxima revisão ({soloIntervals.join(' → ')} dias); precisar de ajuda traz de volta para amanhã. Código, previsão e explicações ficam salvos neste navegador e no backup. As execuções aparecem no Diário de aprendizagem.</p>
       {complete && <div className="practice-onde-agora">
         <h3>Para onde agora</h3>
+        {!proximo && <ExplicaEtapa explica={explicaTrabalho(pendingStageWork(state))} onAbrir={aoProximoDaEtapa} />}
         <div className="button-row">
           {proximo
             ? <button className="button primary" onClick={() => irPara(proximo)}>Próximo miniprojeto: {proximo.title} <Icon name="ArrowRight" size={16} /></button>

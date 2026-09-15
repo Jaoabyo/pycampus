@@ -94,10 +94,12 @@ export function pendingStageWork(state) {
     const lesson = pending.missingLessons[0];
     return { kind: 'lesson', label: `Continuar na aula: ${lesson.title}`, id: lesson.id, moduleIndex: index };
   }
-  if (pending.missingBridges.length) return { kind: 'practice', label: 'Fazer as pontes de função', id: pending.missingBridges[0].id, moduleIndex: index };
+  // Ponte e miniprojeto são os dois 'practice', e moram na mesma tela — mas são coisas
+  // diferentes, e quem vai clicar precisa saber em qual está entrando.
+  if (pending.missingBridges.length) return { kind: 'practice', sub: 'ponte', label: 'Fazer as pontes de função', id: pending.missingBridges[0].id, moduleIndex: index };
   if (pending.missingPractices.length) {
     const count = pending.missingPractices.length;
-    return { kind: 'practice', label: `Treinar ${count} ${count === 1 ? 'miniprojeto' : 'miniprojetos'} da etapa`, id: pending.missingPractices[0].id, moduleIndex: index };
+    return { kind: 'practice', sub: 'miniprojeto', label: `Treinar ${count} ${count === 1 ? 'miniprojeto' : 'miniprojetos'} da etapa`, id: pending.missingPractices[0].id, moduleIndex: index };
   }
   const project = pending.missingProjects[0];
   return { kind: 'project', label: `Construir o projeto: ${project.title}`, id: project.id, moduleIndex: index };
@@ -118,3 +120,41 @@ export function projectIsOpen(state, id) {
     && pending.missingPractices.length === 0
     && pending.missingBridges.length === 0;
 }
+
+// O fim de uma aula mandava para a aula seguinte sem olhar se ela estava aberta: o estudante
+// clicava em "Próxima aula" e levava um aviso de tela travada, sem nada para fazer a seguir.
+// Quem sabe o que vem é pendingStageWork. Aqui ficam as palavras que explicam o que vem, para
+// que a aula, a oficina e o estúdio digam a mesma coisa — e digam ANTES do clique, porque
+// entrar num miniprojeto ou num projeto sem aviso é entrar em outra tela sem saber por quê.
+export function explicaTrabalho(work) {
+  if (work.kind === 'practice') return work.sub === 'ponte' ? {
+    eyebrow: 'A ETAPA PEDE AS PONTES DE FUNÇÃO ANTES DA PRÓXIMA AULA',
+    titulo: work.label,
+    texto: 'Uma ponte é um exercício curto sobre um único ponto de função: chamar, devolver, passar um valor. Você monta ou escreve poucas linhas e responde a uma pergunta. Elas ficam na oficina de prática e abrem a próxima aula desta etapa.',
+    botao: 'Ir para as pontes de função'
+  } : {
+    eyebrow: 'A ETAPA PEDE MINIPROJETOS ANTES DA PRÓXIMA AULA',
+    titulo: work.label,
+    texto: 'Um miniprojeto tem cinco etapas: você prevê a saída de um exemplo pronto, executa, explica por que funciona, muda uma parte e só então escreve a sua versão. Leva alguns minutos e abre a próxima aula desta etapa.',
+    botao: 'Ir para a oficina de prática'
+  };
+  if (work.kind === 'project') return {
+    eyebrow: 'A ETAPA PEDE O PROJETO AGORA',
+    titulo: work.label,
+    texto: 'O projeto é construído em passos, cada um com pista, conferência e uma pergunta sua. Você escreve o código, registra cada passo e no fim entrega. É o que fecha esta etapa.',
+    botao: 'Abrir o estúdio do projeto'
+  };
+  if (work.kind === 'done') return {
+    eyebrow: 'FORMAÇÃO CONCLUÍDA',
+    titulo: work.label,
+    texto: 'As oito etapas estão completas. Daqui em diante vale rever o que quiser e melhorar os projetos que já entregou.',
+    botao: 'Ver minhas conquistas'
+  };
+  return {
+    eyebrow: 'PRÓXIMO PASSO',
+    titulo: work.label,
+    texto: 'Seguindo na mesma etapa.',
+    botao: 'Continuar'
+  };
+}
+

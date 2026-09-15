@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Icon, irAoTopo } from './ui.jsx';
 import { lessons } from './curriculum.js';
 import { stepsFor, fileNameFor } from './project-steps.js';
-import { pendingStageWork } from './progression.js';
+import { pendingStageWork, explicaTrabalho } from './progression.js';
 import { localDate } from './progress.js';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
@@ -136,13 +136,16 @@ function NextStep({ project, state, steps, done, navigate, openLesson, openProje
     else if (work.kind === 'project') openProject(work.id);
     else navigate('badges');
   };
+  const explica = explicaTrabalho(work);
   return <section className="card studio-next">
     <div className="step-head">
       <span className="icon-tile purple"><Icon name="Rocket" size={21} /></span>
       <div><div className="eyebrow">PROJETO CONCLUÍDO · PARA ONDE AGORA</div><h3>{work.label}</h3></div>
     </div>
+    {/* O rótulo sozinho não diz em que o estudante está entrando. O texto explica antes do clique. */}
+    <p>{explica.texto}</p>
     <div className="button-row">
-      <button className="button primary" onClick={go}>{work.label} <Icon name="ArrowRight" size={16} /></button>
+      <button className="button primary" onClick={go}>{explica.botao} <Icon name="ArrowRight" size={16} /></button>
       <button className="text-button" onClick={() => navigate('projects')}>Ver todos os projetos</button>
     </div>
   </section>;
