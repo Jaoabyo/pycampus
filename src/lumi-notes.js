@@ -23,7 +23,10 @@ const normalizeOne = item => {
     title: clip(item.title, 140),
     level: Number.isInteger(item.level) && item.level >= 1 && item.level <= 4 ? item.level : 0,
     question: clip(item.question, 600),
-    tip: clip(item.tip, 1200)
+    tip: clip(item.tip, 1200),
+    // A ajuda escrita vale sozinha e é a única disponível com a IA desligada. Ela entra no
+    // diário como as outras, mas dizendo o que era: orientação escrita, não resposta do modelo.
+    fonte: item.fonte === 'escrita' ? 'escrita' : 'ia'
   };
   return note.id && note.at && note.activityId && note.lessonId && note.title && note.level && note.question && note.tip ? note : null;
 };

@@ -8,6 +8,7 @@
 // Enquanto esta janela estiver aberta, o Lumi funciona no celular. Fechou, o Lumi volta a ser
 // só as dicas escritas — que funcionam sempre, em qualquer aparelho.
 import { spawn } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 const SITE = process.env.PYCAMPUS_SITE || 'https://jaoabyo.github.io/pycampus/';
 const OLLAMA = process.env.OLLAMA_LOCAL || 'http://127.0.0.1:11434';
@@ -20,20 +21,19 @@ if (!modelos) {
 }
 console.log(`Ollama respondendo. Modelos: ${modelos.models.map(m => m.name).join(', ')}`);
 
-// Túnel rápido dá um endereço novo a cada vez que sobe. Quem tem uma conta Cloudflare pode
-// criar um túnel nomeado, com endereço fixo, e passá-lo aqui:
-//
-//   cloudflared tunnel login
-//   cloudflared tunnel create pycampus
-//   cloudflared tunnel route dns pycampus lumi.SEU-DOMINIO
-//   PYCAMPUS_TUNEL=pycampus PYCAMPUS_TUNEL_HOST=https://lumi.SEU-DOMINIO npm run lumi:celular
-//
-// Aí o link do celular para de mudar e dá para guardar na tela inicial. Sem isso, segue o
-// túnel rápido, que não exige conta nenhuma.
-const nomeado = process.env.PYCAMPUS_TUNEL;
-const hostFixo = process.env.PYCAMPUS_TUNEL_HOST;
+// Túnel rápido dá um endereço novo a cada vez que sobe, e isso obriga a mandar o link para o
+// celular toda sessão. "npm run lumi:fixo" configura um túnel nomeado, com endereço fixo e
+// seu; depois disso este script o usa sozinho. Sem essa configuração, segue o túnel rápido,
+// que não exige conta nenhuma.
+// "npm run lumi:fixo" grava essa configuração uma vez; daqui em diante o endereço não muda
+// mais e não é preciso lembrar de variável nenhuma.
+const salvo = (() => {
+  try { return JSON.parse(readFileSync('.pycampus-tunel.json', 'utf8')); } catch { return null; }
+})();
+const nomeado = process.env.PYCAMPUS_TUNEL || salvo?.nome || '';
+const hostFixo = process.env.PYCAMPUS_TUNEL_HOST || (process.env.PYCAMPUS_TUNEL ? '' : salvo?.host || '');
 if (nomeado && !hostFixo) {
-  console.error('PYCAMPUS_TUNEL exige PYCAMPUS_TUNEL_HOST com o endereço https que aponta para ele.');
+  console.error('PYCAMPUS_TUNEL exige PYCAMPUS_TUNEL_HOST com o endereço https que aponta para ele, ou rode "npm run lumi:fixo" uma vez.');
   process.exit(1);
 }
 

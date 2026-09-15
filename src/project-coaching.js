@@ -201,6 +201,14 @@ coachedProjects.tarefas = [
       'Antes de cadastrar, use strip para conferir se o título tem conteúdo. Para ids inexistentes, mostre uma mensagem e volte ao menu sem alterar as tarefas.'],
     'Cadastre duas tarefas, liste, conclua uma, apague outra e saia. Confira que os números não se repetem e que sair encerra o programa.')
 ];
+// Auditoria das 70 perguntas de reflexão (scripts/auditar-perguntas.mjs, 210 julgamentos do
+// modelo local em 3 passadas): 12 suspeitos, dos quais 11 eram falso positivo na leitura humana
+// — o modelo reprova pergunta conceitual que não repete o vocabulário do enunciado. O único
+// real estava em banco/construcao-2, que perguntava a ordem da conferência, assunto já decidido
+// no passo anterior, em vez do registro no histórico, que é o que este passo acrescenta.
+// A auditoria fica como ferramenta de leitura, nunca como portão: ela sinaliza, quem decide lê.
+// Prova disso: depois de reescrita, a pergunta de banco/construcao-2 fala literalmente do
+// registro no histórico, e o modelo continua acusando que ela ignora a técnica do passo.
 // A auditoria apontou cinco saltos aqui: o construtor pedia três atributos de uma vez, o
 // depósito exigia raise ValueError (que só é ensinado no módulo 05), a retirada juntava duas
 // guardas sem nunca ter praticado uma, a transferência estreava "método que recebe outro
@@ -227,7 +235,7 @@ coachedProjects.banco = [
     'Deposite 1000 e confira o saldo. Depois deposite -1 e confira que a resposta foi False e o saldo não mudou.'),
   coachStep('construcao-2', 'Depositar',
     'Faça o depósito aceito registrar o movimento no histórico, além de mudar o saldo.',
-    'Você confere o valor antes ou depois de mudar o saldo? Por quê?',
+    'O depósito recusado pode deixar linha no histórico? Em que ponto do método você pôs o registro para isso não acontecer?',
     ['Diga em português onde o registro entra: antes da regra, depois dela, ou dentro do caminho que aceitou?',
       'Use self.historico.append("deposito de 1000") no mesmo trecho que já soma ao saldo. O depósito recusado não pode deixar rastro no histórico.'],
     'Depositar 1000 deve produzir saldo 1000 centavos e uma linha no histórico. Depositar -1 não pode mudar nem o saldo nem o histórico.'),

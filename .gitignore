@@ -10,3 +10,4 @@ dist/
 !public/*.png
 .obsidian/
 pycampus/Bem-vindo.md
+.pycampus-tunel.json

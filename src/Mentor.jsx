@@ -96,12 +96,28 @@ export default function Mentor({ title, challenge, expected, code, output, lesso
       ...(minha ? [{ de: 'voce', texto: minha }] : []),
       { de: 'lumi', nivel: proximoNivel, texto: '', pergunta: minha }
     ]);
-    if (!status?.ok) return;
+    const escreverTurno = patch => setConversa(atual => atual.map((turno, indice) => (indice === atual.length - 1 ? { ...turno, ...patch } : turno)));
+    const registrar = (tip, fonte) => onSaveNote?.({
+      id: `${activityId}:${Date.now()}`,
+      at: new Date().toISOString(),
+      activityId, lessonId: lessonId || activityId,
+      title, level: proximoNivel,
+      question: minha || mentorSteps[proximoNivel - 1].label,
+      tip, fonte
+    });
+    // Com a IA desligada a ajuda escrita continua valendo, e agora também chega ao diário: o
+    // estudante pediu ajuda de verdade, e o registro disso é o que alimenta a próxima revisão.
+    if (!status?.ok) {
+      const escrita = localHelp(context, proximoNivel).join(' ');
+      escreverTurno({ texto: escrita });
+      registrar(escrita, 'escrita');
+      return;
+    }
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
     setBusy(true);
-    const escrever = patch => setConversa(atual => atual.map((turno, indice) => (indice === atual.length - 1 ? { ...turno, ...patch } : turno)));
+    const escrever = escreverTurno;
     try {
       const resposta = await askMentor({
         context, level: proximoNivel, question: minha, signal: controller.signal,
@@ -125,14 +141,7 @@ export default function Mentor({ title, challenge, expected, code, output, lesso
       // mostrarem onde ele pediu ajuda, sem virar um caderno de respostas.
       // id, at e lessonId não são enfeite: sem eles normalizeLumiNotes descarta a nota em
       // silêncio, e a conversa não chega ao diário nem ao relatório.
-      onSaveNote?.({
-        id: `${activityId}:${Date.now()}`,
-        at: new Date().toISOString(),
-        activityId, lessonId: lessonId || activityId,
-        title, level: proximoNivel,
-        question: minha || mentorSteps[proximoNivel - 1].label,
-        tip: resposta
-      });
+      registrar(resposta, 'ia');
     } catch (erro) {
       if (!controller.signal.aborted) escrever({ falhou: erro.message });
     } finally {
@@ -203,7 +212,7 @@ export default function Mentor({ title, challenge, expected, code, output, lesso
 
       <div className="mentor-atalhos">
         {level < MAX_LEVEL
-          ? <button className="button outline" disabled={busy || !status?.ok} onClick={() => perguntar(level + 1)}>
+          ? <button className="button outline" disabled={busy} onClick={() => perguntar(level + 1)}>
               <Icon name="ArrowUp" size={15} /> {mentorSteps[level].label}
             </button>
           : <p className="mentor-final"><Icon name="Sprout" size={15} /> Agora escreva com suas palavras por que aquilo resolveu. Explicar é o que fixa.</p>}

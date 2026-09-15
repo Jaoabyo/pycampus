@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { appendLumiNote, LUMI_NOTES_LIMIT, normalizeLumiNotes } from '../src/lumi-notes.js';
 import { initialState, normalizeState } from '../src/progress.js';
 import { mergeProgress } from '../src/merge-progress.js';
@@ -58,4 +59,20 @@ test('the learning diary and study report include Lumi guidance as guidance, not
   for (const text of ['Conversas com o Lumi', 'Por que upper muda o texto?', 'upper cria uma versão']) assert.ok(diary.includes(text), text);
   for (const text of ['Conversas recentes com o Lumi', 'Por que upper muda o texto?', 'não comprovam domínio']) assert.ok(report.includes(text), text);
   assert.deepEqual(gistState.lumiNotes, state.lumiNotes, 'o Gist privado recebe as notas junto do estado');
+});
+
+// Com a IA desligada, a ajuda escrita continuava aparecendo na tela mas não chegava ao diário:
+// o estudante pedia ajuda e o relatório de estudo não sabia disso. Agora ela é registrada, e a
+// nota diz de onde veio, para nunca parecer que o modelo respondeu quando ele estava fora.
+test('a nota guarda de onde veio a orientação', () => {
+  const base = { id: 'a:1', at: '2026-09-14T10:00:00.000Z', activityId: 'a', lessonId: 'entrada', title: 'T', level: 2, question: 'q', tip: 'orientação' };
+  assert.equal(normalizeLumiNotes([base])[0].fonte, 'ia', 'nota antiga, sem campo, continua contando como resposta do modelo');
+  assert.equal(normalizeLumiNotes([{ ...base, fonte: 'escrita' }])[0].fonte, 'escrita');
+  assert.equal(normalizeLumiNotes([{ ...base, fonte: 'inventada' }])[0].fonte, 'ia', 'valor de fora do backup não passa');
+});
+
+test('o painel registra a ajuda escrita e deixa subir de degrau sem IA', () => {
+  const fonte = readFileSync(new URL('../src/Mentor.jsx', import.meta.url), 'utf8');
+  assert.match(fonte, /registrar\(escrita, 'escrita'\)/, 'a ajuda escrita voltou a não ser registrada');
+  assert.doesNotMatch(fonte, /disabled=\{busy \|\| !status\?\.ok\} onClick=\{\(\) => perguntar\(level \+ 1\)\}/, 'subir de degrau voltou a depender da IA');
 });
