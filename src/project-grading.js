@@ -124,7 +124,9 @@ export async function gradeProject({ project, files, signal }) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: MENTOR_MODEL, stream: false, format: 'json', keep_alive: '30m',
-      options: { temperature: 0.1, num_predict: 900 },
+      // A nota precisa ser repetível para os mesmos arquivos; criatividade fica no mentor,
+      // não numa avaliação que concede XP e emblema.
+      options: { temperature: 0, seed: 42, num_predict: 900 },
       messages: [{ role: 'system', content: system }, { role: 'user', content: user }]
     })
   });

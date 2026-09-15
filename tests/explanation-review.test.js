@@ -23,10 +23,23 @@ test('a talkative model cannot flood the screen', () => {
   assert.equal(wordy.pergunta.length, 240);
 });
 test('the prompt tells the model to comment, never to grade or to write the answer', () => {
-  const { system, user } = explanationPrompt({ subject: 'Explicar a linha nome = "Ana"', reference: 'nome = "Ana"\nprint(nome)', explanation: 'mostra o nome' });
+  const { system, user } = explanationPrompt({ subject: 'Explicar a linha nome = "Ana"', enunciado: 'O que muda com ou sem aspas?', reference: 'nome = "Ana"\nprint(nome)', explanation: 'mostra o nome' });
   assert.ok(system.includes('não dar nota nem aprovar'));
   assert.ok(system.includes('Não escreva a explicação pronta no lugar dele'));
   assert.ok(user.includes('nome = "Ana"') && user.includes('mostra o nome'));
+  assert.ok(user.includes('O que muda com ou sem aspas?'), 'o enunciado inteiro precisa chegar à leitura');
+});
+
+test('uma explicação completa nunca recebe uma pergunta sobre o que já explicou', () => {
+  const respostaDoCasoReal = {
+    suficiente: true,
+    acertou: ['Explicou o if-else e o que acontece acima, abaixo e exatamente em 18.'],
+    faltou: [],
+    pergunta: 'O que aconteceria se a idade fosse exatamente 18 anos?'
+  };
+  const review = parseExplanationReview(JSON.stringify(respostaDoCasoReal));
+  assert.equal(review.suficiente, true);
+  assert.equal(review.pergunta, '');
 });
 
 // Medido 3 de 3 vezes com uma explicação real do estudante: o modelo copiava o espaço

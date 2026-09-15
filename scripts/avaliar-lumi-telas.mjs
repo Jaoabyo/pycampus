@@ -101,6 +101,19 @@ const casos = [
   },
   {
     grupo: 'explicação',
+    nome: 'caso real: não pergunta de novo sobre os 18 anos já explicados',
+    executar: () => reviewExplanation({
+      subject: 'Explicar a linha if idade >= 18:',
+      enunciado: 'O que acontece acima, abaixo ou exatamente em 18 anos?',
+      reference: ['idade = 20', 'if idade >= 18:', '    print("Pode entrar")', 'else:', '    print("Ainda não")'].join(NL),
+      explanation: 'O if verifica se a idade é maior ou igual a 18. Se for 18 ou mais, mostra Pode entrar. Se for menor de 18, cai no else e mostra Ainda não.'
+    }),
+    conferir: r => !r.suficiente
+      ? `não reconheceu a explicação completa: ${(r.faltou[0] || '').slice(0, 70)}`
+      : r.pergunta ? `perguntou de novo algo já explicado: ${r.pergunta.slice(0, 70)}` : null
+  },
+  {
+    grupo: 'explicação',
     nome: 'assunto de reflexão: resposta vazia de conteúdo é apontada',
     executar: () => reviewExplanation({
       subject: `Reflexão sobre o miniprojeto ${cartao.title}`,

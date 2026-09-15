@@ -21,7 +21,7 @@ export function repeteOEnunciado(explicacao, assunto) {
   const repetidas = dela.filter(palavra => doEnunciado.has(palavra)).length;
   return repetidas / dela.length >= 0.8;
 }
-export function explanationPrompt({ subject, reference, explanation }) {
+export function explanationPrompt({ subject, reference, explanation, enunciado = '' }) {
   const system = [
     'Você é o Lumi e está lendo a explicação de um estudante brasileiro iniciante em Python.',
     'Seu papel é ajudar a explicar melhor, não dar nota nem aprovar.',
@@ -30,13 +30,16 @@ export function explanationPrompt({ subject, reference, explanation }) {
     'Em "faltou", aponte o que uma explicação completa precisaria dizer e que ele não disse. Não escreva a explicação pronta no lugar dele.',
     'Se a explicação já cobre o essencial do assunto, devolva "suficiente": true e "faltou": [] — dizer que está boa é uma resposta válida e esperada.',
     'Não invente cobrança para preencher espaço, e não peça detalhe que o assunto não exige. Explicação de iniciante não precisa citar tudo que existe sobre o tema.',
-    'Nunca cobre de novo algo que ele já disse com outras palavras.',
-    'Termine com UMA pergunta curta que o faça pensar no ponto mais fraco.',
+    'Leia a explicação inteira antes de decidir. Considere sinônimos e exemplos do estudante: nunca cobre de novo algo que ele já disse com outras palavras.',
+    'Cada item de "faltou" precisa apontar uma ideia realmente ausente da explicação e necessária para responder ao enunciado.',
+    'Se faltou algo, termine com UMA pergunta curta sobre um dos itens de "faltou". Não pergunte sobre uma ideia que aparece na explicação.',
+    'Se a explicação está suficiente, use "faltou": [] e "pergunta": "". Não invente uma pergunta adicional.',
     'Em "acertou" escreva no máximo duas frases, sobre a explicação dele. Nunca devolva o texto de exemplo abaixo.',
     'Responda APENAS um JSON neste formato: {"suficiente":true,"acertou":["<frase sua>"],"faltou":["<frase sua>"],"pergunta":"<sua pergunta>"}'
   ].join('\n');
   const user = [
     `Assunto: ${subject}`,
+    enunciado ? `O que a atividade pediu para explicar:\n${enunciado}` : '',
     reference ? `Código ou trecho em questão:\n${reference}` : '',
     `Explicação escrita pelo estudante:\n${explanation}`
   ].filter(Boolean).join('\n\n');
@@ -58,8 +61,12 @@ export function parseExplanationReview(raw) {
   const faltou = list(data.faltou);
   // Coerência decidida aqui, não no modelo: dizer que está suficiente e listar faltas ao mesmo
   // tempo é a contradição que fazia o alvo se mover a cada leitura.
+  const suficiente = data.suficiente === true && !faltou.length;
   const pergunta = String(data.pergunta || '').trim().slice(0, 240);
-  const review = { suficiente: data.suficiente === true && !faltou.length, acertou: list(data.acertou), faltou, pergunta: ecoDoMolde(pergunta) ? '' : pergunta };
+  // Se nada ficou faltando, uma pergunta de correção contradiz o próprio veredito. O modelo
+  // era obrigado pelo prompt antigo a inventar uma e acabava repetindo exatamente o que o
+  // estudante já tinha explicado. Esta coerência fica garantida no produto, não na sorte.
+  const review = { suficiente, acertou: list(data.acertou), faltou, pergunta: suficiente || ecoDoMolde(pergunta) ? '' : pergunta };
   if (!review.acertou.length && !review.faltou.length) throw new Error('A leitura voltou vazia. Tente pedir de novo.');
   return review;
 }
@@ -73,13 +80,15 @@ export async function reviewExplanation({ subject, reference, explanation, enunc
     faltou: ['Sua explicação repete o enunciado com as mesmas palavras. Explicar é dizer, com as suas, o que o código faz e por quê.'],
     pergunta: 'Se alguém que nunca viu esse código perguntasse por que ele funciona, o que você responderia?'
   };
-  const { system, user } = explanationPrompt({ subject, reference, explanation });
+  const { system, user } = explanationPrompt({ subject, reference, explanation, enunciado });
   const response = await fetch(`${ollamaUrl()}/api/chat`, {
     method: 'POST', signal,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: MENTOR_MODEL, stream: false, format: 'json', keep_alive: '30m',
-      options: { temperature: 0.2, num_predict: 420 },
+      // A mesma explicação não deve receber um alvo diferente a cada clique em "outra
+      // leitura". A avaliação é estruturada; temperatura zero e semente fixa a deixam estável.
+      options: { temperature: 0, seed: 42, num_predict: 420 },
       messages: [{ role: 'system', content: system }, { role: 'user', content: user }]
     })
   });

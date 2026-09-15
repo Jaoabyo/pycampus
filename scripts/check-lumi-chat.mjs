@@ -19,7 +19,13 @@ try {
   await page.route(`${ia}/api/tags`, route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ models: [{ name: 'qwen2.5-coder:14b' }] }) }));
   await page.route(`${ia}/api/chat`, route => {
     const request = route.request().postDataJSON();
-    if (!request.stream) return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ message: { content: 'ok' } }) });
+    if (!request.stream) {
+      const content = request.format === 'json'
+        // Simula exatamente a contradição vista na tela: o motor precisa remover a pergunta.
+        ? JSON.stringify({ suficiente: true, acertou: ['Explicou o caso igual a 18.'], faltou: [], pergunta: 'O que acontece exatamente em 18 anos?' })
+        : 'ok';
+      return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ message: { content } }) });
+    }
     streams.push(request);
     const resposta = 'Você guardou o texto em uma variável e mostrou uma versão em maiúsculas. Veja se o valor guardado é o que você queria mostrar.';
     return route.fulfill({ contentType: 'application/x-ndjson', body: `${JSON.stringify({ message: { content: resposta.slice(0, 68) } })}\n${JSON.stringify({ message: { content: resposta.slice(68) } })}\n` });
@@ -47,6 +53,13 @@ try {
   await page.waitForFunction(() => JSON.parse(localStorage.getItem('pycampus.v1') || '{}').lumiNotes?.length >= 2);
   const notas = await page.evaluate(() => JSON.parse(localStorage.getItem('pycampus.v1') || '{}').lumiNotes);
   assert.ok(notas.every(note => note.activityId && note.question && note.tip), 'a conversa precisa ficar resumida no diário');
+
+  await page.getByRole('button', { name: /^2 · Investigue$/ }).click();
+  await page.locator('.practice-field textarea').fill('A condição inclui o valor igual e escolhe entre o if e o else.');
+  await page.getByRole('button', { name: 'Pedir ao Lumi para ler minha explicação' }).click();
+  await page.locator('.explain-suficiente').waitFor();
+  assert.equal(await page.locator('.explain-question').count(), 0, 'uma leitura completa não pode repetir como pergunta o que o estudante já explicou');
+
   await page.setViewportSize({ width: 390, height: 844 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'o chat não pode cortar no celular');
   console.log('Lumi no navegador: botão, Enter, bolhas, resposta e histórico aprovados.');

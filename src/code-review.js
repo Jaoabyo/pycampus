@@ -85,9 +85,9 @@ export async function reviewCode({ lesson, codigo, saida, signal }) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: MENTOR_MODEL, stream: false, format: 'json', keep_alive: '30m',
-      // Temperatura baixa porque aqui o retorno decide se a aula conclui: o mesmo código não
-      // pode ser aprovado numa execução e reprovado na seguinte.
-      options: { temperature: 0.1, num_predict: 380 },
+      // Aqui o retorno pode liberar uma solução alternativa: o mesmo código não pode ser
+      // aprovado numa leitura e reprovado na seguinte.
+      options: { temperature: 0, seed: 42, num_predict: 380 },
       messages: [{ role: 'system', content: system }, { role: 'user', content: user }]
     })
   });
