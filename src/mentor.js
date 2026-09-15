@@ -230,7 +230,7 @@ export async function askMentor({ context, level, question = '', onToken, signal
   });
   if (!response.ok || !response.body) throw new Error(`Ollama respondeu ${response.status}`);
   const reader = response.body.getReader(), decoder = new TextDecoder();
-  let buffer = '', full = '';
+  let buffer = '', full = '', finished = false;
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -239,11 +239,15 @@ export async function askMentor({ context, level, question = '', onToken, signal
     buffer = lines.pop() || '';
     for (const line of lines) {
       if (!line.trim()) continue;
-      const piece = JSON.parse(line).message?.content || '';
-      if (!piece) continue;
-      full += piece;
-      onToken?.(sanitizeReply(full, level, context.code, Boolean(question)));
+      const pacote = JSON.parse(line);
+      const piece = pacote.message?.content || '';
+      if (piece) {
+        full += piece;
+        onToken?.(sanitizeReply(full, level, context.code, Boolean(question)));
+      }
+      if (pacote.done === true) { finished = true; break; }
     }
+    if (finished) { await reader.cancel(); break; }
   }
   const limpo = sanitizeReply(full, level, context.code, Boolean(question));
   // Vazio significa "a limpeza descartou tudo". Quem chama decide: a tela sobe um degrau

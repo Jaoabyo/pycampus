@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sanitizeReply, mentorPrompt, mentorSteps, localHelp, taughtUpTo, MAX_LEVEL } from '../src/mentor.js';
+import { askMentor, sanitizeReply, mentorPrompt, mentorSteps, localHelp, taughtUpTo, MAX_LEVEL } from '../src/mentor.js';
 import { lessons } from '../src/curriculum.js';
 
 const context = {
@@ -12,6 +12,31 @@ const context = {
   taught: taughtUpTo('tipos')
 };
 const block = '```python\ntexto = "21"\nnumero = int(texto)\nprint(numero)\n```';
+
+test('o streaming termina no marcador done mesmo se o túnel mantiver a conexão aberta', async () => {
+  const originalFetch = globalThis.fetch;
+  let cancelado = false;
+  globalThis.fetch = async () => ({
+    ok: true,
+    body: new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('{"message":{"content":"Resposta curta."},"done":false}\n'));
+        controller.enqueue(new TextEncoder().encode('{"message":{"content":""},"done":true}\n'));
+      },
+      cancel() { cancelado = true; }
+    })
+  });
+  try {
+    const resposta = await Promise.race([
+      askMentor({ context, level: 2, question: 'Por quê?' }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('o stream ficou preso')), 500))
+    ]);
+    assert.equal(resposta, 'Resposta curta.');
+    assert.equal(cancelado, true);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
 
 // A promessa ao estudante é "não entrego a resposta de cara". Confiar nisso ao modelo seria
 // ingênuo: ele desobedece. A trava é aqui, e é isto que estes testes protegem.
