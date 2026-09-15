@@ -82,6 +82,40 @@ export function orientacoesAnteriores(lumiNotes, activityId = '', lessonId = '')
   ].join(NL)).join(`${NL}${NL}`);
 }
 
+// O chat não precisa de pixels, menus ou cores para entender a tela. Ele precisa dos fatos
+// pedagógicos que o estudante está vendo e que antes ficavam presos em cada componente.
+// A lista fechada evita mandar estado interno irrelevante; os limites impedem uma resposta
+// antiga ou um campo enorme de soterrar o código e o enunciado atuais.
+const CAMPOS_VISIVEIS = [
+  ['etapa', 'Etapa visível'],
+  ['entrada', 'Entradas fornecidas ao input()'],
+  ['feedback', 'Mensagem mostrada pela plataforma'],
+  ['perguntaRevisao', 'Pergunta de revisão visível'],
+  ['respostaRevisao', 'Resposta escolhida pelo estudante'],
+  ['respostaEscrita', 'Explicação escrita pelo estudante'],
+  ['previsao', 'Previsão escrita pelo estudante'],
+  ['status', 'Progresso desta atividade'],
+  ['pistas', 'Pistas que o estudante já abriu']
+];
+const textoVisivel = valor => Array.isArray(valor)
+  ? valor.filter(Boolean).join(`${NL}- `)
+  : String(valor ?? '');
+
+export function contextoVisivel(dados = {}) {
+  if (!dados || typeof dados !== 'object') return '';
+  let restante = 3200;
+  const linhas = [];
+  for (const [chave, rotulo] of CAMPOS_VISIVEIS) {
+    if (restante <= 0) break;
+    const bruto = textoVisivel(dados[chave]).trim();
+    if (!bruto) continue;
+    const valor = bruto.slice(0, Math.min(800, restante));
+    linhas.push(`${rotulo}:${NL}${valor}`);
+    restante -= valor.length;
+  }
+  return linhas.join(`${NL}${NL}`);
+}
+
 // Cada degrau era uma chamada isolada, então o degrau 2 recomeçava do zero e repetia o 1.
 // Passando o que já foi dito, a escada vira conversa: ele avança em vez de reformular.
 export function degrausAnteriores(replies = {}, level = 1) {

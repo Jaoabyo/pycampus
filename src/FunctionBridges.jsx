@@ -24,6 +24,7 @@ export const bridgeDone = (state, id) => Boolean(state?.functionBridges?.[id]?.p
 export const bridgesDone = state => functionBridges.filter(bridge => bridgeDone(state, bridge.id)).length;
 
 function Bridge({ bridge, state, update, back, proxima, irPara }) {
+  const explanationQuestion = 'Explique, sem consultar, por que sua solução funciona.';
   const record = state.functionBridges?.[bridge.id] || {};
   const [code, setCode] = useState(record.code ?? bridge.starter);
   const [feedback, setFeedback] = useState(''), [mismatch, setMismatch] = useState(null), [hints, setHints] = useState(0), [fails, setFails] = useState(0), [puzzle, setPuzzle] = useState(false), [celebrate, setCelebrate] = useState(0);
@@ -86,7 +87,14 @@ function Bridge({ bridge, state, update, back, proxima, irPara }) {
       {python.success === false && <ErrorHelp output={python.output} code={code} />}
       {saidaOk && <CodeReview lesson={{ ...bridge, objective: bridge.concept }} codigo={code} saida={python.output} faltando={faltando} aprovacao={aprovacao} onAprovacao={setAprovacao} />}
       {mismatch !== null && <OutputCompare actual={mismatch} expected={bridge.expected} />}
-      {<Mentor activityId={`bridge:${bridge.id}`} lumiNotes={state.lumiNotes} onSaveNote={note => update(s => appendLumiNote(s, note))} attempts={fails} history={state.history} title={`Ponte de função: ${bridge.title}`} challenge={bridge.challenge} expected={bridge.expected} code={code} output={python.output} lessonId="funcoes" />}
+      {<Mentor activityId={`bridge:${bridge.id}`} lumiNotes={state.lumiNotes} onSaveNote={note => update(s => appendLumiNote(s, note))} attempts={fails} history={state.history} title={`Ponte de função: ${bridge.title}`} challenge={bridge.challenge} expected={bridge.expected} code={code} output={python.output} lessonId="funcoes" screenContext={{
+        etapa: 'Sua vez · construir a ponte', entrada: bridge.stdin, feedback,
+        previsao: record.previsao, respostaEscrita: record.explicacao,
+        perguntaRevisao: bridge.question,
+        respostaRevisao: answered === null ? '' : bridge.options[answered],
+        status: `Código ${record.passed ? 'confirmado' : 'pendente'}; revisão ${record.quizCorrect ? 'correta' : 'pendente'}.`,
+        pistas: bridge.hints.slice(0, hints)
+      }} />}
       <button className="text-button" disabled={hints >= bridge.hints.length} onClick={() => setHints(n => n + 1)}><Icon name="Lightbulb" size={15} /> {hints ? 'Preciso de mais uma pista' : 'Me dê uma pista'}</button>
       <button className="text-button" onClick={() => setPuzzle(!puzzle)}><Icon name="Boxes" size={15} /> {puzzle ? 'Fechar o quebra-cabeça' : 'Travou? Monte o código embaralhado'}</button>
       {bridge.hints.slice(0, hints).map((hint, index) => <p className="hint" key={index}><strong>Pista {index + 1}:</strong> {hint}</p>)}
@@ -101,11 +109,11 @@ function Bridge({ bridge, state, update, back, proxima, irPara }) {
       {answered !== null && <p className={answered === bridge.answer ? 'success-text' : 'error-text'} role="status">{answered === bridge.answer ? 'Isso mesmo.' : 'Ainda não. Releia a ideia no topo e o exemplo, e escolha outra alternativa.'}</p>}
       {/* Explicar com as próprias palavras é o que separa reconhecer de saber. O Lumi lê e
           comenta; a etapa continua sendo liberada por código e prova, nunca por este texto. */}
-      <label className="practice-field">Explique, sem consultar, por que sua solução funciona.
+      <label className="practice-field">{explanationQuestion}
         <textarea aria-label="Minha explicação da ponte" maxLength={1200} value={record.explicacao || ''}
           onChange={event => save({ explicacao: event.target.value })} placeholder="Eu pensei assim…" />
       </label>
-      <ExplainReview subject={`Ponte de função: ${bridge.title} — ${bridge.concept}`} reference={code} explanation={record.explicacao || ''} enunciado={bridge.challenge} />
+      <ExplainReview subject={`Ponte de função: ${bridge.title} — ${bridge.concept}`} reference={code} explanation={record.explicacao || ''} enunciado={explanationQuestion} />
       <ul className="practice-checklist">
         <li className={record.passed ? 'done' : ''}><Icon name={record.passed ? 'CheckCircle2' : 'Circle'} size={16} /> Código com a saída esperada</li>
         <li className={record.quizCorrect ? 'done' : ''}><Icon name={record.quizCorrect ? 'CheckCircle2' : 'Circle'} size={16} /> Pergunta respondida corretamente</li>

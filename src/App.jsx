@@ -161,7 +161,12 @@ function LessonView({ lesson, state, update, notify, openLesson, openProject, na
         {python.success === false && <ErrorHelp output={python.output} code={code} />}
         {mismatch !== null && <OutputCompare actual={mismatch} expected={lesson.expected} />}
         {saidaOk && <CodeReview lesson={lesson} codigo={code} saida={python.output} faltando={faltando} aprovacao={aprovacao} onAprovacao={setAprovacao} />}
-        {<Mentor activityId={`lesson:${lesson.id}`} lumiNotes={state.lumiNotes} onSaveNote={note => update(s => appendLumiNote(s, note))} title={lesson.title} challenge={lesson.challenge} expected={lesson.expected} code={code} output={python.output} lessonId={lesson.id} attempts={fails} history={state.history} />}
+        {<Mentor activityId={`lesson:${lesson.id}`} lumiNotes={state.lumiNotes} onSaveNote={note => update(s => appendLumiNote(s, note))} title={lesson.title} challenge={lesson.challenge} expected={lesson.expected} code={code} output={python.output} lessonId={lesson.id} attempts={fails} history={state.history} screenContext={{
+          etapa: '3 · Agora tente você', entrada: stdin, feedback,
+          perguntaRevisao: lesson.question,
+          respostaRevisao: answer === null ? '' : lesson.options[answer],
+          status: `Desafio ${passed ? 'confirmado' : 'pendente'}; revisão ${answer === lesson.answer ? 'correta' : 'pendente'}.`
+        }} />}
         <StyleTips code={code} show={python.success === true} />
         <div className="exercise-tools"><button className="text-button" disabled={python.busy} onClick={() => { setCode(lesson.starter); python.reset(); }}><Icon name="RotateCcw" size={14} /> Reiniciar código</button><button className="text-button" onClick={() => setShowHint(!showHint)}><Icon name="Lightbulb" size={15} /> Uma ajudinha</button>{lesson.puzzle && <button className="text-button" onClick={() => setShowPuzzle(!showPuzzle)}><Icon name="Boxes" size={15} /> {showPuzzle ? 'Fechar o quebra-cabeça' : 'Travou? Monte o código embaralhado'}</button>}</div>
         {showHint && <GuidedHints lesson={lesson} />}

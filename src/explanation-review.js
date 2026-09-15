@@ -21,7 +21,35 @@ export function repeteOEnunciado(explicacao, assunto) {
   const repetidas = dela.filter(palavra => doEnunciado.has(palavra)).length;
   return repetidas / dela.length >= 0.8;
 }
+
+const normalizaTrecho = texto => String(texto || '').toLowerCase().replace(/\s+/g, ' ').trim();
+const semInvocacaoExterna = linha => {
+  const limpa = String(linha || '').trim();
+  const chamada = limpa.match(/^[a-z_]\w*\((.*)\)$/i);
+  return chamada ? chamada[1].trim() : limpa;
+};
+
+// Em reflexões do tipo "escolha uma linha", o arquivo inteiro é referência visual, não uma
+// lista de obrigações. Se a resposta cita a linha escolhida, isolamos esse alvo antes da IA:
+// assim ela não transforma as outras linhas do exemplo em novas perguntas obrigatórias.
+export function referenciaDaLinhaEscolhida(reference, explanation, enunciado = '') {
+  if (!/escolh[ae].*uma linha/i.test(enunciado)) return reference;
+  const explicacao = normalizaTrecho(explanation);
+  const linhas = String(reference || '').split(/\r?\n/).map(linha => linha.trim()).filter(Boolean);
+  const candidatas = linhas
+    .map(linha => ({ linha, trecho: semInvocacaoExterna(linha) }))
+    .filter(item => item.trecho.length >= 5 && !/^\w+\s*=\s*[^=]/.test(item.trecho))
+    .filter(item => explicacao.includes(normalizaTrecho(item.trecho)))
+    .sort((a, b) => b.trecho.length - a.trecho.length);
+  if (!candidatas.length) return reference;
+  const escolhida = candidatas[0].linha;
+  const valores = linhas.filter(linha => /^\w+\s*=\s*[^=]/.test(linha));
+  return [`Valores usados:`, ...valores, 'Linha escolhida pelo estudante:', escolhida].join('\n');
+}
+
 export function explanationPrompt({ subject, reference, explanation, enunciado = '' }) {
+  const escolheUmaLinha = /escolh[ae].*uma linha/i.test(enunciado);
+  const referenciaAvaliada = referenciaDaLinhaEscolhida(reference, explanation, enunciado);
   const system = [
     'Você é o Lumi e está lendo a explicação de um estudante brasileiro iniciante em Python.',
     'Seu papel é ajudar a explicar melhor, não dar nota nem aprovar.',
@@ -31,6 +59,12 @@ export function explanationPrompt({ subject, reference, explanation, enunciado =
     'Se a explicação já cobre o essencial do assunto, devolva "suficiente": true e "faltou": [] — dizer que está boa é uma resposta válida e esperada.',
     'Não invente cobrança para preencher espaço, e não peça detalhe que o assunto não exige. Explicação de iniciante não precisa citar tudo que existe sobre o tema.',
     'Leia a explicação inteira antes de decidir. Considere sinônimos e exemplos do estudante: nunca cobre de novo algo que ele já disse com outras palavras.',
+    'Em "acertou", reconheça somente ideias realmente escritas pelo estudante. Não atribua a ele algo que você apenas inferiu ao ler o código.',
+    'Avalie somente o que o enunciado pede. O código completo serve de contexto, mas não transforma cada linha dele numa obrigação.',
+    'Se o enunciado manda escolher uma linha, basta explicar uma linha e uma mudança nela. Ignore as outras linhas ao procurar faltas.',
+    'Exemplo da regra anterior: se o código tem uma linha com "and" e outra com "or", e o estudante escolheu a linha com "and", nunca cobre a linha com "or".',
+    'Quando o enunciado pergunta o que a linha faz E o que mudaria, são duas partes: a explicação só é suficiente se disser o comportamento atual da linha escolhida e o efeito da mudança.',
+    'Exemplo de avaliação: para print(a > 5 and ativo), escrever apenas "se trocar 5 por 3 dá True" explica a mudança, mas NÃO explica o comportamento atual nem como o and decide o resultado; portanto é insuficiente.',
     'Cada item de "faltou" precisa apontar uma ideia realmente ausente da explicação e necessária para responder ao enunciado.',
     'Se faltou algo, termine com UMA pergunta curta sobre um dos itens de "faltou". Não pergunte sobre uma ideia que aparece na explicação.',
     'Se a explicação está suficiente, use "faltou": [] e "pergunta": "". Não invente uma pergunta adicional.',
@@ -40,7 +74,8 @@ export function explanationPrompt({ subject, reference, explanation, enunciado =
   const user = [
     `Assunto: ${subject}`,
     enunciado ? `O que a atividade pediu para explicar:\n${enunciado}` : '',
-    reference ? `Código ou trecho em questão:\n${reference}` : '',
+    escolheUmaLinha ? 'Critério desta atividade: avalie somente a linha que o estudante escolheu. As demais linhas são apenas contexto e não podem aparecer em "faltou" nem na pergunta final.' : '',
+    referenciaAvaliada ? `Código ou trecho em questão:\n${referenciaAvaliada}` : '',
     `Explicação escrita pelo estudante:\n${explanation}`
   ].filter(Boolean).join('\n\n');
   return { system, user };

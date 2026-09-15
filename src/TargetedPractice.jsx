@@ -46,6 +46,7 @@ function CodeLevel({ patternId, level, done, onDone, update }) {
 }
 
 function PatternCard({ item, state, update, openLesson, open, setOpen }) {
+  const explanationQuestion = 'Explique com suas palavras o engano e como evitá-lo.';
   const lesson = lessons.find(l => l.id === item.lesson);
   const done = levelsDone(state, item.id);
   const mastery = masteryState(state, item.id);
@@ -95,8 +96,8 @@ function PatternCard({ item, state, update, openLesson, open, setOpen }) {
       <div className="mastery-panel">
         <h3><Icon name="Target" size={17} /> Para considerar dominado</h3>
         <ul className="practice-checklist">{mastery.steps.map(step => <li key={step.id} className={step.done ? 'done' : ''}><Icon name={step.done ? 'CheckCircle2' : 'Circle'} size={16} /> {step.label}</li>)}</ul>
-        <label className="practice-field">Explique com suas palavras o engano e como evitá-lo<textarea maxLength={2000} value={mastery.note} onChange={e => update(s => saveExplanation(s, item.id, e.target.value))} placeholder="O engano era… agora eu faço assim porque…" /></label>
-        <ExplainReview subject={`Explicar o engano: ${item.title}`} reference={item.summary} enunciado={item.summary} explanation={mastery.note} />
+        <label className="practice-field">{explanationQuestion}<textarea maxLength={2000} value={mastery.note} onChange={e => update(s => saveExplanation(s, item.id, e.target.value))} placeholder="O engano era… agora eu faço assim porque…" /></label>
+        <ExplainReview subject={`Explicar o engano: ${item.title}`} reference={item.summary} enunciado={explanationQuestion} explanation={mastery.note} />
         <p className="small">Este texto é guardado para revisão externa e entra no relatório do diário. A plataforma não julga se ele demonstra domínio.</p>
         {mastery.review && <p className={mastery.review.verdict === 'dominado' ? 'success-text' : 'muted'} role="status">Revisão registrada em {dayLabel(mastery.review.at)}: {mastery.review.verdict === 'dominado' ? 'dominado' : 'praticar mais'}.</p>}
         <div className="tab-row">

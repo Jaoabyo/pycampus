@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { explanationPrompt, parseExplanationReview } from '../src/explanation-review.js';
+import { readFileSync } from 'node:fs';
+import { explanationPrompt, parseExplanationReview, referenciaDaLinhaEscolhida } from '../src/explanation-review.js';
 
 // A plataforma pedia explicação escrita em quatro telas e nunca respondia nada. O Lumi passou
 // a ler e comentar — mas comentar não é aprovar: nada aqui concede XP nem conclui etapa.
@@ -28,6 +29,24 @@ test('the prompt tells the model to comment, never to grade or to write the answ
   assert.ok(system.includes('Não escreva a explicação pronta no lugar dele'));
   assert.ok(user.includes('nome = "Ana"') && user.includes('mostra o nome'));
   assert.ok(user.includes('O que muda com ou sem aspas?'), 'o enunciado inteiro precisa chegar à leitura');
+  assert.match(system, /escolher uma linha, basta explicar uma linha/, 'uma escolha não pode virar cobrança do código inteiro');
+});
+
+test('a reflexão do miniprojeto envia ao Lumi a mesma pergunta mostrada ao estudante', () => {
+  const fonte = readFileSync(new URL('../src/PracticeStudio.jsx', import.meta.url), 'utf8');
+  assert.match(fonte, /const reflectionQuestion = 'Escolha uma linha/);
+  assert.match(fonte, /<ExplainReview[^>]+enunciado=\{reflectionQuestion\}/);
+  assert.doesNotMatch(fonte, /<ExplainReview[^>]+enunciado=\{p\.create\}[^>]+explanation=\{item\.reflection\}/);
+});
+
+test('quando o estudante escolhe a linha com and, a linha com or deixa de ser alvo', () => {
+  const reference = ['idade = 16', 'ingresso = True', 'print(idade >= 18 and ingresso)', 'print(idade >= 18 or ingresso)'].join('\n');
+  const enunciado = 'Escolha uma linha do código acima e explique o que ela faz. O que mudaria na saída se você trocasse um valor?';
+  const explanation = 'Se trocarmos idade >= 18 and ingresso para idade >= 16 and ingresso, o resultado muda para True.';
+  const alvo = referenciaDaLinhaEscolhida(reference, explanation, enunciado);
+  assert.match(alvo, /idade >= 18 and ingresso/);
+  assert.doesNotMatch(alvo, /idade >= 18 or ingresso/);
+  assert.match(explanationPrompt({ subject: 'x', reference, explanation, enunciado }).user, /Linha escolhida pelo estudante/);
 });
 
 test('uma explicação completa nunca recebe uma pergunta sobre o que já explicou', () => {

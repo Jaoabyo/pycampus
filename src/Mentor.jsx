@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './ui.jsx';
 import { askMentor, localHelp, mentorAvailable, mentorSteps, taughtUpTo, warmMentor, MAX_LEVEL, MENTOR_MODEL } from './mentor.js';
-import { orientacoesAnteriores } from './contexto-do-lumi.js';
+import { contextoVisivel, orientacoesAnteriores } from './contexto-do-lumi.js';
 import './mentor.css';
 
 // O Lumi é um vaga-lume: ele ilumina o caminho, não caminha por você.
@@ -57,7 +57,7 @@ const inline = text => text.split(/(`[^`]+`|\*\*[^*]+\*\*)/).filter(Boolean).map
 // primeiro degrau sozinho, e enquanto ela vinha o campo de pergunta ficava bloqueado: quem
 // abria para perguntar alguma coisa esperava por uma resposta que não tinha pedido. Agora ele
 // abre pronto para ouvir, e a escada continua ali para quem quiser mais profundidade.
-export default function Mentor({ title, challenge, expected, code, output, lessonId = '', attempts = 0, history = [], activityId = '', lumiNotes = [], onSaveNote = null }) {
+export default function Mentor({ title, challenge, expected, code, output, lessonId = '', attempts = 0, history = [], activityId = '', lumiNotes = [], onSaveNote = null, screenContext = {} }) {
   const [open, setOpen] = useState(false);
   const [level, setLevel] = useState(1);
   const [conversa, setConversa] = useState([]);
@@ -71,7 +71,8 @@ export default function Mentor({ title, challenge, expected, code, output, lesso
     .filter(turno => turno.de === 'lumi' && turno.texto)
     .map(turno => [turno.nivel, turno.texto]));
   const previousGuidance = orientacoesAnteriores(lumiNotes, activityId, lessonId);
-  const context = { title, challenge, expected, code, output, lessonId, history, taught: taughtUpTo(lessonId), replies, previousGuidance };
+  const visibleContext = contextoVisivel(screenContext);
+  const context = { title, challenge, expected, code, output, lessonId, history, taught: taughtUpTo(lessonId), replies, previousGuidance, visibleContext };
 
   // Cada execução nova é um problema novo: a escada recomeça e a conversa anterior sai da tela.
   useEffect(() => { setLevel(1); setConversa([]); }, [output]);

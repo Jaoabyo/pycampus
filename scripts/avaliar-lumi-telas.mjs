@@ -114,6 +114,23 @@ const casos = [
   },
   {
     grupo: 'explicação',
+    nome: 'caso real: escolher a linha do and não obriga explicar também o or',
+    executar: () => reviewExplanation({
+      subject: 'Reflexão sobre o miniprojeto Ingresso e idade',
+      enunciado: 'Escolha uma linha do código acima e explique o que ela faz. O que mudaria na saída se você trocasse um valor?',
+      reference: ['idade = 16', 'ingresso = True', 'print(idade >= 18 and ingresso)', 'print(idade >= 18 or ingresso)'].join(NL),
+      explanation: 'Se trocarmos idade >= 18 and ingresso para idade >= 16 and ingresso, o resultado nesse exemplo muda para True.'
+    }),
+    conferir: r => {
+      const texto = [...r.faltou, r.pergunta].join(' ');
+      if (/segund|\bor\b/i.test(texto)) return `cobrou a linha do or que o estudante não escolheu: ${texto.slice(0, 90)}`;
+      if (/não (?:disse|mencionou).*(?:true|resultado.*mudan)/i.test(texto)) return `ignorou que ele escreveu o novo resultado: ${texto.slice(0, 90)}`;
+      if (r.suficiente) return 'declarou completa sem ele explicar por que a expressão original dava False';
+      return null;
+    }
+  },
+  {
+    grupo: 'explicação',
     nome: 'assunto de reflexão: resposta vazia de conteúdo é apontada',
     executar: () => reviewExplanation({
       subject: `Reflexão sobre o miniprojeto ${cartao.title}`,
