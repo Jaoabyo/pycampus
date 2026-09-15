@@ -10,6 +10,8 @@ import { appendAttempt } from './history.js';
 import CodeEditor from './CodeEditor.jsx';
 import { ErrorHelp, OutputCompare } from './RunFeedback.jsx';
 import './targeted.css';
+import './lesson.css';
+import './practice.css';
 
 const dayLabel = value => { const date = new Date(value?.length === 10 ? `${value}T12:00:00` : value); return Number.isNaN(date.valueOf()) ? '' : date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }); };
 

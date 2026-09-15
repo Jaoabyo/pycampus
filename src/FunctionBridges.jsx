@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon } from './ui.jsx';
+import { Icon, irAoTopo } from './ui.jsx';
 import { functionBridges } from './function-bridges.js';
 import { lessons } from './curriculum.js';
 import { usePython } from './useTrackedPython.js';
@@ -14,6 +14,8 @@ import { requisitosFaltando } from './requisitos.js';
 import ParsonsPuzzle from './ParsonsPuzzle.jsx';
 import Mentor from './Mentor.jsx';
 import './bridges.css';
+import './lesson.css';
+import './practice.css';
 
 // A ponte entre "função sem parâmetro" e "função que recebe, compara e devolve": oito passos
 // pequenos, cada um com uma novidade só. Concluir exige rodar o código e acertar a pergunta,
@@ -123,11 +125,12 @@ function Bridge({ bridge, state, update, back, proxima, irPara }) {
 
 export default function FunctionBridges({ state, update, openLesson }) {
   const [selected, setSelected] = useState(null);
+  const abrir = bridge => { setSelected(bridge); irAoTopo(); };
   const lesson = lessons.find(l => l.id === 'funcoes');
   const unlocked = state.completed.includes('funcoes');
   const done = bridgesDone(state);
   if (selected) return <Bridge key={selected.id} bridge={selected} state={state} update={update} back={() => setSelected(null)}
-    proxima={functionBridges[functionBridges.findIndex(item => item.id === selected.id) + 1] || null} irPara={setSelected} />;
+    proxima={functionBridges[functionBridges.findIndex(item => item.id === selected.id) + 1] || null} irPara={abrir} />;
   return <section className="card bridges-panel">
     <div className="step-head">
       <span className="icon-tile blue"><Icon name="Footprints" size={22} /></span>
@@ -139,7 +142,7 @@ export default function FunctionBridges({ state, update, openLesson }) {
     <ol className="bridges-list">{functionBridges.map((bridge, index) => {
       const ready = bridgeDone(state, bridge.id);
       return <li key={bridge.id}>
-        <button disabled={!unlocked} onClick={() => setSelected(bridge)}>
+        <button disabled={!unlocked} onClick={() => abrir(bridge)}>
           <span className={`bridge-number ${ready ? 'done' : ''}`}>{ready ? <Icon name="Check" size={15} /> : unlocked ? String(index + 1).padStart(2, '0') : <Icon name="LockKeyhole" size={13} />}</span>
           <span className="bridge-name">{bridge.title}<small>{bridge.concept.split('. ')[0]}.</small></span>
           <Icon name="ArrowRight" size={15} />

@@ -4,6 +4,9 @@ import { fileNameFor, parseRepo } from './project-steps.js';
 
 import { readmeFields, buildReadme } from './project-documentation.js';
 import ProjectGrade from './ProjectGrade.jsx';
+import './lesson.css';
+import './practice.css';
+import './project-studio.css';
 
 export default function ProjectDelivery({ project, state, update, download, code }) {
   const [part, setPart] = useState('readme'), [index, setIndex] = useState(0), [message, setMessage] = useState('');

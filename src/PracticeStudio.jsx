@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Icon, Progress } from './ui.jsx';
+import { Icon, Progress, irAoTopo } from './ui.jsx';
 import { practiceProjects, nextReview, reviewInterval, soloIntervals, practiceSteps, practiceDone, practiceXp, predictionMatches } from './practice-content.js';
 import { lessons, modules } from './curriculum.js';
 import { practiceIsOpen, blockingSummary, moduleIndexForLesson } from './progression.js';
@@ -17,6 +17,9 @@ import CodeReview from './CodeReview.jsx';
 import { requisitosFaltando } from './requisitos.js';
 import { canReviewPractice, firstPendingPracticeStage, invalidatePracticeStage, markPracticeStagePassed, practicePosition } from './practice-flow.js';
 import './practice.css';
+import './lesson.css';
+import './grade.css';
+import './project-studio.css';
 
 const stages = [['read', '1 · Preveja', 'Eye'], ['investigate', '2 · Investigue', 'Search'], ['modify', '3 · Mude', 'Pencil'], ['create', '4 · Crie', 'Sparkles'], ['review', '5 · Confira', 'CheckCircle2']];
 const practiceStageLabels = { modify: 'Mude', create: 'Crie' };
@@ -56,7 +59,7 @@ export default function PracticeStudio({ state, update, openLesson }) {
   const trained = practiceProjects.filter(p => practiceDone(state.learning?.[p.id], p));
   const readyProjects = practiceProjects.filter(p => practiceIsOpen(state, p.id));
   const next = due[0] || readyProjects.find(p => !practiceDone(state.learning?.[p.id], p)) || readyProjects[0];
-  const select = project => { if (project && practiceIsOpen(state, project.id)) setSelected(project); };
+  const select = project => { if (project && practiceIsOpen(state, project.id)) { setSelected(project); irAoTopo(); } };
   // O próximo miniprojeto é o seguinte na ordem do currículo que já esteja liberado.
   const proximoDe = atual => {
     const depois = practiceProjects.slice(practiceProjects.findIndex(item => item.id === atual.id) + 1);
@@ -132,7 +135,7 @@ function Practice({ project: p, state, update, back, openLesson, proximo, irPara
   const expected = reading ? p.output : stage === 'modify' ? p.modified : p.expected;
   const python = usePython({ source: 'playground', title: `Oficina: ${p.title} · ${stage}`, expected, onRecord: attempt => update(s => appendAttempt(s, attempt)) });
   const [saidaOk, setSaidaOk] = useState(false), [faltando, setFaltando] = useState([]), [aprovacao, setAprovacao] = useState(null), [editedStage, setEditedStage] = useState(null);
-  const changeStage = value => { if (value === 'review' && !canReviewPractice(item)) return; save({ position: value }); setSaidaOk(false); setFaltando([]); setStage(value); setFeedback(''); setHint(false); setMismatch(null); setPredicted(''); setPuzzle(false); python.reset(); };
+  const changeStage = value => { if (value === 'review' && !canReviewPractice(item)) return; irAoTopo(); save({ position: value }); setSaidaOk(false); setFaltando([]); setStage(value); setFeedback(''); setHint(false); setMismatch(null); setPredicted(''); setPuzzle(false); python.reset(); };
   const goToStage = value => changeStage(value === 'review' ? pendingStage || value : value);
   const changeCode = value => { setSaidaOk(false); setFaltando([]); setAprovacao(null); if (stage === 'modify' || stage === 'create') setEditedStage(stage); save({ codes: { ...item.codes, [stage]: value }, passed: invalidatePracticeStage(item, stage) }); setFeedback(''); setMismatch(null); };
   const run = () => python.run(code, '', result => {

@@ -15,7 +15,11 @@
     "avaliar:lumi-dificil": "node scripts/avaliar-lumi-dificil.mjs",
     "avaliar:ao-vivo": "node scripts/avaliar-leitura-ao-vivo.mjs",
     "avaliar:licao": "node scripts/avaliar-licao-personalizada.mjs",
-    "avaliar:telas": "node scripts/avaliar-lumi-telas.mjs"
+    "avaliar:telas": "node scripts/avaliar-lumi-telas.mjs",
+    "test:jornada": "node scripts/jornada-de-estudo.mjs",
+    "test:estudo": "node scripts/check-study-flow.mjs",
+    "test:projetos": "node scripts/check-guided-projects.mjs",
+    "verificar": "npm test && npm run test:curriculum && npm run test:estudo && npm run test:projetos && npm run test:jornada"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

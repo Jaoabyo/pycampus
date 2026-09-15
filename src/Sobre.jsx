@@ -3,6 +3,7 @@ import { lessons, projects } from './curriculum.js';
 import { practiceProjects } from './practice-content.js';
 import { PYTHON_VERSAO, SQLITE_VERSAO, mudancas } from './sobre.js';
 import './sobre.css';
+import './lesson.css';
 
 // Página pedida pelo mediador da disciplina: quem chega pelo link precisa saber o que isto é,
 // em que versão do Python roda, o que o ambiente não faz, e por onde reclamar quando algo

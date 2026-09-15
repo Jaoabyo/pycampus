@@ -1,7 +1,7 @@
 import { lessons, projects } from './curriculum.js';
 import { normalizeHistory } from './history.js';
 import { normalizeLearning, practiceProjects, practiceDone, practiceAttemptDone, practiceAchievement, practiceXp } from './practice-content.js';
-import { normalizeProjectWork } from './project-steps.js';
+import { normalizeProjectWork, stepsFor } from './project-steps.js';
 import { normalizeMastery, patterns } from './diagnosis.js';
 import { normalizeBridges } from './function-bridges.js';
 import { normalizeProvas } from './exam.js';
@@ -69,7 +69,8 @@ export function normalizeState(input) {
     };
   }
   for (const [date, entries] of Object.entries(input.activities || {})) {
-    if (validDate(date) && date <= localDate() && Array.isArray(entries)) base.activities[date] = [...new Set(entries.filter(id => typeof id === 'string' && (ids.has(id) || id === 'prova' || id.startsWith('session:') || patterns.some(p => `lumi:${p.id}` === id) || projects.some(p => `project:${p.id}` === id) || practiceProjects.some(p => `practice:${p.id}` === id))))].slice(0, 200);
+    if (validDate(date) && date <= localDate() && Array.isArray(entries)) base.activities[date] = [...new Set(entries.filter(id => typeof id === 'string' && (ids.has(id) || id === 'prova' || id.startsWith('session:') || patterns.some(p => `lumi:${p.id}` === id) || projects.some(p => `project:${p.id}` === id) || practiceProjects.some(p => `practice:${p.id}` === id)
+      || projects.some(p => stepsFor(p.id).some(s => `passo:${p.id}:${s.id}` === id)))))].slice(0, 200);
   }
   base.sessions = (Array.isArray(input.sessions) ? input.sessions : []).filter(s => s && typeof s.id === 'string' && validDate(s.date) && typeof s.title === 'string' && validTime(s.time)).slice(0, 1000).map(s => ({ id: s.id.slice(0, 80), title: s.title.slice(0, 100), date: s.date, time: s.time, minutes: bounded(s.minutes, 30, 10, 240), done: Boolean(s.done) }));
   for (const l of lessons) if (typeof input.codes?.[l.id] === 'string') base.codes[l.id] = input.codes[l.id].slice(0, 50000);

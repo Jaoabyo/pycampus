@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Icon, Progress } from './ui.jsx';
+import { Icon, Progress, irAoTopo } from './ui.jsx';
 import { acertou, montarProva, podeFazerProva, resultadoDaProva, MINIMO_DE_AULAS, QUESTOES_PADRAO, SEGUNDOS_POR_QUESTAO } from './exam.js';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
 import { localDate } from './progress.js';
 import CodeEditor from './CodeEditor.jsx';
 import './prova.css';
+import './lesson.css';
 
 const relogio = segundos => `${String(Math.floor(segundos / 60)).padStart(2, '0')}:${String(segundos % 60).padStart(2, '0')}`;
 
@@ -121,9 +122,9 @@ export default function Prova({ state, update, openLesson }) {
         filename="prova.py" runLabel="Testar minha resposta" emptyOutput="Escreva do zero e teste." />
       {aviso && <p className={respostas[questao.id] ? 'success-text' : 'muted'} role="status">{aviso}</p>}
       <div className="button-row">
-        <button className="button outline" disabled={indice === 0 || python.busy} onClick={() => { setIndice(indice - 1); setAviso(''); python.reset(); }}>← Anterior</button>
+        <button className="button outline" disabled={indice === 0 || python.busy} onClick={() => { setIndice(indice - 1); setAviso(''); python.reset(); irAoTopo(); }}>← Anterior</button>
         {indice < questoes.length - 1
-          ? <button className="button primary" disabled={python.busy} onClick={() => { setIndice(indice + 1); setAviso(''); python.reset(); }}>Próxima →</button>
+          ? <button className="button primary" disabled={python.busy} onClick={() => { setIndice(indice + 1); setAviso(''); python.reset(); irAoTopo(); }}>Próxima →</button>
           : <button className="button primary" disabled={python.busy} onClick={encerrar}>Encerrar e ver o resultado</button>}
         {indice < questoes.length - 1 && <button className="text-button" disabled={python.busy} onClick={encerrar}>Encerrar agora</button>}
       </div>

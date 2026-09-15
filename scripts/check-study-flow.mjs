@@ -36,13 +36,20 @@ try {
   const p = practiceProjects.find(item => item.id === 'etiqueta');
   await page.locator('.practice-card').filter({ hasText: p.title }).getByRole('button', { name: 'Abrir miniprojeto' }).click();
   const tabs = page.locator('.practice-stage-tabs');
-  assert.equal(await tabs.getByRole('button', { name: /Confira/ }).isDisabled(), true);
+  // A aba da conferência deixou de ser um botão cinza sem explicação: agora ela é clicável,
+  // diz o que falta e leva o estudante até a etapa pendente, em vez de só recusar o clique.
+  const conferir = tabs.getByRole('button', { name: /Confira/ });
+  assert.equal(await conferir.isDisabled(), false, 'a aba voltou a ser um botão morto');
+  assert.match(await conferir.getAttribute('title'), /Falta executar/);
+  await conferir.click();
+  assert.match(await page.locator('.practice-stage-tabs button[aria-pressed=true]').innerText(), /Mude/, 'clicar na conferência pendente devia levar à etapa que falta');
+  await tabs.getByRole('button', { name: /^1 · Preveja$/ }).click();
   assert.equal(await page.locator('.practice-quiz').count(), 0);
   assert.ok(await page.evaluate(() => document.querySelector('.practice-reading').getBoundingClientRect().top < document.querySelector('.practice-field').getBoundingClientRect().top));
   await page.getByPlaceholder('Acho que vai mostrar…').fill('312');
   await page.getByRole('button', { name: 'Executar o exemplo', exact: true }).click();
   await page.locator('.prediction-compare.is-diferente').waitFor({ timeout: 90000 });
-  await tabs.getByRole('button', { name: /Mude/ }).click();
+  await tabs.getByRole('button', { name: /^3 · Mude$/ }).click();
   const editor = page.getByRole('textbox', { name: 'Editor de código Python', exact: true });
   await editor.fill(p.example.replace('12', '15'));
   await page.getByRole('button', { name: 'Executar meu código', exact: true }).click();
@@ -55,7 +62,7 @@ try {
   await editor.fill(p.example.replace('12', '15'));
   await page.getByRole('button', { name: 'Executar meu código', exact: true }).click();
   await page.locator('.run-check').waitFor();
-  await tabs.getByRole('button', { name: /Crie/ }).click();
+  await tabs.getByRole('button', { name: /^4 · Crie$/ }).click();
   await editor.fill('print(30)');
   await page.getByRole('button', { name: 'Executar meu código', exact: true }).click();
   await page.locator('.code-review.is-pending').waitFor();
@@ -72,14 +79,14 @@ try {
   await page.locator('.celebration-dialog').waitFor();
   await page.locator('.celebration-confirm').click();
   await page.waitForFunction(() => JSON.parse(localStorage.getItem('pycampus.v1')).learning.etiqueta.earned === true);
-  await tabs.getByRole('button', { name: /Crie/ }).click();
+  await tabs.getByRole('button', { name: /^4 · Crie$/ }).click();
   await editor.fill('print("revisando")');
   assert.ok(await page.evaluate(() => JSON.parse(localStorage.getItem('pycampus.v1')).learning.etiqueta.earned));
   await page.reload();
   await page.getByRole('button', { name: 'Abrir menu', exact: true }).click();
   await page.locator('.sidebar nav button').filter({ hasText: 'Oficina de prática' }).click();
   await page.locator('.practice-card').filter({ hasText: p.title }).getByRole('button', { name: 'Continuar', exact: true }).click();
-  assert.equal(await tabs.getByRole('button', { name: /Crie/ }).getAttribute('aria-current'), 'step');
+  assert.equal(await tabs.getByRole('button', { name: /^4 · Crie$/ }).getAttribute('aria-current'), 'step');
   assert.equal(await editor.inputValue(), 'print("revisando")');
   await page.evaluate(() => scrollTo(0, 0));
   await page.screenshot({ path: 'artifacts/study/practice-editor-mobile.png', fullPage: true, animations: 'disabled' });

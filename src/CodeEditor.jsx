@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Icon } from './ui.jsx';
 import LeituraAoVivo from './LeituraAoVivo.jsx';
+import './project-studio.css';
 
 
 // Editor único da plataforma: aula, laboratório e oficina compartilham a mesma aparência de IDE.

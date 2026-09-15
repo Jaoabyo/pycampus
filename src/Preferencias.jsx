@@ -6,6 +6,7 @@ import { estadoNotificacao, pedirNotificacao, podeNotificar, temLembretePeriodic
 import { baixarDaNuvem, conectado, conferirToken, definirGist, definirToken, salvarNaNuvem } from './nuvem.js';
 import { montarRelatorio, relatorioVencido, DIAS_ENTRE_RELATORIOS } from './relatorio.js';
 import './preferencias.css';
+import './custom-lesson.css';
 
 const seguro = typeof location !== 'undefined' && location.protocol === 'https:';
 

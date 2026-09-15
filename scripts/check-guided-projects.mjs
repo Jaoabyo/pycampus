@@ -3,7 +3,9 @@ import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { projectSteps } from '../src/project-steps.js';
 import { calculatorGuide } from '../tests/calculator-reference.js';
-import { projects } from '../src/curriculum.js';
+import { projects, lessons } from '../src/curriculum.js';
+import { practiceProjects } from '../src/practice-content.js';
+import { functionBridges } from '../src/function-bridges.js';
 import { initialState } from '../src/progress.js';
 const browser = await chromium.launch({ channel: 'msedge', headless: true });
 try {
@@ -39,13 +41,31 @@ try {
   assert.deepEqual(results.filter(r => !r.ok), []);
   console.log('7 soluções de referência executaram; nenhuma é fornecida pelo estúdio.');
   const legacy = '# Meu código anterior\nrenda = 3000.0';
-  await page.evaluate(state => localStorage.setItem('pycampus.v1', JSON.stringify(state)), { ...initialState(), completed: ['ola','variaveis','tipos','operadores','strings','entrada'], projectCodes: { calculadora: legacy } });
-  await page.reload();
-  await page.locator('.sidebar nav button').filter({ hasText: 'Projetos' }).click();
-  assert.equal(await page.getByRole('button', { name: 'Construir passo a passo' }).count(), 8);
+  // Só a primeira etapa estava liberada, então a partir do segundo projeto o botão vinha
+  // desabilitado e a checagem travava sem nunca ter rodado até o fim. Uma etapa abre quando o
+  // projeto da anterior está construído E conferido, então cada volta do laço libera todos os
+  // outros projetos e deixa em branco justamente o que vai ser medido.
+  const semear = async atual => {
+    await page.evaluate(state => localStorage.setItem('pycampus.v1', JSON.stringify(state)), {
+      ...initialState(),
+      completed: lessons.map(l => l.id),
+      learning: Object.fromEntries(practiceProjects.map(p => [p.id, { answered: p.investigate.answer, passed: ['modify', 'create'] }])),
+      functionBridges: Object.fromEntries(functionBridges.map(b => [b.id, { passed: true, answered: b.answer, quizCorrect: true }])),
+      projectChecks: Object.fromEntries(projects.map(p => [p.id, p.requirements.map((_, index) => index)])),
+      projectStepsDone: Object.fromEntries(projects.filter(p => p.id !== atual).map(p => [p.id, projectSteps[p.id].map(s => s.id)])),
+      projectReadmes: readmes,
+      projectCodes: { calculadora: legacy }
+    });
+    await page.reload();
+    await page.locator('.sidebar nav button').filter({ hasText: 'Projetos' }).click();
+  };
+  const readmes = {};
+  await semear('calculadora');
+  assert.equal(await page.locator('.project-card').count(), 8);
   for (let index = 0; index < projects.length; index++) {
     const p = projects[index];
-    await page.getByRole('button', { name: 'Construir passo a passo' }).nth(index).click();
+    await semear(p.id);
+    await page.locator('.project-card').filter({ hasText: p.title }).getByRole('button', { name: 'Construir passo a passo' }).click();
     assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), p.title);
     assert.equal(await page.locator('.studio-steps button').count(), projectSteps[p.id].length);
     assert.equal(await page.getByRole('button', { name: 'Usar este exemplo no editor' }).count(), 0);
@@ -56,9 +76,12 @@ try {
     assert.ok(!(await page.locator('.studio-work').innerText()).includes('Pista 2:'));
     await page.getByRole('button', { name: 'Preciso de mais uma pista' }).click();
     await page.getByRole('textbox', { name: 'Minha explicação do passo' }).fill(`Explicação escrita por mim para ${p.id}.`);
+    // Construir e entregar viraram duas fases; o README mora na segunda.
+    await page.getByRole('button', { name: /2 · Entregar/ }).click();
     await page.getByRole('textbox', { name: 'Texto do README' }).fill(`Descrição própria do projeto ${p.id}.`);
     await page.getByRole('button', { name: 'Próxima pergunta →', exact: true }).click();
     await page.getByRole('textbox', { name: 'Texto do README' }).fill(`Como usar ${p.id}.`);
+    readmes[p.id] = { purpose: `Descrição própria do projeto ${p.id}.`, usage: `Como usar ${p.id}.` };
     await page.getByRole('button', { name: '2 · Baixar e testar' }).click();
     const downloaded = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Baixar README.md', exact: true }).click();
@@ -70,14 +93,17 @@ try {
     await page.getByRole('button', { name: '3 · Publicar no GitHub' }).click();
     assert.ok((await page.locator('.studio-publish').innerText()).includes('Upload files'));
     if (p.id === 'api') {
-      await page.locator('.studio-steps button').nth(3).click();
+      await page.getByRole('button', { name: /1 · Construir/ }).click();
+      // O índice fixo apontava para outro passo desde que a API ganhou degraus novos.
+      await page.locator('.studio-steps button').nth(projectSteps.api.findIndex(s => s.mode === 'local')).click();
       assert.equal(await page.getByRole('button', { name: 'Este passo é conferido fora do executor' }).isDisabled(), true);
       await page.getByText('Como passar do código para um servidor local', { exact: true }).click();
       assert.ok((await page.locator('.guided-example').innerText()).includes('uvicorn api:app'));
     }
     await page.getByRole('button', { name: 'Voltar para os projetos' }).click();
   }
-  await page.getByRole('button', { name: 'Construir passo a passo' }).first().click();
+  await semear('calculadora');
+  await page.locator('.project-card').filter({ hasText: projects[0].title }).getByRole('button', { name: 'Construir passo a passo' }).click();
   await page.getByRole('button', { name: /Faça uma pergunta/ }).click();
   await page.getByRole('textbox', { name: 'Editor de código Python' }).fill('texto = input("Quanto é sua despesa? ")\nprint(texto)');
   await page.getByRole('button', { name: 'Testar o que escrevi' }).click();

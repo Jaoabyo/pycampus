@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Icon } from './ui.jsx';
 import { historyStatuses, historyReport, reviewQuestions, HISTORY_LIMIT } from './history.js';
 import { normalizeLumiNotes, LUMI_NOTES_LIMIT } from './lumi-notes.js';
+import './lesson.css';
 export default function HistoryView({ state, update, download }) {
   const [filter, setFilter] = useState('all');
   const items = state.history || [];

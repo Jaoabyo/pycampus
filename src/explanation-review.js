@@ -32,7 +32,8 @@ export function explanationPrompt({ subject, reference, explanation }) {
     'Não invente cobrança para preencher espaço, e não peça detalhe que o assunto não exige. Explicação de iniciante não precisa citar tudo que existe sobre o tema.',
     'Nunca cobre de novo algo que ele já disse com outras palavras.',
     'Termine com UMA pergunta curta que o faça pensar no ponto mais fraco.',
-    'Responda APENAS um JSON: {"suficiente":true,"acertou":["até duas frases"],"faltou":[],"pergunta":"uma pergunta"}'
+    'Em "acertou" escreva no máximo duas frases, sobre a explicação dele. Nunca devolva o texto de exemplo abaixo.',
+    'Responda APENAS um JSON neste formato: {"suficiente":true,"acertou":["<frase sua>"],"faltou":["<frase sua>"],"pergunta":"<sua pergunta>"}'
   ].join('\n');
   const user = [
     `Assunto: ${subject}`,
@@ -42,7 +43,13 @@ export function explanationPrompt({ subject, reference, explanation }) {
   return { system, user };
 }
 
-const list = value => (Array.isArray(value) ? value : []).slice(0, 2).map(item => String(item).trim().slice(0, 240)).filter(Boolean);
+// O modelo copiava o espaço reservado do formato e a tela imprimia "até duas frases" como se
+// fosse elogio — reproduzido 3 de 3 vezes com uma explicação real do estudante. O molde é
+// conhecido aqui, então o eco dele é descartado antes de chegar à tela.
+const MOLDE = ['até duas frases', 'uma pergunta', 'uma pergunta curta', 'frase sua', 'sua pergunta', '...', '…'];
+const ecoDoMolde = texto => MOLDE.includes(texto.toLowerCase().replace(/^[<"']|[>"']$/g, '').trim());
+const list = value => (Array.isArray(value) ? value : []).slice(0, 2)
+  .map(item => String(item).trim().slice(0, 240)).filter(item => item && !ecoDoMolde(item));
 
 export function parseExplanationReview(raw) {
   const match = typeof raw === 'string' ? raw.match(/\{[\s\S]*\}/) : null;
@@ -51,7 +58,8 @@ export function parseExplanationReview(raw) {
   const faltou = list(data.faltou);
   // Coerência decidida aqui, não no modelo: dizer que está suficiente e listar faltas ao mesmo
   // tempo é a contradição que fazia o alvo se mover a cada leitura.
-  const review = { suficiente: data.suficiente === true && !faltou.length, acertou: list(data.acertou), faltou, pergunta: String(data.pergunta || '').trim().slice(0, 240) };
+  const pergunta = String(data.pergunta || '').trim().slice(0, 240);
+  const review = { suficiente: data.suficiente === true && !faltou.length, acertou: list(data.acertou), faltou, pergunta: ecoDoMolde(pergunta) ? '' : pergunta };
   if (!review.acertou.length && !review.faltou.length) throw new Error('A leitura voltou vazia. Tente pedir de novo.');
   return review;
 }

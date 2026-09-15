@@ -28,3 +28,22 @@ test('the prompt tells the model to comment, never to grade or to write the answ
   assert.ok(system.includes('Não escreva a explicação pronta no lugar dele'));
   assert.ok(user.includes('nome = "Ana"') && user.includes('mostra o nome'));
 });
+
+// Medido 3 de 3 vezes com uma explicação real do estudante: o modelo copiava o espaço
+// reservado do formato e a tela imprimia "até duas frases" sob "Você acertou", como elogio.
+test('o eco do formato não vira comentário na tela', () => {
+  const soMolde = JSON.stringify({ suficiente: true, acertou: ['até duas frases'], faltou: [], pergunta: 'uma pergunta' });
+  assert.throws(() => parseExplanationReview(soMolde), /voltou vazia/);
+
+  const misturado = JSON.stringify({ suficiente: false, acertou: ['<frase sua>', 'Você viu que o print só mostra.'], faltou: ['...'], pergunta: 'O que muda sem o print?' });
+  const review = parseExplanationReview(misturado);
+  assert.deepEqual(review.acertou, ['Você viu que o print só mostra.']);
+  assert.deepEqual(review.faltou, []);
+  assert.equal(review.pergunta, 'O que muda sem o print?');
+});
+
+test('o formato pedido ao modelo não oferece mais um texto copiável', () => {
+  const { system } = explanationPrompt({ subject: 'x', reference: 'print(1)', explanation: 'porque sim' });
+  assert.doesNotMatch(system, /até duas frases"\]/, 'o espaço reservado voltou para dentro do JSON de exemplo');
+  assert.match(system, /<frase sua>/);
+});

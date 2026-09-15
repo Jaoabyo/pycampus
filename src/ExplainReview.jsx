@@ -8,6 +8,8 @@ import './explain.css';
 // Leitura da explicação escrita. Comenta e pergunta; nunca marca etapa como concluída nem
 // concede XP — o que libera progresso continua sendo prova respondida e código executado.
 export default function ExplainReview({ subject, reference, explanation, enunciado = '' }) {
+  // A leitura ficava na tela depois de o estudante mudar ou apagar o texto: a captura dele
+  // mostrava "Sua explicação está completa" com o campo vazio. Guardo o texto que foi lido.
   const [review, setReview] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -22,7 +24,7 @@ export default function ExplainReview({ subject, reference, explanation, enuncia
     try {
       const availability = await mentorAvailable(controller.signal);
       if (!availability.ok) throw new Error('A IA local está desligada. Abra o aplicativo Ollama para eu ler sua explicação.');
-      setReview(await reviewExplanation({ subject, reference, explanation: written, enunciado, signal: controller.signal }));
+      setReview({ ...await reviewExplanation({ subject, reference, explanation: written, enunciado, signal: controller.signal }), lidoDe: written });
     } catch (failure) {
       if (!controller.signal.aborted) setError(failure.message);
     } finally {
@@ -32,11 +34,11 @@ export default function ExplainReview({ subject, reference, explanation, enuncia
 
   return <div className="explain-review">
     <button className="text-button" disabled={busy || !written} onClick={ask}>
-      <Icon name="Sparkles" size={15} /> {busy ? 'O Lumi está lendo…' : review ? 'Pedir outra leitura' : 'Pedir ao Lumi para ler minha explicação'}
+      <Icon name="Sparkles" size={15} /> {busy ? 'O Lumi está lendo…' : review?.lidoDe === written ? 'Pedir outra leitura' : 'Pedir ao Lumi para ler minha explicação'}
     </button>
     {!written && <span className="explain-hint">Escreva sua explicação para o Lumi poder lê-la.</span>}
     {error && <p className="explain-error" role="alert"><Icon name="TriangleAlert" size={14} /> <span>{error}</span></p>}
-    {review && <div className="explain-card">
+    {review?.lidoDe === written && <div className="explain-card">
       <div className="explain-head"><LumiArt size={26} /><span>{review.suficiente ? 'Sua explicação está completa' : 'O que eu vi na sua explicação'}</span></div>
       {review.acertou.length > 0 && <div className="explain-block is-good">
         <h5><Icon name="CheckCircle2" size={14} /> Você acertou</h5>

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Icon } from './ui.jsx';
+import { Icon, irAoTopo } from './ui.jsx';
 import { lessons } from './curriculum.js';
 import { stepsFor, fileNameFor } from './project-steps.js';
 import { pendingStageWork } from './progression.js';
+import { localDate } from './progress.js';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
 import { appendLumiNote } from './lumi-notes.js';
@@ -14,6 +15,8 @@ import ProjectDelivery from './ProjectDelivery.jsx';
 import Mentor from './Mentor.jsx';
 import ExplainReview from './ExplainReview.jsx';
 import './project-studio.css';
+import './lesson.css';
+import './practice.css';
 
 // Um projeto não pertence a uma aula, e sim a uma etapa inteira: o Lumi pode se apoiar em
 // tudo que foi ensinado até o fim do módulo dele.
@@ -42,7 +45,7 @@ export default function ProjectStudio({ project, state, update, back, openLesson
   const python = usePython({ source: 'playground', title: `Projeto: ${project.title} · ${step.title}`, expected: exact ? step.expected : undefined, onRecord: attempt => update(s => appendAttempt(s, attempt)) });
   const setCode = value => { update(s => ({ ...s, projectCodes: { ...s.projectCodes, [project.id]: value } })); setFeedback(''); setMismatch(null); setCheckedRun(false); setManualCheck(false); };
   const saveNote = answer => update(s => ({ ...s, projectNotes: { ...s.projectNotes, [project.id]: { ...s.projectNotes?.[project.id], [step.id]: { answer } } } }));
-  const go = index => { setCurrent(index); setHints(0); setStdin(interativo ? '' : respostasDoPasso(steps[index])); setFeedback(''); setMismatch(null); setCheckedRun(false); setManualCheck(false); python.reset(); update(s => ({ ...s, projectPositions: { ...s.projectPositions, [project.id]: steps[index].id } })); };
+  const go = index => { irAoTopo(); setCurrent(index); setHints(0); setStdin(interativo ? '' : respostasDoPasso(steps[index])); setFeedback(''); setMismatch(null); setCheckedRun(false); setManualCheck(false); python.reset(); update(s => ({ ...s, projectPositions: { ...s.projectPositions, [project.id]: steps[index].id } })); };
   const run = () => { setFeedback(''); setCheckedRun(false); setMismatch(null); python.run(code, stdin, result => {
     const match = result.ok && (!exact || result.output.trim() === step.expected.trim());
     setCheckedRun(match);
@@ -52,9 +55,22 @@ export default function ProjectStudio({ project, state, update, back, openLesson
     if (match) setCelebrate(n => n + 1);
     setSaidaOk(match && inBrowser);
   }); };
+  // O botão ficava desabilitado por três motivos diferentes e nenhum aparecia na tela: o
+  // estudante clicava e nada acontecia. A mesma lista que trava o registro agora é mostrada.
+  const conferencia = [
+    inBrowser && { id: 'run', feito: checkedRun, texto: exact ? 'Executar e conferir a saída deste caso' : 'Executar o que você escreveu' },
+    { id: 'nota', feito: Boolean(note.trim()), texto: 'Escrever sua explicação no campo acima' },
+    { id: 'check', feito: manualCheck, texto: 'Marcar que fez a conferência indicada' }
+  ].filter(Boolean);
+  const pendencias = conferencia.filter(item => !item.feito);
   const register = () => {
-    if (!note.trim() || !manualCheck || inBrowser && !checkedRun || python.busy) return;
-    update(s => ({ ...s, projectStepsDone: { ...s.projectStepsDone, [project.id]: [...new Set([...(s.projectStepsDone?.[project.id] || []), step.id])] } }));
+    if (pendencias.length || python.busy) return;
+    // Registrar um passo é estudo do dia: sem isto, um dia inteiro de projeto não aparecia
+    // na sequência, no calendário nem na meta diária.
+    const hoje = localDate();
+    update(s => ({ ...s,
+      projectStepsDone: { ...s.projectStepsDone, [project.id]: [...new Set([...(s.projectStepsDone?.[project.id] || []), step.id])] },
+      activities: { ...s.activities, [hoje]: [...new Set([...(s.activities?.[hoje] || []), `passo:${project.id}:${step.id}`])] } }));
     setFeedback('Passo registrado com sua explicação e sua conferência. Você pode revisar quando quiser.');
   };
   return <><button className="text-button back" disabled={python.busy} onClick={back}><Icon name="ArrowLeft" size={16} /> Voltar para os projetos</button><div className="page-heading"><div><div className="eyebrow">CONSTRUA COM ORIENTAÇÃO</div><h1>{project.title}</h1><p>{done.length} de {steps.length} passos registrados · seu código e suas respostas ficam salvos</p></div></div>
@@ -76,7 +92,7 @@ export default function ProjectStudio({ project, state, update, back, openLesson
       <CodeEditor aoVivo={{ lessonId: lastLessonOfModule(project.module), challenge: step.instruction }} code={code} onChange={setCode} stdin={stdin} setStdin={setStdin} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} filename={file} runDisabled={!inBrowser} runLabel={inBrowser ? 'Testar o que escrevi' : 'Este passo é conferido fora do executor'} emptyOutput="Seu resultado aparece aqui depois de executar." />
       {feedback && <p role="status" className="practice-feedback">{feedback}</p>}{python.success === false && <ErrorHelp output={python.output} code={code} />}{saidaOk && <CodeReview lesson={{ id: step.id, title: step.title, objective: step.why || step.instruction, challenge: step.instruction }} codigo={code} saida={python.output} faltando={[]} aprovacao={aprovacao} onAprovacao={setAprovacao} />}{mismatch !== null && <OutputCompare actual={mismatch} expected={step.expected} />}
       {<Mentor activityId={`project:${project.id}:${step.id}`} lumiNotes={state.lumiNotes} onSaveNote={note => update(s => appendLumiNote(s, note))} attempts={fails} history={state.history} title={`${project.title} · ${step.title}`} challenge={step.instruction} expected={step.expected} code={code} output={python.output} lessonId={lastLessonOfModule(project.module)} />}
-      <section className="coach-check"><h3>Vamos conferir juntos</h3><p>{step.check}</p><label className="practice-field">{step.question}<textarea aria-label="Minha explicação do passo" maxLength={2000} value={note} onChange={e => saveNote(e.target.value)} placeholder="Eu pensei assim…" /></label><ExplainReview subject={`${step.title} — ${step.question}`} reference={code} enunciado={step.question} explanation={note} /><label className="coach-confirm"><input type="checkbox" checked={manualCheck} onChange={e => setManualCheck(e.target.checked)} /> Fiz a conferência indicada e registrei o que entendi.</label><p className="small">Sua explicação fica guardada para avaliação posterior. A plataforma não julga automaticamente se o texto demonstra domínio.</p><button className="button primary" disabled={python.busy || !note.trim() || !manualCheck || inBrowser && !checkedRun} onClick={register}>Registrar este passo</button></section>
+      <section className="coach-check"><h3>Vamos conferir juntos</h3><p>{step.check}</p><label className="practice-field">{step.question}<textarea aria-label="Minha explicação do passo" maxLength={2000} value={note} onChange={e => saveNote(e.target.value)} placeholder="Eu pensei assim…" /></label><ExplainReview subject={`${step.title} — ${step.question}`} reference={code} enunciado={step.question} explanation={note} /><label className="coach-confirm"><input type="checkbox" checked={manualCheck} onChange={e => setManualCheck(e.target.checked)} /> Fiz a conferência indicada e registrei o que entendi.</label><p className="small">Sua explicação fica guardada para avaliação posterior. A plataforma não julga automaticamente se o texto demonstra domínio.</p><RegisterGate id={`portao-${step.id}`} conferencia={conferencia} /><button className="button primary" aria-describedby={`portao-${step.id}`} disabled={python.busy || pendencias.length > 0} onClick={register}>Registrar este passo</button></section>
       <div className="button-row"><button className="button outline" disabled={current === 0 || python.busy} onClick={() => go(current - 1)}>← Passo anterior</button>{current < steps.length - 1 ? <button className="button primary" disabled={python.busy} onClick={() => go(current + 1)}>Próximo passo →</button> : <button className="button primary" disabled={python.busy} onClick={() => setPhase('deliver')}>Ir para a entrega →</button>}</div><p className="small">As marcações registram sua prática. Os requisitos finais continuam na autoavaliação; passar por uma tela não concede pontos por si só.</p>
     </section>
     </>}
@@ -153,4 +169,20 @@ function ProjectCompletion({ project, state, update, steps, done, onBuild }) {
 
 function LocalServerGuide({ file }) {
   return <details className="guided-example"><summary>Como passar do código para um servidor local</summary><p>As funções e o SQLite podem ser treinados aqui. O navegador não abre um servidor HTTP. Escreva e baixe o arquivo; siga estes passos no computador.</p><ol className="guided-actions"><li>Crie uma pasta e salve {file} nela. Abra essa pasta no terminal.</li><li>Crie um ambiente separado: <code>python -m venv .venv</code>.</li><li>No Windows, instale os pacotes com <code>.\.venv\Scripts\python -m pip install fastapi uvicorn</code>.</li><li>O aplicativo começa com <code>from fastapi import FastAPI</code> e depois <code>app = FastAPI()</code>. Essas duas linhas importam a ferramenta e criam o aplicativo.</li><li><code>@app.get("/caminho")</code> antes de uma função liga um pedido GET à função. O return da função vira a resposta. Crie primeiro uma rota simples sua e só depois conecte as funções de hábitos.</li><li>Execute <code>.\.venv\Scripts\python -m uvicorn api:app --reload</code>. api é o arquivo api.py; app é o aplicativo que você criou.</li><li>Abra <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer">http://127.0.0.1:8000/docs</a>. Use Try it out e Execute para testar cada rota.</li><li>Para receber dados, estude Request Body; para status de erro, Handling Errors, no tutorial abaixo. Compare o código recebido, como 200 ou 404, e o corpo da resposta.</li></ol><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">Tutorial oficial com cada parte da sintaxe</a><p>Confira os pedidos manualmente e descreva o resultado. A plataforma não executa nem verifica o servidor do seu computador.</p></details>;
+}
+
+// Espelha o portão que já existe na oficina de prática (.practice-gate): a lista diz o que
+// falta, em vez de deixar um botão cinza sem explicação.
+function RegisterGate({ id, conferencia }) {
+  const faltam = conferencia.filter(item => !item.feito).length;
+  return <section id={id} className={`practice-gate ${faltam ? '' : 'is-ready'}`} aria-live="polite">
+    <div className="practice-gate-head">
+      <div><span className="eyebrow">PARA REGISTRAR ESTE PASSO</span><h4>{faltam ? `Falta ${faltam === 1 ? '1 item' : `${faltam} itens`}` : 'Tudo pronto para registrar'}</h4></div>
+      <Icon name={faltam ? 'CheckCheck' : 'CheckCircle2'} size={22} />
+    </div>
+    <ul>{conferencia.map(item => <li key={item.id} className={item.feito ? 'done' : 'pending'}>
+      <Icon name={item.feito ? 'CheckCircle2' : 'Circle'} size={18} />
+      <span><strong>{item.texto}</strong></span>
+    </li>)}</ul>
+  </section>;
 }
