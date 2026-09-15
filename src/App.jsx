@@ -184,7 +184,7 @@ const passoDaEtapa = (work, state) => {
   }
   if (work.kind === 'project') {
     const project = projects.find(item => item.id === work.id) || projects[0];
-    return { etapa: `ETAPA ${modulo.number} · PROJETO DA ETAPA`, titulo: project.title, linha: project.brief, minutos: null, xp: 250, progresso: 100, abrir: 'project' };
+    return { etapa: `ETAPA ${modulo.number} · PROJETO DA ETAPA`, titulo: project.title, linha: modulo.title, minutos: null, xp: 250, progresso: 100, abrir: 'project' };
   }
   if (work.kind === 'practice') {
     return { etapa: `ETAPA ${modulo.number} · OFICINA DE PRÁTICA`, titulo: work.label, linha: 'Treine o que a etapa ensinou antes de abrir o projeto.', minutos: null, xp: 40, progresso, abrir: 'practice' };
