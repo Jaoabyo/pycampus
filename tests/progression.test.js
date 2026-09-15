@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { lessons, modules, projects } from '../src/curriculum.js';
 import { practiceProjects } from '../src/practice-content.js';
 import { stepsFor } from '../src/project-steps.js';
 import { functionBridges } from '../src/function-bridges.js';
-import { lessonAllowed, missingSummary, blockingSummary, nextOpenLesson, pendingStageWork } from '../src/progression.js';
+import { lessonAllowed, missingSummary, blockingSummary, pendingStageWork } from '../src/progression.js';
 import { initialState } from '../src/progress.js';
 import {
   firstIncompleteModule, lessonIsOpen, moduleIndexForLesson, moduleIsOpen,
@@ -181,15 +182,28 @@ test('the blocking summary points at the earlier stage that is holding, not the 
   assert.ok(reason.includes('etapa 01'), `deveria citar a etapa 01: ${reason}`);
   assert.equal(blockingSummary(initialState(), 0), '', 'a primeira etapa não tem etapa anterior');
 });
-test('the dashboard button never points at a locked lesson', () => {
-  assert.equal(nextOpenLesson(initialState()).id, lessons[0].id);
-  const started = { ...initialState(), completed: ['ola'] };
-  assert.equal(nextOpenLesson(started).id, 'variaveis', 'segue dentro da etapa aberta');
-  // Com as aulas da etapa feitas e miniprojetos pendentes, o botão manda para a oficina, não para uma aula travada.
+// O herói e o cartão "Seu próximo passo" mostravam trabalhos diferentes: o cartão usava a
+// primeira aula não concluída e ignorava miniprojetos, pontes e projeto pendentes. Os dois
+// passaram a ler pendingStageWork, e nextOpenLesson deixou de existir.
+test('a visão geral nunca aponta para uma aula travada', () => {
+  assert.equal(pendingStageWork(initialState()).kind, 'lesson');
+  assert.equal(pendingStageWork({ ...initialState(), completed: ['ola'] }).id, 'variaveis', 'segue dentro da etapa aberta');
+  // Com as aulas da etapa feitas e miniprojetos pendentes, manda para a oficina, não para uma aula travada.
   const skipped = { ...initialState(), completed: lessons.slice(0, 6).map(l => l.id) };
   const work = pendingStageWork(skipped);
   assert.equal(work.kind, 'practice', JSON.stringify(work));
   assert.match(work.label, /miniprojeto/);
   assert.equal(pendingStageWork(initialState()).kind, 'lesson');
   assert.equal(pendingStageWork(initialState()).id, lessons[0].id);
+});
+
+// Os dois controles da visão geral precisam sair da mesma fonte: enquanto o cartão calculava o
+// próprio próximo passo, ele mandava abrir "Decisões com if" enquanto o herói mandava construir
+// o projeto da calculadora, na mesma tela.
+test('o herói e o cartão da visão geral leem a mesma fonte', () => {
+  const fonte = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(fonte, /nextOpenLesson\s*\(/, 'o cartão voltou a ter fonte própria');
+  assert.equal((fonte.match(/const proximo = pendingStageWork\(state\);/g) || []).length, 1);
+  assert.match(fonte, /<ProximoPasso work=\{proximo\}/);
+  assert.match(fonte, /onClick=\{abrirProximo\}/);
 });

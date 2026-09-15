@@ -84,13 +84,6 @@ export function blockingSummary(state, index) {
   return '';
 }
 
-// Aula a exibir como "próximo passo". Prefere uma aula aberta; se a etapa já teve todas as aulas
-// concluídas e o que falta é prática ou projeto, cai na próxima da sequência apenas para exibição.
-export function nextOpenLesson(state) {
-  const open = lessons.find(lesson => !state?.completed?.includes(lesson.id) && lessonIsOpen(state, lesson.id));
-  return open || lessons.find(lesson => !state?.completed?.includes(lesson.id)) || lessons[0];
-}
-
 // O que de fato destrava a formação agora. O botão principal usa isto, então ele nunca manda
 // o estudante para uma tela travada: se faltam miniprojetos, ele vai para a oficina.
 export function pendingStageWork(state) {
