@@ -35,7 +35,7 @@ export default function ProjectStudio({ project, state, update, back, openLesson
     return next < 0 ? steps.length - 1 : next;
   });
   const [feedback, setFeedback] = useState(''), [mismatch, setMismatch] = useState(null), [hints, setHints] = useState(0), [fails, setFails] = useState(0), [saidaOk, setSaidaOk] = useState(false), [stdin, setStdin] = useState(() => interativo ? '' : respostasDoPasso(steps[current])), [checkedRun, setCheckedRun] = useState(false), [manualCheck, setManualCheck] = useState(false), [celebrate, setCelebrate] = useState(0);
-  const [aprovacao, setAprovacao] = useState(null);
+  const [aprovacao, setAprovacao] = useState(null), [registro, setRegistro] = useState('');
   const step = steps[current], done = state.projectStepsDone?.[project.id] || [];
   const file = fileNameFor(project.id);
   const code = state.projectCodes?.[project.id] ?? `# ${project.title}\n# Escreva uma instrução de cada vez.\n`;
@@ -43,9 +43,9 @@ export default function ProjectStudio({ project, state, update, back, openLesson
   const exact = typeof step.expected === 'string';
   const inBrowser = step.mode === 'browser';
   const python = usePython({ source: 'playground', title: `Projeto: ${project.title} · ${step.title}`, expected: exact ? step.expected : undefined, onRecord: attempt => update(s => appendAttempt(s, attempt)) });
-  const setCode = value => { update(s => ({ ...s, projectCodes: { ...s.projectCodes, [project.id]: value } })); setFeedback(''); setMismatch(null); setCheckedRun(false); setManualCheck(false); };
+  const setCode = value => { update(s => ({ ...s, projectCodes: { ...s.projectCodes, [project.id]: value } })); setFeedback(''); setMismatch(null); setCheckedRun(false); setManualCheck(false); setRegistro(''); };
   const saveNote = answer => update(s => ({ ...s, projectNotes: { ...s.projectNotes, [project.id]: { ...s.projectNotes?.[project.id], [step.id]: { answer } } } }));
-  const go = index => { irAoTopo(); setCurrent(index); setHints(0); setStdin(interativo ? '' : respostasDoPasso(steps[index])); setFeedback(''); setMismatch(null); setCheckedRun(false); setManualCheck(false); python.reset(); update(s => ({ ...s, projectPositions: { ...s.projectPositions, [project.id]: steps[index].id } })); };
+  const go = index => { irAoTopo(); setRegistro(''); setCurrent(index); setHints(0); setStdin(interativo ? '' : respostasDoPasso(steps[index])); setFeedback(''); setMismatch(null); setCheckedRun(false); setManualCheck(false); python.reset(); update(s => ({ ...s, projectPositions: { ...s.projectPositions, [project.id]: steps[index].id } })); };
   const run = () => { setFeedback(''); setCheckedRun(false); setMismatch(null); python.run(code, stdin, result => {
     const match = result.ok && (!exact || result.output.trim() === step.expected.trim());
     setCheckedRun(match);
@@ -71,7 +71,14 @@ export default function ProjectStudio({ project, state, update, back, openLesson
     update(s => ({ ...s,
       projectStepsDone: { ...s.projectStepsDone, [project.id]: [...new Set([...(s.projectStepsDone?.[project.id] || []), step.id])] },
       activities: { ...s.activities, [hoje]: [...new Set([...(s.activities?.[hoje] || []), `passo:${project.id}:${step.id}`])] } }));
-    setFeedback('Passo registrado com sua explicação e sua conferência. Você pode revisar quando quiser.');
+    // A confirmação ficava lá em cima, junto do editor: a 725px do botão, fora da tela de quem
+    // acabou de clicar. Ele clicava, nada mudava à vista dele, e parecia que o botão não pegava.
+    setRegistro(current < steps.length - 1
+      ? 'Passo registrado. Pode seguir para o próximo.'
+      : 'Último passo registrado. A construção está completa.');
+    // No celular a confirmação nasce abaixo da dobra, e some do mesmo jeito que sumia antes.
+    // O tempo zero espera o React pintar; sem isso o elemento ainda não existe.
+    setTimeout(() => document.querySelector('.registro-ok')?.scrollIntoView({ block: 'center', behavior: 'instant' }), 0);
   };
   return <><button className="text-button back" disabled={python.busy} onClick={back}><Icon name="ArrowLeft" size={16} /> Voltar para os projetos</button><div className="page-heading"><div><div className="eyebrow">CONSTRUA COM ORIENTAÇÃO</div><h1>{project.title}</h1><p>{done.length} de {steps.length} passos registrados · seu código e suas respostas ficam salvos</p></div></div>
     <section className="card studio-progress"><div><div className="eyebrow">SEU ROTEIRO DE CONSTRUÇÃO</div><strong>{done.length === steps.length ? 'Construção registrada. Agora entregue seu projeto.' : `Você está no passo ${current + 1}: ${step.title}`}</strong><span>{done.length === steps.length ? 'A entrega reúne README, GitHub e a conferência final.' : `${steps.length - done.length} ${steps.length - done.length === 1 ? 'passo falta' : 'passos faltam'} para terminar a construção.`}</span></div><div className="studio-progress-track" aria-label={`${done.length} de ${steps.length} passos registrados`}><i style={{ width: `${done.length / steps.length * 100}%` }} /></div><span className="studio-progress-count">{done.length}/{steps.length}</span></section>
@@ -81,7 +88,18 @@ export default function ProjectStudio({ project, state, update, back, openLesson
       <button aria-pressed={phase === 'deliver'} className={phase === 'deliver' ? 'active' : ''} onClick={() => setPhase('deliver')}><Icon name="Rocket" size={15} /> 2 · Entregar e receber a nota</button>
     </div>
     {phase === 'build' && <>
-    <div className="studio-steps tab-row" aria-label="Passos do projeto">{steps.map((s, i) => <button key={s.id} disabled={python.busy} aria-pressed={i === current} className={i === current ? 'active' : ''} onClick={() => go(i)}>{done.includes(s.id) ? '✓ ' : ''}{i + 1} · {s.title}</button>)}</div>
+    {/* Sete botões com o título inteiro ficavam colados de ponta a ponta no computador e viravam
+        quatro linhas no celular. O título completo já está logo abaixo, no cabeçalho do passo:
+        aqui basta o número, o visto de registrado e o nome só do passo em que ele está. */}
+    <div className="studio-steps" aria-label="Passos do projeto">{steps.map((s, i) => {
+      const feito = done.includes(s.id), agora = i === current;
+      return <button key={s.id} disabled={python.busy} aria-pressed={agora} title={s.title}
+        aria-label={`Passo ${i + 1} de ${steps.length}: ${s.title}${feito ? ', registrado' : ''}`}
+        className={`studio-step${agora ? ' is-agora' : ''}${feito ? ' is-feito' : ''}`} onClick={() => go(i)}>
+        <span className="studio-step-num">{feito ? <Icon name="Check" size={13} /> : i + 1}</span>
+        {agora && <span className="studio-step-nome">{s.title}</span>}
+      </button>;
+    })}</div>
     <details className="card studio-brief"><summary>O que vamos construir e quais aulas ajudam</summary><p>{project.brief}</p><ProjectPreparation project={project} lessons={lessons} openLesson={openLesson} /></details>
     <section className="card studio-work"><div className="eyebrow">PASSO {current + 1} DE {steps.length} · {inBrowser ? 'PRÁTICA NO NAVEGADOR' : step.mode === 'plan' ? 'PLANEJAMENTO' : 'SERVIDOR NO COMPUTADOR'}</div><h2>{step.title}</h2><p className="coach-task">{step.instruction}</p><p>Faça só esta parte agora. Se já começou o projeto, continue no seu código abaixo.</p>
       {step.mode === 'local' && <LocalServerGuide file={file} />}
@@ -92,7 +110,7 @@ export default function ProjectStudio({ project, state, update, back, openLesson
       <CodeEditor aoVivo={{ lessonId: lastLessonOfModule(project.module), challenge: step.instruction }} code={code} onChange={setCode} stdin={stdin} setStdin={setStdin} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} filename={file} runDisabled={!inBrowser} runLabel={inBrowser ? 'Testar o que escrevi' : 'Este passo é conferido fora do executor'} emptyOutput="Seu resultado aparece aqui depois de executar." />
       {feedback && <p role="status" className="practice-feedback">{feedback}</p>}{python.success === false && <ErrorHelp output={python.output} code={code} />}{saidaOk && <CodeReview lesson={{ id: step.id, title: step.title, objective: step.why || step.instruction, challenge: step.instruction }} codigo={code} saida={python.output} faltando={[]} aprovacao={aprovacao} onAprovacao={setAprovacao} />}{mismatch !== null && <OutputCompare actual={mismatch} expected={step.expected} />}
       {<Mentor activityId={`project:${project.id}:${step.id}`} lumiNotes={state.lumiNotes} onSaveNote={note => update(s => appendLumiNote(s, note))} attempts={fails} history={state.history} title={`${project.title} · ${step.title}`} challenge={step.instruction} expected={step.expected} code={code} output={python.output} lessonId={lastLessonOfModule(project.module)} />}
-      <section className="coach-check"><h3>Vamos conferir juntos</h3><p>{step.check}</p><label className="practice-field">{step.question}<textarea aria-label="Minha explicação do passo" maxLength={2000} value={note} onChange={e => saveNote(e.target.value)} placeholder="Eu pensei assim…" /></label><ExplainReview subject={`${step.title} — ${step.question}`} reference={code} enunciado={step.question} explanation={note} /><label className="coach-confirm"><input type="checkbox" checked={manualCheck} onChange={e => setManualCheck(e.target.checked)} /> Fiz a conferência indicada e registrei o que entendi.</label><p className="small">Sua explicação fica guardada para avaliação posterior. A plataforma não julga automaticamente se o texto demonstra domínio.</p><RegisterGate id={`portao-${step.id}`} conferencia={conferencia} /><button className="button primary" aria-describedby={`portao-${step.id}`} disabled={python.busy || pendencias.length > 0} onClick={register}>Registrar este passo</button></section>
+      <section className="coach-check"><h3>Vamos conferir juntos</h3><p>{step.check}</p><label className="practice-field">{step.question}<textarea aria-label="Minha explicação do passo" maxLength={2000} value={note} onChange={e => saveNote(e.target.value)} placeholder="Eu pensei assim…" /></label><ExplainReview subject={`${step.title} — ${step.question}`} reference={code} enunciado={step.question} explanation={note} /><label className="coach-confirm"><input type="checkbox" checked={manualCheck} onChange={e => setManualCheck(e.target.checked)} /> Fiz a conferência indicada e registrei o que entendi.</label><p className="small">Sua explicação fica guardada para avaliação posterior. A plataforma não julga automaticamente se o texto demonstra domínio.</p><RegisterGate id={`portao-${step.id}`} conferencia={conferencia} registrado={done.includes(step.id)} /><button className="button primary" aria-describedby={`portao-${step.id}`} disabled={python.busy || pendencias.length > 0} onClick={register}>{done.includes(step.id) ? 'Registrar de novo' : 'Registrar este passo'}</button>{registro && <p className="registro-ok" role="status"><Icon name="CheckCircle2" size={16} /> <span>{registro}</span>{current < steps.length - 1 && <button className="button primary" onClick={() => go(current + 1)}>Ir para o passo {current + 2} <Icon name="ArrowRight" size={15} /></button>}</p>}</section>
       <div className="button-row"><button className="button outline" disabled={current === 0 || python.busy} onClick={() => go(current - 1)}>← Passo anterior</button>{current < steps.length - 1 ? <button className="button primary" disabled={python.busy} onClick={() => go(current + 1)}>Próximo passo →</button> : <button className="button primary" disabled={python.busy} onClick={() => setPhase('deliver')}>Ir para a entrega →</button>}</div><p className="small">As marcações registram sua prática. Os requisitos finais continuam na autoavaliação; passar por uma tela não concede pontos por si só.</p>
     </section>
     </>}
@@ -173,12 +191,13 @@ function LocalServerGuide({ file }) {
 
 // Espelha o portão que já existe na oficina de prática (.practice-gate): a lista diz o que
 // falta, em vez de deixar um botão cinza sem explicação.
-function RegisterGate({ id, conferencia }) {
+function RegisterGate({ id, conferencia, registrado }) {
   const faltam = conferencia.filter(item => !item.feito).length;
-  return <section id={id} className={`practice-gate ${faltam ? '' : 'is-ready'}`} aria-live="polite">
+  return <section id={id} className={`practice-gate ${registrado ? 'is-registrado' : faltam ? '' : 'is-ready'}`} aria-live="polite">
     <div className="practice-gate-head">
-      <div><span className="eyebrow">PARA REGISTRAR ESTE PASSO</span><h4>{faltam ? `Falta ${faltam === 1 ? '1 item' : `${faltam} itens`}` : 'Tudo pronto para registrar'}</h4></div>
-      <Icon name={faltam ? 'CheckCheck' : 'CheckCircle2'} size={22} />
+      <div><span className="eyebrow">{registrado ? 'PASSO REGISTRADO' : 'PARA REGISTRAR ESTE PASSO'}</span>
+        <h4>{registrado ? 'Este passo já conta como feito' : faltam ? `Falta ${faltam === 1 ? '1 item' : `${faltam} itens`}` : 'Tudo pronto para registrar'}</h4></div>
+      <Icon name={registrado || !faltam ? 'CheckCircle2' : 'CheckCheck'} size={22} />
     </div>
     <ul>{conferencia.map(item => <li key={item.id} className={item.feito ? 'done' : 'pending'}>
       <Icon name={item.feito ? 'CheckCircle2' : 'Circle'} size={18} />

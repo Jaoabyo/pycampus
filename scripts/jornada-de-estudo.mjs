@@ -122,6 +122,19 @@ async function textoDeMolde(page, tela) {
   for (const termo of achados) anotar(tela, `texto de molde na tela: "${termo}"`);
 }
 
+// Uma comemoração legítima abre como <dialog> modal e tapa a tela inteira: registrar um passo
+// pode fechar a sequência de três dias e soltar um emblema. O estudante fecha e segue; a
+// checagem faz o mesmo. Se ela não fechar, aí sim é defeito, e vira achado.
+async function fecharComemoracao(page, tela) {
+  const dialogo = page.locator('dialog[open]');
+  if (!await dialogo.count()) return;
+  const confirmar = dialogo.getByRole('button', { name: /Confirmar e continuar|Continuar|Fechar/ }).first();
+  if (!await confirmar.count()) { anotar(tela, 'uma janela modal abriu sem botão de fechar'); return; }
+  await confirmar.click();
+  await page.waitForTimeout(600);
+  if (await page.locator('dialog[open]').count()) anotar(tela, 'a janela modal não fechou no botão dela');
+}
+
 async function conferirTela(page, tela) {
   conferidas++;
   await botoesMudos(page, tela);
@@ -176,14 +189,48 @@ for (const [nome, width, height] of [['desktop', 1440, 1000], ['celular', 390, 8
     await conferirTela(page, `${nome}/projeto`);
     if (SAIDA) await page.screenshot({ path: `${SAIDA}/jornada-projeto-${nome}.png`, fullPage: true }).catch(() => {});
 
+    // Registrar o passo é o clique mais importante do estúdio: sem ele nada conta. A confirmação
+    // nascia 725px acima do botão, fora da tela de quem acabou de clicar, e o estudante concluiu
+    // que o botão não funcionava. A regra: a ação responde perto de onde foi feita.
+    if (await page.locator('.coach-check').count()) {
+      await page.getByRole('button', { name: 'Testar o que escrevi' }).click().catch(() => {});
+      await page.locator('.practice-gate li.done', { hasText: 'Executar' }).first().waitFor({ timeout: 90000 }).catch(() => {});
+      await page.locator('textarea[aria-label="Minha explicação do passo"]').fill('Escrevi para conferir que o registro responde na tela.');
+      await page.locator('.coach-confirm input').check().catch(() => {});
+      const registrar = page.getByRole('button', { name: /^Registrar/ });
+      if (await registrar.isEnabled().catch(() => false)) {
+        await registrar.scrollIntoViewIfNeeded();
+        await registrar.click();
+        await page.waitForTimeout(1200);
+        await fecharComemoracao(page, `${nome}/projeto`);
+        const resposta = await page.evaluate(() => {
+          const aviso = document.querySelector('.registro-ok');
+          if (!aviso) return { achou: false };
+          const caixa = aviso.getBoundingClientRect();
+          return { achou: true, naTela: caixa.top >= 0 && caixa.bottom <= innerHeight, texto: aviso.innerText.trim().slice(0, 60) };
+        });
+        if (!resposta.achou) anotar(`${nome}/projeto`, 'registrar o passo não respondeu nada na tela');
+        else if (!resposta.naTela) anotar(`${nome}/projeto`, `a confirmação "${resposta.texto}" ficou fora da tela`);
+        const guardado = await page.evaluate(() => (JSON.parse(localStorage.getItem('pycampus.v1') || '{}').projectStepsDone?.calculadora || []).length);
+        if (guardado < 3) anotar(`${nome}/projeto`, `o passo registrado não foi guardado (${guardado} passos no progresso)`);
+        await fecharComemoracao(page, `${nome}/projeto`);
+      } else {
+        anotar(`${nome}/projeto`, 'o botão de registrar não liberou mesmo com os três itens cumpridos');
+      }
+    }
+
     // 4. Trocar de passo tem de levar ao topo, não deixar no rodapé.
     await page.locator('.studio-work .button-row').first().scrollIntoViewIfNeeded();
     const proximo = page.getByRole('button', { name: /Próximo passo/ });
     if (await proximo.count()) {
+      if (await proximo.isDisabled()) {
+        anotar(`${nome}/projeto`, 'o botão "Próximo passo" ficou desabilitado depois de registrar');
+      } else {
       await proximo.click();
       await page.waitForTimeout(800);
       const depois = await page.evaluate(() => window.scrollY);
       if (depois > 4) anotar(`${nome}/projeto`, `"Próximo passo" deixou a página em ${depois}px, não no topo`);
+      }
     }
   }
 
