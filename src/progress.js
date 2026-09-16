@@ -3,7 +3,7 @@ import { normalizeHistory } from './history.js';
 import { normalizeLearning, practiceProjects, practiceDone, practiceAttemptDone, practiceAchievement, practiceXp } from './practice-content.js';
 import { normalizeProjectWork, stepsFor } from './project-steps.js';
 import { normalizeMastery, patterns } from './diagnosis.js';
-import { normalizeBridges } from './function-bridges.js';
+import { functionBridgeIds, normalizeBridges } from './function-bridges.js';
 import { normalizeProvas } from './exam.js';
 import { normalizeLumiNotes } from './lumi-notes.js';
 export const STORAGE_KEY = 'pycampus.v1';
@@ -69,8 +69,23 @@ export function normalizeState(input) {
     };
   }
   for (const [date, entries] of Object.entries(input.activities || {})) {
-    if (validDate(date) && date <= localDate() && Array.isArray(entries)) base.activities[date] = [...new Set(entries.filter(id => typeof id === 'string' && (ids.has(id) || id === 'prova' || id.startsWith('session:') || patterns.some(p => `lumi:${p.id}` === id) || projects.some(p => `project:${p.id}` === id) || practiceProjects.some(p => `practice:${p.id}` === id)
+    if (validDate(date) && date <= localDate() && Array.isArray(entries)) base.activities[date] = [...new Set(entries.filter(id => typeof id === 'string' && (ids.has(id) || id === 'prova' || id.startsWith('session:') || patterns.some(p => `lumi:${p.id}` === id) || projects.some(p => `project:${p.id}` === id) || practiceProjects.some(p => `practice:${p.id}` === id) || functionBridgeIds.some(bridgeId => `bridge:${bridgeId}` === id)
       || projects.some(p => stepsFor(p.id).some(s => `passo:${p.id}:${s.id}` === id)))))].slice(0, 200);
+  }
+  // Versões anteriores salvavam a ponte concluída, mas não a atividade diária. Recuperamos
+  // uma vez no primeiro carregamento; depois o id preservado impede qualquer contagem dupla.
+  const recordedActivities = new Set(Object.values(base.activities).flat());
+  const recoveredBridges = functionBridgeIds.filter(id => base.functionBridges[id]?.passed && base.functionBridges[id]?.quizCorrect && !recordedActivities.has(`bridge:${id}`));
+  if (recoveredBridges.length) base.activities[localDate()] = [...new Set([...(base.activities[localDate()] || []), ...recoveredBridges.map(id => `bridge:${id}`)])].slice(0, 200);
+  // Alguns passos de projeto das primeiras versões também eram salvos sem entrada no calendário.
+  // Quando há outros passos do mesmo projeto, usamos aquela data; só recorremos a hoje sem pista.
+  for (const [projectId, steps] of Object.entries(base.projectStepsDone)) {
+    const relatedDate = Object.entries(base.activities).find(([, entries]) => entries.some(id => id === `project:${projectId}` || id.startsWith(`passo:${projectId}:`)))?.[0] || localDate();
+    for (const stepId of steps) {
+      const key = `passo:${projectId}:${stepId}`;
+      if (Object.values(base.activities).some(entries => entries.includes(key))) continue;
+      base.activities[relatedDate] = [...new Set([...(base.activities[relatedDate] || []), key])].slice(0, 200);
+    }
   }
   base.sessions = (Array.isArray(input.sessions) ? input.sessions : []).filter(s => s && typeof s.id === 'string' && validDate(s.date) && typeof s.title === 'string' && validTime(s.time)).slice(0, 1000).map(s => ({ id: s.id.slice(0, 80), title: s.title.slice(0, 100), date: s.date, time: s.time, minutes: bounded(s.minutes, 30, 10, 240), done: Boolean(s.done) }));
   for (const l of lessons) if (typeof input.codes?.[l.id] === 'string') base.codes[l.id] = input.codes[l.id].slice(0, 50000);

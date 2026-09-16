@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Icon, irAoTopo } from './ui.jsx';
-import { functionBridges } from './function-bridges.js';
+import { functionBridges, recordBridgeProgress } from './function-bridges.js';
 import { lessons } from './curriculum.js';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
@@ -13,6 +13,7 @@ import { predictionMatches } from './practice-content.js';
 import { requisitosFaltando } from './requisitos.js';
 import ParsonsPuzzle from './ParsonsPuzzle.jsx';
 import Mentor from './Mentor.jsx';
+import { localDate } from './progress.js';
 import './bridges.css';
 import './lesson.css';
 import './practice.css';
@@ -30,7 +31,7 @@ function Bridge({ bridge, state, update, back, proxima, irPara }) {
   const [feedback, setFeedback] = useState(''), [mismatch, setMismatch] = useState(null), [hints, setHints] = useState(0), [fails, setFails] = useState(0), [puzzle, setPuzzle] = useState(false), [celebrate, setCelebrate] = useState(0);
   const [saidaOk, setSaidaOk] = useState(false), [faltando, setFaltando] = useState([]), [aprovacao, setAprovacao] = useState(null);
   const python = usePython({ source: 'playground', title: `Ponte de função: ${bridge.title}`, expected: bridge.expected, onRecord: attempt => update(s => appendAttempt(s, attempt)) });
-  const save = patch => update(s => ({ ...s, functionBridges: { ...s.functionBridges, [bridge.id]: { ...s.functionBridges?.[bridge.id], ...patch } } }));
+  const save = patch => update(s => recordBridgeProgress(s, bridge.id, patch, localDate()));
   // Saída certa é pré-condição, não aprovação: a resposta escrita à mão produz a mesma saída
   // sem usar a função que a ponte existe para ensinar.
   const run = () => python.run(code, bridge.stdin, result => {

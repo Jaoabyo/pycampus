@@ -123,6 +123,20 @@ export const functionBridges = bridges.map(bridge => ({
 
 export const functionBridgeIds = functionBridges.map(bridge => bridge.id);
 
+export function recordBridgeProgress(state, id, patch, date) {
+  const bridge = functionBridges.find(item => item.id === id);
+  if (!bridge) return state;
+  const previous = state.functionBridges?.[id] || {};
+  const next = { ...previous, ...patch };
+  const completedBefore = previous.passed === true && previous.quizCorrect === true;
+  const completedNow = next.passed === true && next.quizCorrect === true;
+  const key = `bridge:${id}`;
+  const activities = completedNow && !completedBefore && date
+    ? { ...state.activities, [date]: [...new Set([...(state.activities?.[date] || []), key])] }
+    : state.activities;
+  return { ...state, functionBridges: { ...state.functionBridges, [id]: next }, activities };
+}
+
 
 // Só ids conhecidos entram, e o código guardado é limitado como nos outros editores.
 export function normalizeBridges(input) {

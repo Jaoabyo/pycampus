@@ -56,6 +56,17 @@ test('um passo de projeto registrado conta como atividade do dia e sobrevive ao 
   assert.deepEqual(normalizeState({ ...estado, activities: { [dia]: ['passo:calculadora:inventado'] } }).activities[dia], []);
 });
 
+test('backup antigo recupera passo concluído na data dos outros passos do projeto', () => {
+  const [primeiro, segundo] = stepsFor('calculadora');
+  const dia = '2026-09-14';
+  const restaurado = normalizeState({ ...initialState(),
+    projectStepsDone: { calculadora: [primeiro.id, segundo.id] },
+    activities: { [dia]: [`passo:calculadora:${segundo.id}`] }
+  });
+  assert.ok(restaurado.activities[dia].includes(`passo:calculadora:${primeiro.id}`));
+  assert.equal(restaurado.activities[dia].filter(id => id.startsWith('passo:calculadora:')).length, 2);
+});
+
 // A tela mostrava 1/6 num dia de uma aula e quatro miniprojetos, porque contava só ids de aula.
 // O número é montado dentro do JSX; o que dá para travar aqui é a conta que o alimenta.
 test('a meta diária conta tudo que foi registrado no dia', () => {

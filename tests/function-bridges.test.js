@@ -2,7 +2,7 @@ import { initialState } from '../src/progress.js';
 import { moduleRequirements } from '../src/progression.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { functionBridges, functionBridgeIds } from '../src/function-bridges.js';
+import { functionBridges, functionBridgeIds, recordBridgeProgress } from '../src/function-bridges.js';
 import { functionBridgeSolutions } from './function-bridge-reference.js';
 import { lessons } from '../src/curriculum.js';
 import { coachedProjects } from '../src/project-coaching.js';
@@ -95,4 +95,25 @@ test('finishing every bridge is what lets the logic stage close', () => {
     functionBridges: Object.fromEntries(functionBridges.map(bridge => [bridge.id, { passed: true, quizCorrect: true, answered: bridge.answer, code: '' }]))
   };
   assert.equal(moduleRequirements(withBridges, 1).missingBridges.length, 0, 'com as oito pontes feitas, elas somem da lista de pendências');
+});
+
+test('uma ponte concluída conta como atividade uma única vez', () => {
+  const bridge = functionBridges[0];
+  const date = '2026-09-16';
+  const started = recordBridgeProgress(initialState(), bridge.id, { passed: true }, date);
+  assert.deepEqual(started.activities[date], undefined);
+  const finished = recordBridgeProgress(started, bridge.id, { answered: bridge.answer, quizCorrect: true }, date);
+  assert.deepEqual(finished.activities[date], [`bridge:${bridge.id}`]);
+  const repeated = recordBridgeProgress(finished, bridge.id, { quizCorrect: true }, date);
+  assert.deepEqual(repeated.activities[date], [`bridge:${bridge.id}`]);
+});
+
+test('backup antigo recupera pontes concluídas que ainda não estavam no contador', () => {
+  const bridge = functionBridges[0];
+  const restored = normalizeState({ version: 1, completed: ['funcoes'], functionBridges: {
+    [bridge.id]: { passed: true, answered: bridge.answer, quizCorrect: true }
+  }, activities: {} });
+  assert.ok(Object.values(restored.activities).flat().includes(`bridge:${bridge.id}`));
+  const roundTrip = normalizeState(restored);
+  assert.equal(Object.values(roundTrip.activities).flat().filter(id => id === `bridge:${bridge.id}`).length, 1);
 });
