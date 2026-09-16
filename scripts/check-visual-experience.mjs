@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';
+import { initialState, localDate } from '../src/progress.js';
 
 const base = process.env.PYCAMPUS_TEST_URL || 'http://127.0.0.1:5176/';
 mkdirSync('artifacts/visual-experience', { recursive: true });
@@ -49,8 +50,19 @@ try {
   const reduced = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
   await reduced.goto(base, { waitUntil: 'networkidle' });
   assert.equal(await reduced.locator('.python-tile').evaluate(element => getComputedStyle(element).animationName), 'none');
+
+  const targeted = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
+  const targetedState = { ...initialState(), completed: ['funcoes'] };
+  const targetedUi = { lessonMode: 'focus', courseView: 'map', lessonSteps: {}, dailyMission: {
+    date: localDate(), items: [{ key: 'practice:ponte:ponte-funcao-chamar', kind: 'practice', id: 'ponte-funcao-chamar', sub: 'ponte', label: 'Fazer as pontes de função', baseline: 0 }]
+  } };
+  await targeted.addInitScript(({ state, ui }) => { localStorage.setItem('pycampus.v1', JSON.stringify(state)); localStorage.setItem('pycampus.ui.v1', JSON.stringify(ui)); }, { state: targetedState, ui: targetedUi });
+  await targeted.goto(base, { waitUntil: 'networkidle' });
+  await targeted.locator('.daily-mission').getByRole('button', { name: 'Abrir', exact: true }).click();
+  await targeted.getByRole('heading', { name: 'Criar não é executar' }).waitFor();
+  assert.equal(await targeted.getByRole('heading', { name: /Vamos praticar/ }).count(), 0, 'a missão abriu a capa da oficina em vez da ponte indicada');
   assert.deepEqual(errors, []);
-  console.log('Visual: missão, mapa, foco, celular e movimento reduzido aprovados.');
+  console.log('Visual: missão com destino exato, mapa, foco, celular e movimento reduzido aprovados.');
 } finally {
   await browser.close();
 }

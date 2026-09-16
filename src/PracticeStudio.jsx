@@ -54,18 +54,23 @@ function PracticeArt() {
   </div>;
 }
 
-export default function PracticeStudio({ state, update, openLesson, openProject, navigate }) {
+export default function PracticeStudio({ state, update, openLesson, openProject, navigate, target }) {
   const [selected, setSelected] = useState(null), [filter, setFilter] = useState('ready');
   const due = practiceProjects.filter(p => practiceIsOpen(state, p.id) && nextReview(state.learning?.[p.id]) && nextReview(state.learning[p.id]) <= localDate());
   const trained = practiceProjects.filter(p => practiceDone(state.learning?.[p.id], p));
   const readyProjects = practiceProjects.filter(p => practiceIsOpen(state, p.id));
   const next = due[0] || readyProjects.find(p => !practiceDone(state.learning?.[p.id], p)) || readyProjects[0];
   const select = project => { if (project && practiceIsOpen(state, project.id)) { setSelected(project); irAoTopo(); } };
+  useEffect(() => {
+    if (!target || target.sub === 'ponte') return;
+    select(practiceProjects.find(project => project.id === target.id));
+  }, [target?.request]);
   // O próximo miniprojeto é o seguinte na ordem do currículo que já esteja liberado.
   const proximoDe = atual => {
     const depois = practiceProjects.slice(practiceProjects.findIndex(item => item.id === atual.id) + 1);
     return depois.find(item => practiceIsOpen(state, item.id)) || null;
   };
+  if (target?.sub === 'ponte') return <FunctionBridges state={state} update={update} openLesson={openLesson} initialBridgeId={target.id} request={target.request} />;
   if (selected && practiceIsOpen(state, selected.id)) return <Practice key={selected.id} project={selected} state={state} update={update}
     back={() => setSelected(null)} openLesson={openLesson} openProject={openProject} navigate={navigate} proximo={proximoDe(selected)} irPara={select} />;
   return <>

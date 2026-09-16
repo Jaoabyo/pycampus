@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Icon, irAoTopo } from './ui.jsx';
 import { functionBridges } from './function-bridges.js';
 import { lessons } from './curriculum.js';
@@ -131,9 +131,13 @@ function Bridge({ bridge, state, update, back, proxima, irPara }) {
     </section></>;
 }
 
-export default function FunctionBridges({ state, update, openLesson }) {
-  const [selected, setSelected] = useState(null);
+export default function FunctionBridges({ state, update, openLesson, initialBridgeId, request }) {
+  const [selected, setSelected] = useState(() => functionBridges.find(bridge => bridge.id === initialBridgeId) || null);
   const abrir = bridge => { setSelected(bridge); irAoTopo(); };
+  useEffect(() => {
+    if (!initialBridgeId) return;
+    abrir(functionBridges.find(bridge => bridge.id === initialBridgeId));
+  }, [request]);
   const lesson = lessons.find(l => l.id === 'funcoes');
   const unlocked = state.completed.includes('funcoes');
   const done = bridgesDone(state);
