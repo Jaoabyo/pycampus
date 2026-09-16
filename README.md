@@ -11,7 +11,7 @@
 
 ---
 
-Abre no celular e no computador, sem instalar nada. Dá para **adicionar à tela de início** e usar como aplicativo, inclusive sem internet depois do primeiro acesso.
+Abre no celular e no computador, sem login ou cadastro no PyCampus. Dá para **adicionar à tela de início** e usar como aplicativo, inclusive sem internet depois do primeiro acesso. Por padrão, o progresso fica no navegador; backup e nuvem privada são opcionais.
 
 O que muda no site publicado, em relação ao PyCampus aberto no seu computador:
 
@@ -63,7 +63,7 @@ Abra **http://127.0.0.1:5173**. O arquivo `iniciar-pycampus.cmd` também inicia 
 - Laboratório com Python real via Pyodide em um Web Worker, entrada padrão, saída, erros, interrupção e limite de execução.
 - Aula de condicionais ajustada ao material da faculdade, com simulador de dois ou três caminhos. Veja `REFERENCIA-FACULDADE.md`.
 - Oito propostas de projetos, com escopo, requisitos e link do repositório.
-- Estúdio do projeto para a **Calculadora de orçamento**: cinco passos de construção verificados pela saída, no editor da própria plataforma, com o código salvo por projeto. Cada passo traz apenas a instrução e a saída esperada — sem código inicial, sem dicas e sem passo a passo comentado, para verificar se o estudante escreve sozinho. Concluídos os cinco, abre um guia de publicação no GitHub com os oito comandos de Git explicados um a um, o download do `.py` e um campo de link que aceita só endereços `https://github.com/usuario/repositorio`. O botão "Conferir no GitHub" consulta a API pública e confirma que o repositório existe e está acessível; ele não lê nem avalia o código, e precisa de internet. Os outros sete projetos seguem com o roteiro de requisitos por autoavaliação.
+- Estúdio para os **oito projetos**, com 42 passos curtos de construção. Cada passo tem tarefa, dicas graduais, execução ou conferência, explicação escrita pelo estudante e registro de progresso. A entrega orienta a criação do README, o teste no computador e a publicação pelo navegador do GitHub. O estudante pode concluir pela autoavaliação ou pedir ao Lumi uma avaliação do repositório público, requisito por requisito.
 - Oficina de prática com 24 miniprojetos curtos, um por assunto das aulas de fundamentos, lógica, estruturas de dados e orientação a objetos. A sequência segue o método PRIMM: **prever** a saída antes de executar, **investigar** o mecanismo (pergunta sobre o código e uma linha para explicar sem consultar), **mudar** uma parte do exemplo e **criar** a própria versão, terminando com uma explicação escrita.
 - Revisão espaçada com intervalos crescentes: cada vez que você resolve sem consultar, a próxima revisão vai para 3, 7, 16 e depois 35 dias; precisar de ajuda traz de volta para o dia seguinte. A aba "Revisar hoje" reúne o que está agendado. É um lembrete de prática, não uma medida de domínio.
 - Guia de leitura de erros: quando a execução falha, a plataforma nomeia o tipo do erro, aponta a linha e dá um roteiro específico para aquele tipo, além do método geral (ler a última linha primeiro). O traceback aparece no formato real do Python, sem os quadros internos do interpretador do navegador.
@@ -100,13 +100,13 @@ Uma aula concede **100 XP uma única vez**, depois que a saída do programa coin
 
 Um miniprojeto da oficina vale **40 XP uma única vez**, quando três condições se cumprem: a **prova rápida** do fim respondida corretamente, a etapa "Mude uma parte" com a saída esperada e a etapa "Crie você" com a saída esperada. A conclusão abre a mesma celebração das aulas, com o XP na tela. Acertar apenas a saída não concede XP, porque o objetivo é saber explicar o mecanismo. O dia de um miniprojeto treinado conta na sequência de estudos. Os pontos derivam do estado salvo: rever depois não remove nem duplica pontos.
 
-Um projeto com todos os requisitos marcados vale **250 XP**, por autoavaliação. Desmarcar um requisito remove esses pontos até a conclusão novamente; alternar não acumula pontos. Não há revisão automática de repositórios.
+Um projeto vale **250 XP** depois que todos os passos de construção foram registrados e uma das duas conferências finais foi concluída: autoavaliação com todos os requisitos marcados ou aprovação do Lumi, com nota mínima 7, lendo o repositório público. Alternar marcações não acumula pontos.
 
-Cada **500 XP** corresponde a um novo nível. A meta diária conta aulas concluídas. A meta semanal e a sequência contam dias com aula, projeto ou sessão concluída. A sequência permanece válida até o fim do dia seguinte à última atividade. As datas usam o fuso local do navegador.
+Cada **500 XP** corresponde a um novo nível. A meta diária, a meta semanal e a sequência contam atividades registradas: aula, miniprojeto, ponte de função, passo de projeto, prova ou sessão de estudo. A sequência permanece válida até o fim do dia seguinte à última atividade. As datas usam o fuso local do navegador.
 
 ## Limites claros
 
-Esta versão é uma aplicação local de uso individual. Não tem autenticação online, servidor próprio, sincronização entre dispositivos, professor automático ou diploma reconhecido. O calendário não envia notificações externas. Limpar os dados do navegador apaga o progresso; use backups.
+O PyCampus não tem autenticação ou conta própria. Por padrão, os dados ficam no navegador e são apagados se os dados do site forem limpos. Quem quiser pode sincronizar por um Gist privado da própria conta do GitHub ou exportar um backup. O Lumi oferece orientação por IA, mas não substitui professor ou correção docente. A plataforma não emite diploma reconhecido.
 
 O interpretador é carregado do CDN jsDelivr e precisa de internet, especialmente na primeira execução. O carregamento tem limite de 90 segundos; a execução, 15 segundos. Arquivos Python são temporários no ambiente virtual e não acessam diretamente os arquivos locais. Códigos de alunos rodam em worker; não são executados no shell do computador. O worker não deve ser tratado como isolamento de segurança para códigos hostis.
 
