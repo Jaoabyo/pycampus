@@ -43,7 +43,7 @@ const diaDoEstado = (() => {
 
 // Texto que só existe dentro de um molde de prompt. Se aparecer na tela, o modelo copiou o
 // exemplo e a plataforma imprimiu como se fosse conteúdo.
-const TELAS = ['Visão geral', 'Minha formação', 'Oficina de prática', 'Projetos', 'Laboratório Python', 'Treino dirigido', 'Modo prova', 'Diário de aprendizagem', 'Meu calendário', 'Conquistas', 'Meu perfil', 'Configurações', 'Sobre e limites'];
+const TELAS = ['Visão geral', 'Minha formação', 'Oficina de prática', 'Projetos', 'Laboratório Python', 'Minha faculdade', 'Treino dirigido', 'Modo prova', 'Diário de aprendizagem', 'Meu calendário', 'Conquistas', 'Meu perfil', 'Configurações', 'Sobre e limites'];
 const MOLDE = ['até duas frases', 'uma pergunta curta', '<frase sua>', '<sua pergunta>', 'undefined', 'NaN', '[object Object]', 'null'];
 
 const problemas = [];

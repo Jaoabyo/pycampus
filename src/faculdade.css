@@ -1,0 +1,21 @@
+.faculdade-hero{background:linear-gradient(120deg,#4b3a86,#7755d9 60%,#9b7ae6)}
+.unidade-card{margin-bottom:22px}
+.unidade-card>p{margin:6px 0}
+.faculdade-aulas{display:flex;flex-direction:column;gap:9px;margin:18px 0}
+.faculdade-aula{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:13px 15px;border:1px solid #e9e3f4;border-radius:12px;background:#fff;transition:border-color .18s,background .18s}
+.faculdade-aula:hover{border-color:#c8b2ec;background:#faf7ff}
+.faculdade-aula strong{display:block;font-family:var(--heading);font-size:15px;font-weight:700;color:#3d2f4d;line-height:1.45}
+.faculdade-aula small{display:block;margin-top:3px;font-size:12px;color:#8a8b9b}
+.faculdade-aula>svg{margin-left:auto;color:#a78beb}
+.faculdade-aula-num{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#f1ecfa;color:#6242c2;font-size:13px;font-weight:750}
+.faculdade-aula.is-feita{background:#f4fbf8;border-color:#cbe8dc}
+.faculdade-aula.is-feita .faculdade-aula-num{background:#e0f2ea;color:#3f7d69}
+.faculdade-tarefas summary{cursor:pointer;color:#63418a;font-weight:650}
+.faculdade-tarefa{margin:14px 0;padding:14px 16px;border-left:3px solid #e0d3f5;background:#faf8fe;border-radius:0 10px 10px 0}
+.faculdade-tarefa strong{display:block;margin:3px 0 6px;font-family:var(--heading);font-size:15px;color:#3d2f4d}
+.faculdade-tarefa p{margin:0 0 6px}
+@media(max-width:600px){
+  .faculdade-aula{align-items:flex-start;padding:12px}
+  .faculdade-aula>svg{display:none}
+  .faculdade-aula strong{font-size:14px}
+}

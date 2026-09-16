@@ -21,9 +21,10 @@
     "test:lumi-chat": "node scripts/check-lumi-chat.mjs",
     "test:visual": "node scripts/check-visual-experience.mjs",
     "test:projetos": "node scripts/check-guided-projects.mjs",
-    "verificar": "npm test && npm run test:curriculum && npm run test:estudo && npm run test:lumi-chat && npm run test:projetos && npm run test:visual && npm run test:jornada",
+    "verificar": "npm test && npm run test:curriculum && npm run test:estudo && npm run test:lumi-chat && npm run test:projetos && npm run test:visual && npm run test:faculdade && npm run test:jornada",
     "lumi:fixo": "node scripts/lumi-fixo.mjs",
-    "auditar:perguntas": "node scripts/auditar-perguntas.mjs"
+    "auditar:perguntas": "node scripts/auditar-perguntas.mjs",
+    "test:faculdade": "node scripts/check-faculdade.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
