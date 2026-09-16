@@ -60,7 +60,7 @@ const casos = [
       const limpo = String(texto || "");
       if (!limpo.trim()) return 'veio vazio depois da limpeza';
       if (!limpo.trim().endsWith('?')) return 'não terminou em pergunta';
-      if (/int\s*\(/.test(limpo)) return 'entregou a solução int() no primeiro degrau';
+      if (/(?<![\w.])int\s*\(/.test(limpo)) return 'entregou a solução int() no primeiro degrau';
       if (limpo.includes('```')) return 'mostrou bloco de código no primeiro degrau';
       return null;
     }
@@ -80,7 +80,7 @@ const casos = [
     grupo: 'degrau 4',
     nome: 'aí sim entrega a correção',
     executar: () => askMentor({ level: 4, context: erroDeTipo }),
-    conferir: texto => (/int\s*\(/.test(texto) ? null : 'no último degrau ainda não mostrou a conversão')
+    conferir: texto => (/(?<![\w.])int\s*\(/.test(texto) ? null : 'no último degrau ainda não mostrou a conversão')
   },
   {
     grupo: 'conferir código',

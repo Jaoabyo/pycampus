@@ -25,7 +25,7 @@ if (!disponivel.ok) {
 const browser = await chromium.launch({ channel: 'msedge' });
 const page = await browser.newPage();
 page.setDefaultTimeout(0);
-await page.goto(process.env.PYCAMPUS_TEST_URL || 'http://127.0.0.1:5177/pycampus/');
+await page.goto(process.env.PYCAMPUS_TEST_URL || 'http://127.0.0.1:5176/');
 await page.waitForFunction(() => globalThis.crossOriginIsolated === true, null, { timeout: 30000 }).catch(() => {});
 await page.waitForTimeout(600);
 await page.addScriptTag({ url: 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js' });
