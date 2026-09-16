@@ -24,12 +24,15 @@
 .lesson-workshop p{font-size:13px;line-height:1.8;color:#7e8091;margin:0 0 12px}
 .lesson-workshop .step-head{margin-bottom:14px}
 .lesson-workshop .text-button{gap:7px}
+.lesson-heading-actions{display:flex;flex-direction:column;align-items:flex-end;gap:9px}.lesson-mode-toggle{min-height:40px}.lesson-steps.is-focus{position:sticky;top:8px;z-index:12;width:max-content;max-width:100%;padding:6px;border:1px solid #e8dff5;border-radius:12px;background:#fffffff2;box-shadow:0 8px 25px #39265712;backdrop-filter:blur(10px)}.lesson-steps.is-focus>button{min-height:39px}.focus-layout{display:block;max-width:980px;margin:0 auto}.focus-layout .focus-panel{width:100%}.focus-layout .theory,.focus-layout .lesson-work,.focus-layout .review{padding:30px}.focus-layout .lesson-work .editor-body,.focus-layout .lesson-work .editor-body>textarea{min-height:340px}.focus-next{margin-top:22px}.focus-actions{display:flex;justify-content:space-between;gap:12px;margin-top:24px;padding-top:18px;border-top:1px solid #eee8f5}.focus-back{margin-top:18px}.focus-enter{animation:focus-enter .32s cubic-bezier(.2,.75,.3,1)}
+@keyframes focus-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @media(max-width:760px){
   .lesson-title{gap:12px}
   .lesson-title .icon-tile{width:36px;height:36px}
   .lesson-steps{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
   .lesson-steps>button{flex-shrink:0}
   .step-head h3{font-size:16px}
+  .lesson-heading-actions{width:100%;align-items:flex-start}.lesson-mode-toggle{width:100%}.lesson-steps.is-focus{top:4px;width:100%;display:grid;grid-template-columns:repeat(4,minmax(max-content,1fr));overflow-x:auto}.lesson-steps.is-focus>button{justify-content:center}.focus-layout .theory,.focus-layout .lesson-work,.focus-layout .review{padding:20px 17px}.focus-actions{flex-direction:column-reverse}.focus-actions>.button,.focus-next,.focus-back{width:100%;min-height:46px}.focus-layout .lesson-work .editor-body,.focus-layout .lesson-work .editor-body>textarea{min-height:300px}
 }
 
 /* Etapa travada: sinal discreto, com o que falta escrito por extenso. O reset global já

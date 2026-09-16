@@ -45,6 +45,9 @@ try {
   // O texto do botão principal mudou para o rótulo do próximo passo pendente, que varia com o
   // progresso. Prender o teste a um texto fixo o deixou quebrado sem ninguém notar.
   await page.locator('.hero-button').click();
+  // O modo foco é a experiência padrão. Este trecho confere vários pontos distantes da aula,
+  // então muda explicitamente para a visualização completa antes de continuar.
+  await page.getByRole('button', { name: 'Ver aula completa' }).click();
   await page.locator('.revision-notice').waitFor();
   assert.equal(await page.getByRole('textbox', { name: 'Editor de código Python' }).inputValue(), legacyCode);
   assert.ok((await page.locator('.challenge').innerText()).includes('Não precisa fazer nenhuma conta'));
