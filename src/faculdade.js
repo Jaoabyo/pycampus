@@ -14,7 +14,21 @@
 const aula = (id, titulo, unidade, teoria, exemplo, desafio, starter, esperado, pergunta, opcoes, resposta = 0, extras = {}) =>
   ({ id, titulo, unidade, teoria: teoria.split('|'), exemplo, desafio, starter, esperado, pergunta, opcoes, resposta, minutos: 20, ...extras });
 
+export const DATA_PROVA = '2026-09-27';
+
+export const diasAteProva = (hoje = new Date()) => {
+  const [ano, mes, dia] = DATA_PROVA.split('-').map(Number);
+  const prova = new Date(ano, mes - 1, dia);
+  const dataAtual = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  return Math.ceil((prova - dataAtual) / 86400000);
+};
+
 export const unidades = [
+  {
+    id: 'revisao', numero: 'REVISÃO', titulo: 'Base para a prova presencial', cor: 'yellow', icone: 'BookOpenCheck',
+    resumo: 'Condicionais, repetições, funções e fundamentos da web, seguindo os slides do professor.',
+    competencia: 'Resolver os exercícios dos slides sem consulta e explicar a função de cada parte do código.'
+  },
   {
     id: 'u2', numero: '2', titulo: 'Explorando Recursos do Python', cor: 'purple', icone: 'Boxes',
     resumo: 'Sequências, listas, tuplas, conjuntos, dicionários, NumPy, classes, herança, módulos e Matplotlib.',
@@ -28,6 +42,47 @@ export const unidades = [
 ];
 
 export const aulasDaFaculdade = [
+  // ——————————————— Revisão dos slides do professor ———————————————
+  aula('r1', 'Condicionais: operadores, lógica e decisões', 'revisao',
+    'Os operadores relacionais comparam valores: <, <=, >, >=, == e !=. O resultado de cada comparação é True ou False. Os operadores and, or e not combinam ou invertem essas condições.|if testa o primeiro caminho. elif testa outro caminho somente quando os anteriores falham. else trata tudo o que sobrou e não recebe condição. A ordem importa: teste primeiro a faixa mais específica ou organize limites sem deixar buracos.|No exercício dos três filmes, idade e disponibilidade precisam ser verificadas juntas. Uma pessoa pode estar na faixa correta e ainda assim não conseguir assistir se não houver ingresso.|Na formação geral, este conteúdo também aparece em “Decisões com if, elif e else” e “Combinando condições”. Aqui ele fica liberado para a revisão da prova.',
+    ['idade = 15', 'tem_ingresso = True', '', 'if idade < 12:', '    filme = 1', 'elif idade < 18:', '    filme = 2', 'else:', '    filme = 3', '', 'if tem_ingresso:', '    print(f"Filme {filme} disponivel")', 'else:', '    print("Sem ingressos")'].join('\n'),
+    'Use idade e tem_ingresso para mostrar exatamente “Filme 2 disponivel”. Organize as faixas com if, elif e else e confirme que existe ingresso.',
+    'idade = 15\ntem_ingresso = True\n# Descubra o filme e verifique o ingresso\n',
+    'Filme 2 disponivel',
+    'Em uma cadeia if / elif / else, quando o bloco elif é testado?',
+    ['Somente quando as condições anteriores foram falsas', 'Sempre, mesmo depois de um if verdadeiro', 'Somente quando existe um else'], 0,
+    { naFormacao: ['Decisões com if, elif e else', 'Combinando condições'], origem: 'Slides · Estruturas condicionais' }),
+
+  aula('r2', 'Repetições: for, while, range, break e continue', 'revisao',
+    'for percorre uma sequência ou os valores de range. range(1, 6) produz 1, 2, 3, 4 e 5: o limite final fica de fora.|while repete enquanto uma condição for verdadeira. Ele é indicado quando a quantidade de repetições não é conhecida antes. Atualize a condição dentro do laço para evitar repetição infinita.|break encerra o laço atual. continue pula o restante daquela volta e segue para a próxima. No exercício dos filmes, uma opção de saída pode acionar break antes de receber todas as cinco notas.|Na formação geral, revise “Repetições com for” e “Repetições com while”. Esta aula reúne exatamente os controles citados pelo professor.',
+    ['notas = [5, 4, 0, 3, 5]', 'soma = 0', 'quantidade = 0', '', 'for nota in notas:', '    if nota == 0:', '        break', '    soma += nota', '    quantidade += 1', '', 'print("Filmes avaliados:", quantidade)', 'print("Media:", soma / quantidade)'].join('\n'),
+    'Percorra as notas [5, 4, 3, 2, 1] com for e mostre somente a soma. Use range ou percorra a lista diretamente.',
+    'notas = [5, 4, 3, 2, 1]\ntotal = 0\n# Some usando for e mostre o total\n',
+    '15',
+    'Qual comando encerra imediatamente o laço atual?',
+    ['break', 'continue', 'range'], 0,
+    { naFormacao: ['Repetições com for', 'Repetições com while'], origem: 'Slides · Estruturas de repetição' }),
+
+  aula('r3', 'Funções: built-ins, parâmetros, retorno e lambda', 'revisao',
+    'Funções built-in já vêm prontas no Python: print, len, sum, max, min e type são exemplos. Elas evitam reescrever operações comuns.|Uma função criada por você começa com def. Parâmetros recebem os dados; return devolve o resultado para quem chamou. print apenas exibe e não substitui return.|lambda cria uma função anônima curta com uma única expressão. Por exemplo, dobro = lambda numero: numero * 2. Use lambda quando a operação for pequena e local; para regras maiores, def fica mais legível.|Na formação geral, este assunto aparece em “Suas primeiras funções”, “Decompondo um problema” e na aula de ordenação com lambda.',
+    ['def calcular_media(notas):', '    return sum(notas) / len(notas)', '', 'media = calcular_media([7, 8, 9])', 'print(media)', '', 'dobro = lambda numero: numero * 2', 'print(dobro(4))'].join('\n'),
+    'Crie a função calcular_media(notas), usando sum e len, e mostre a média de [7, 8, 9].',
+    'def calcular_media(notas):\n    # devolva a media\n    pass\n\nprint(calcular_media([7, 8, 9]))\n',
+    '8.0',
+    'Qual é a diferença principal entre return e print?',
+    ['return devolve um valor ao código; print apenas o exibe', 'print devolve um valor e return apenas exibe', 'Não existe diferença'], 0,
+    { naFormacao: ['Suas primeiras funções', 'Decompondo um problema', 'Ordenando e filtrando'], origem: 'Slides · Funções em Python' }),
+
+  aula('r4', 'Web: front-end, back-end e Python', 'revisao',
+    'O front-end é a parte visível com a qual a pessoa interage. HTML estrutura o conteúdo, CSS cuida da apresentação e JavaScript adiciona comportamento. React, Vue e Angular ajudam a construir interfaces.|O back-end processa regras, dados e comunicação com o servidor. Python é usado principalmente aqui com Django, Flask e FastAPI. Uma API conecta as duas camadas por requisições e respostas HTTP.|Python não substitui HTML no navegador. Ele pode gerar HTML no servidor ou fornecer dados para uma interface. A página de perfil proposta pelo professor pertence ao front-end; seu envio e armazenamento pertencem ao back-end.|Na formação geral, “Como a web funciona” aprofunda HTTP e a etapa de APIs trata FastAPI. Esta revisão fica liberada agora porque o conteúdo está nos slides da prova.',
+    ['camadas = {', '    "front-end": ["HTML", "CSS", "JavaScript"],', '    "back-end": ["Python", "Flask", "Django"]', '}', '', 'print("Front-end:", camadas["front-end"][0])', 'print("Back-end:", camadas["back-end"][1])'].join('\n'),
+    'Crie um dicionário com front-end igual a HTML e back-end igual a Flask. Mostre uma linha para cada camada exatamente como na saída esperada.',
+    'camadas = {"front-end": "HTML", "back-end": "Flask"}\n# Mostre as duas camadas\n',
+    'Front-end: HTML\nBack-end: Flask',
+    'Qual camada cuida da lógica, do processamento e do armazenamento no servidor?',
+    ['Back-end', 'Front-end', 'CSS'], 0,
+    { naFormacao: ['Como a web funciona', 'Projetando uma API REST', 'Da função ao servidor'], origem: 'Slides · Introdução à programação web' }),
+
   // ————————————————————————————— Unidade 2 —————————————————————————————
   aula('u2a1', 'Estruturas de dados I: sequências, listas e tuplas', 'u2',
     'Em Python tudo gira em torno de objetos. Sequências são estruturas que guardam coleções ordenadas, indexadas por inteiros não negativos: o primeiro elemento está no índice 0 e o último na posição n - 1, onde n é o tamanho.|As operações comuns a toda sequência, do Quadro 1 da apostila: x in s testa se um item existe; s + t concatena; n * s repete; s[i] acessa uma posição; s[i:j] fatia da posição i até antes de j; s[i:j:k] fatia com passo k; len(s) dá o tamanho; min(s) e max(s) dão o menor e o maior; s.count(x) conta ocorrências.|Texto (str) também é sequência, e é imutável: não dá para trocar uma letra por atribuição. Listas são sequências mutáveis — dá para adicionar, remover e alterar. O método index devolve a posição de um valor na lista.|Tuplas são sequências imutáveis. Crie com parênteses: vazia com (), com valores com ("a", "b", "c"), ou com o construtor tuple(). Uma vez criada, não muda. enumerate() devolve a posição e o valor a cada volta, o que evita controlar um contador à mão.',
@@ -50,7 +105,7 @@ export const aulasDaFaculdade = [
     '3\n0 seg\n1 ter\n2 qua',
     'Qual é a diferença essencial entre lista e tupla?',
     ['A lista é mutável e a tupla não pode ser alterada depois de criada', 'A tupla só aceita texto e a lista só aceita números', 'A tupla é mais rápida porque não usa índices'],
-    0),
+    0, { naFormacao: ['Trabalhando com textos', 'Listas e índices', 'Tuplas e conjuntos', 'Compreensões de listas'] }),
 
   aula('u2a2', 'Estruturas de dados II: conjuntos, dicionários e NumPy', 'u2',
     'Um conjunto (set) guarda elementos únicos, sem repetição, como um conjunto da matemática. Ele habilita união, interseção e diferença, e serve para eliminar duplicados. Crie com chaves — {"a", "b"} — ou com set(iteravel). add(valor) acrescenta e remove(valor) retira.|Dicionários (dict) associam chaves a valores e são mutáveis. Quatro formas de criar, todas equivalentes: começar vazio com {} e atribuir por chave; escrever os pares direto — {"nome": "Maria", "idade": 25}; usar dict([("nome", "Maria")]); ou combinar duas listas com dict(zip(chaves, valores)).|Acesse um valor com dicionario[chave] e atribua com dicionario[chave] = novo_valor.|NumPy é a biblioteca para computação científica: arrays multidimensionais e operações em massa. Importe com import numpy as np. Um array opera elemento a elemento: my_array ** 2 eleva todos ao quadrado de uma vez, sem laço. np.sum soma tudo. Aqui no PyCampus o NumPy é baixado sozinho quando você escreve o import.',
@@ -80,7 +135,7 @@ export const aulasDaFaculdade = [
     '4',
     'Para que serve um conjunto (set)?',
     ['Guardar valores únicos, sem repetição', 'Guardar pares de chave e valor', 'Guardar valores em ordem fixa que não muda'],
-    0),
+    0, { naFormacao: ['Dicionários: chave e valor', 'Tuplas e conjuntos'], focoFaculdade: 'NumPy e suas operações com arrays são conteúdo específico desta trilha.' }),
 
   aula('u2a3', 'Classes, métodos e herança', 'u2',
     'A orientação a objetos organiza o código em torno de objetos, cada um representando algo do mundo real. A classe é o molde; o objeto é o que nasce dele. Uma classe reúne atributos (os dados, o estado) e métodos (os comportamentos).|Os cinco componentes que a apostila cobra: atributos, métodos, encapsulamento (juntar dados e comportamento numa entidade e controlar o acesso), herança (uma classe herdar de outra) e polimorfismo (classes diferentes respondendo de formas diferentes à mesma mensagem).|Em Python, class abre a classe. O método __init__ é o construtor: roda quando o objeto é criado e inicializa os atributos. self é a convenção que se refere à própria instância — self.nome = nome guarda o valor naquele objeto.|A classe-filha é declarada com o nome da classe-pai entre parênteses: class Carro(Veiculo). Ela herda atributos e métodos e pode reescrevê-los. super().__init__(...) chama o construtor da classe-pai em vez de repetir o código dele. Python aceita herança múltipla: class Filha(Pai1, Pai2).',
@@ -125,7 +180,7 @@ export const aulasDaFaculdade = [
     'Ola, meu nome e Joao.\n31',
     'Para que serve super().__init__(...) na classe-filha?',
     ['Chamar o construtor da classe-pai em vez de repetir o código dele', 'Criar um objeto novo da classe-pai', 'Impedir que a classe-filha altere os atributos'],
-    0),
+    0, { naFormacao: ['Classes e objetos', 'Construtores e atributos', 'Encapsulamento e propriedades', 'Herança e polimorfismo'] }),
 
   aula('u2a4', 'Módulos, bibliotecas e Matplotlib', 'u2',
     'Módulos são componentes de código que reúnem funções, e servem para reaproveitar código entre programas. Na prática um módulo é uma biblioteca de funções: math traz funções matemáticas, os traz funções do sistema operacional.|Três formas de usar um módulo. A primeira carrega tudo e você chama pelo nome do módulo: import math, depois math.sqrt(25). A segunda dá um apelido: import math as m, depois m.sqrt(25). A terceira carrega só o que você vai usar: from math import sqrt, e então sqrt(25) direto.|Os módulos se classificam em três tipos. Built-in vêm no interpretador e não precisam de instalação: math, os, sys, random, datetime, re, collections. De terceiros são criados fora e distribuídos pelo PyPI, instalados com pip install nome — é o caso de NumPy, pandas e Matplotlib. Próprios são os que você mesmo escreve.|Matplotlib é a biblioteca de gráficos mais usada em Python. O módulo pyplot dá a interface de alto nível: import matplotlib.pyplot as plt. plt.plot faz um gráfico de linha, plt.bar um de barras, plt.xlabel e plt.ylabel rotulam os eixos, plt.title dá o título e plt.show exibe. Aqui no navegador o gráfico não abre em janela; use plt.gcf() para conferir que a figura foi montada.',
@@ -155,7 +210,7 @@ export const aulasDaFaculdade = [
     '12',
     'O que import math as m muda em relação a import math?',
     ['Passa a chamar as funções por m.sqrt em vez de math.sqrt', 'Carrega só a função sqrt na memória', 'Instala o módulo math antes de usar'],
-    0),
+    0, { naFormacao: ['Módulos e ambientes virtuais'], focoFaculdade: 'Matplotlib e a criação dos gráficos da apostila são aprofundados aqui.' }),
 
   // ————————————————————————————— Unidade 3 —————————————————————————————
   aula('u3a1', 'Banco de dados: SQL, SQLite e CRUD', 'u3',
@@ -199,7 +254,7 @@ export const aulasDaFaculdade = [
     "[(1, 'Maria', 'maria@email.com')]",
     'CREATE TABLE pertence a qual categoria do SQL?',
     ['DDL, porque define a estrutura do banco', 'DML, porque manipula os dados', 'DCL, porque controla o acesso'],
-    0),
+    0, { naFormacao: ['Seu primeiro banco SQLite'], focoFaculdade: 'As categorias DDL, DML e DCL e o ciclo CRUD completo são cobrados aqui.' }),
 
   aula('u3a2', 'pandas: Series e DataFrame', 'u3',
     'pandas é a biblioteca de código aberto para manipular e analisar dados em tabelas e séries temporais. Ela é construída sobre o NumPy. Importe com import pandas as pd.|Duas estruturas sustentam tudo. A Series é unidimensional, como uma lista com rótulos. O DataFrame é bidimensional, como uma tabela com linhas e colunas.|Crie uma Series a partir de uma lista — pd.Series([10, 20, 30]) — e os índices viram 0, 1, 2. A partir de um dicionário, as chaves viram os índices e os valores viram os dados. O parâmetro index define rótulos próprios.|Sobre a Series você aplica cálculos direto: mean() dá a média, sum() a soma, max() e min() os extremos. Um DataFrame nasce de um dicionário de listas, em que cada chave é uma coluna.|pandas lê dados estruturados de muitas origens, sempre com o prefixo read_: read_csv, read_json, read_html, read_excel, read_sql. Para escrever, os métodos to_: to_csv, to_json, to_excel, to_sql. read_html procura as tabelas <table> de uma página e devolve uma lista de DataFrames.',
@@ -225,7 +280,7 @@ export const aulasDaFaculdade = [
     '30.0',
     'Qual é a diferença entre Series e DataFrame?',
     ['A Series é unidimensional e o DataFrame é bidimensional, como uma tabela', 'A Series só guarda números e o DataFrame só guarda texto', 'A Series é imutável e o DataFrame é mutável'],
-    0),
+    0, { naFormacao: ['Análise de dados e estatística'], focoFaculdade: 'Series, DataFrame e os métodos read_ e to_ são aprofundados nesta trilha.' }),
 
   aula('u3a3', 'pandas: capturar, transformar e extrair informação', 'u3',
     'Dados brutos quase nunca chegam prontos. A etapa de captura e transformação é o que os torna utilizáveis, e é onde mora a maior parte do trabalho real.|Linhas duplicadas distorcem qualquer conta. drop_duplicates() remove as repetidas; keep="last" mantém a última ocorrência e inplace=True salva a mudança no próprio DataFrame, em vez de devolver uma cópia.|Criar uma coluna nova é uma atribuição: df["nova_coluna"] = valor. Se o valor for único, o pandas o repete em todas as linhas. Se for um cálculo entre colunas, ele é feito linha a linha — df["preco"] = df["receita"] / df["quantidade"].|Para extrair informação existem dois caminhos principais. loc seleciona por rótulo: df.loc[0] traz a linha 0, df.loc[[0, 2]] traz duas linhas. O teste booleano compara uma coluna inteira e devolve True ou False para cada linha; usado dentro de df[...] ele filtra — df[df["preco"] > 50] traz só as linhas em que o preço passa de 50.',
@@ -256,7 +311,7 @@ export const aulasDaFaculdade = [
     "['A', 'C']",
     'O que faz df[df["preco"] > 50]?',
     ['Devolve só as linhas em que a coluna preco passa de 50', 'Troca por 50 todos os preços menores', 'Ordena o DataFrame pela coluna preco'],
-    0),
+    0, { naFormacao: ['Análise de dados e estatística'], focoFaculdade: 'drop_duplicates, loc, filtros booleanos e criação de colunas são conteúdo específico desta trilha.' }),
 
   aula('u3a4', 'Visualização de dados: Matplotlib, pandas e Seaborn', 'u3',
     'Gráficos contam a história dos dados. Três caminhos, do mais manual ao mais especializado.|Matplotlib é a base. O pyplot cria e gerencia a figura e o eixo sozinho, e você chama plt.plot, plt.bar, plt.xlabel, plt.title. O outro estilo, orientado a objetos, cria figura e eixos explicitamente com plt.subplots e chama métodos sobre eles.|pandas tem plot() embutido, construído sobre o Matplotlib: df.plot(x="Produto", y="qtde_vendida", kind="bar") — e kind aceita bar, pie, line e outros.|Seaborn é construído sobre o Matplotlib e traz conjuntos de dados prontos, como tips. O que o diferencia é o parâmetro estimator do barplot: por padrão ele calcula a MÉDIA, mas aceita sum para somar e len para contar. Essa escolha muda a conclusão.|A apostila insiste num ponto que costuma cair em prova: o mesmo dado, com estimadores diferentes, conta histórias diferentes. Na soma os homens parecem gastar muito mais; com len você descobre que eles são muitos mais na base. Interpretar gráfico exige olhar o contexto, não só a barra mais alta.',
@@ -297,21 +352,24 @@ export const aulasDaFaculdade = [
     'Barras: 2',
     'No barplot do Seaborn, o que o parâmetro estimator faz?',
     ['Escolhe a conta da barra: média por padrão, ou sum, ou len', 'Escolhe a cor das barras', 'Escolhe quantas barras cabem no gráfico'],
-    0)
+    0, { naFormacao: ['Análise de dados e estatística'], focoFaculdade: 'Matplotlib, pandas.plot, Seaborn e estimator são aprofundados nesta trilha.' })
 ];
 
 // As oito tarefas "Aplicando a aula!" e "É Hora de Praticar!" dos slides e das apostilas. São o
 // que o professor propõe como aplicação, então são o que mais se parece com a avaliação.
 export const tarefasDaFaculdade = [
-  { id: 't-condicionais', unidade: 'u2', titulo: 'Três filmes por faixa etária', origem: 'Slides · Estruturas condicionais',
+  { id: 't-condicionais', unidade: 'revisao', titulo: 'Três filmes por faixa etária', origem: 'Slides · Estruturas condicionais',
     enunciado: 'Há 3 filmes por semana. O primeiro é para menores de 12 anos; o segundo para maiores ou iguais a 12 e menores de 18; o terceiro para maiores ou iguais a 18. Considere também a disponibilidade de ingressos.',
     pratica: ['if', 'elif', 'else', 'operadores relacionais', 'and'] },
-  { id: 't-repeticao', unidade: 'u2', titulo: 'Notas de cinco filmes', origem: 'Slides · Estruturas de repetição',
+  { id: 't-repeticao', unidade: 'revisao', titulo: 'Notas de cinco filmes', origem: 'Slides · Estruturas de repetição',
     enunciado: 'Percorra os cinco filmes (Filme 1 a Filme 5) e receba para cada um uma nota de 1 a 5. Deixe sempre uma forma da pessoa encerrar o programa antes do fim.',
     pratica: ['for', 'while', 'range', 'break', 'continue'] },
-  { id: 't-funcoes', unidade: 'u2', titulo: 'Média de notas automatizada', origem: 'Slides · Funções em Python',
+  { id: 't-funcoes', unidade: 'revisao', titulo: 'Média de notas automatizada', origem: 'Slides · Funções em Python',
     enunciado: 'Automatize a média de notas dos alunos. Parta do código da aula anterior e melhore usando funções definidas por você, com parâmetro e retorno.',
     pratica: ['def', 'parâmetro', 'return', 'lambda'] },
+  { id: 't-web', unidade: 'revisao', titulo: 'Página de perfil pessoal', origem: 'Slides · Introdução à programação web',
+    enunciado: 'Crie uma página de perfil pessoal e identifique o que pertence ao front-end. Explique qual parte ficaria no back-end se o perfil fosse salvo.',
+    pratica: ['HTML', 'CSS', 'front-end', 'back-end', 'Flask'] },
   { id: 't-convidados', unidade: 'u2', titulo: 'Convidados que não confirmaram', origem: 'Unidade 2 · Aula 1',
     enunciado: 'Você gerencia a lista de convidados de uma festa e a lista de quem confirmou presença. Identifique quem ainda não confirmou, para convidar de novo.',
     pratica: ['tupla', 'lista', 'list comprehension', 'not in'] },

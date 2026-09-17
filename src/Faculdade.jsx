@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Icon, irAoTopo } from './ui.jsx';
-import { unidades, aulasDaUnidade, tarefasDaUnidade, aulasDaFaculdade } from './faculdade.js';
+import { unidades, aulasDaUnidade, tarefasDaUnidade, aulasDaFaculdade, tarefasDaFaculdade, diasAteProva } from './faculdade.js';
 import { localDate } from './progress.js';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
@@ -25,15 +25,40 @@ export default function Faculdade({ state, update, navigate }) {
 
   const abrir = aula => { irAoTopo(); setAberta(aula); };
   const total = aulasDaFaculdade.length;
+  const pendentes = aulasDaFaculdade.filter(aula => !feitas.includes(aula.id));
+  const proxima = pendentes[0] || aulasDaFaculdade[0];
+  const dias = diasAteProva();
+  const ritmo = dias > 0 ? Math.max(1, Math.ceil(pendentes.length / dias)) : pendentes.length;
   return <>
     <section className="hero faculdade-hero">
       <div className="hero-copy">
         <div className="hero-kicker"><span /> LINGUAGEM DE PROGRAMAÇÃO · ANHANGUERA</div>
         <h2>O conteúdo da sua<br />disciplina, <em>rodando.</em></h2>
-        <p>As Unidades 2 e 3 da ementa, com os exemplos do professor executando de verdade —
-          NumPy, pandas, Matplotlib e SQLite no seu navegador.</p>
-        <div className="hero-foot"><Icon name="GraduationCap" size={14} /> {total} aulas <span>·</span> {feitas.length} estudadas <span>·</span> 8 tarefas do professor</div>
+        <p>Revisão dos slides e das Unidades 2 e 3, com os exemplos do professor executando de verdade —
+          de condicionais a NumPy, pandas, Matplotlib e SQLite.</p>
+        <div className="hero-foot"><Icon name="GraduationCap" size={14} /> {total} aulas <span>·</span> {feitas.length} estudadas <span>·</span> {tarefasDaFaculdade.length} tarefas do professor</div>
       </div>
+    </section>
+
+    <section className="card prova-plano" aria-labelledby="titulo-plano-prova">
+      <div className="prova-plano-topo">
+        <div>
+          <div className="eyebrow">PLANO ATÉ 27 DE SETEMBRO</div>
+          <h3 id="titulo-plano-prova">Preparação para a prova presencial</h3>
+          <p>{pendentes.length === 0 ? 'Conteúdo estudado. Agora revise os desafios sem olhar a resposta.'
+            : dias > 0 ? `${dias} ${dias === 1 ? 'dia restante' : 'dias restantes'} · faça ${ritmo} ${ritmo === 1 ? 'aula' : 'aulas'} por dia e deixe o último dia para revisão.`
+              : 'A data da prova chegou. Priorize os exercícios marcados pelo professor.'}</p>
+        </div>
+        <div className="prova-medidor" aria-label={`${feitas.length} de ${total} aulas estudadas`}>
+          <strong>{feitas.length}</strong><span>/{total}</span><small>estudadas</small>
+        </div>
+      </div>
+      <div className="prova-progresso"><span style={{ width: `${Math.round(feitas.length / total * 100)}%` }} /></div>
+      {proxima && <button className="button primary prova-acao" onClick={() => abrir(proxima)}>
+        <span><small>{pendentes.length ? 'COMECE AGORA' : 'REVISAR'}</small>{proxima.titulo}</span>
+        <Icon name="ArrowRight" size={18} />
+      </button>}
+      <p className="small prova-fonte"><Icon name="BookOpen" size={15} /> Conferido em 7 materiais diferentes: um dos 8 PDFs enviados era uma cópia repetida.</p>
     </section>
 
     {unidades.map(unidade => {
@@ -42,14 +67,14 @@ export default function Faculdade({ state, update, navigate }) {
       return <section className="card unidade-card" key={unidade.id}>
         <div className="step-head">
           <span className={`icon-tile ${unidade.cor}`}><Icon name={unidade.icone} size={21} /></span>
-          <div><div className="eyebrow">UNIDADE {unidade.numero} · {prontas} DE {aulas.length} ESTUDADAS</div><h3>{unidade.titulo}</h3></div>
+          <div><div className="eyebrow">{unidade.id === 'revisao' ? 'REVISÃO PARA A PROVA' : `UNIDADE ${unidade.numero}`} · {prontas} DE {aulas.length} ESTUDADAS</div><h3>{unidade.titulo}</h3></div>
         </div>
         <p>{unidade.resumo}</p>
         <p className="small"><strong>Competência da unidade:</strong> {unidade.competencia}</p>
         <div className="faculdade-aulas">
           {aulas.map((aula, indice) => <button key={aula.id} className={`faculdade-aula ${feitas.includes(aula.id) ? 'is-feita' : ''}`} onClick={() => abrir(aula)}>
             <span className="faculdade-aula-num">{feitas.includes(aula.id) ? <Icon name="Check" size={14} /> : indice + 1}</span>
-            <span><strong>{aula.titulo}</strong><small>{aula.minutos} min · aula {indice + 1} da Unidade {unidade.numero}</small></span>
+            <span><strong>{aula.titulo}</strong><small>{aula.minutos} min · {aula.origem || `aula ${indice + 1} da Unidade ${unidade.numero}`}</small></span>
             <Icon name="ArrowRight" size={17} />
           </button>)}
         </div>
@@ -125,7 +150,7 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
   return <>
     <button className="text-button back" disabled={python.busy} onClick={voltar}><Icon name="ArrowLeft" size={16} /> Voltar para a minha faculdade</button>
     <div className="page-heading"><div>
-      <div className="eyebrow">UNIDADE {aula.unidade === 'u2' ? '2' : '3'} · LINGUAGEM DE PROGRAMAÇÃO</div>
+      <div className="eyebrow">{aula.unidade === 'revisao' ? 'REVISÃO PARA A PROVA' : `UNIDADE ${aula.unidade === 'u2' ? '2' : '3'}`} · LINGUAGEM DE PROGRAMAÇÃO</div>
       <h1>{aula.titulo}</h1>
       <p>{aula.minutos} min {feita ? '· já estudada' : ''}</p>
     </div></div>
@@ -134,6 +159,10 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
       <div className="step-head"><span className="icon-tile purple"><Icon name="BookOpen" size={21} /></span>
         <div><div className="eyebrow">PASSO 1 DE 3</div><h3>A ideia</h3></div></div>
       {aula.teoria.map(paragrafo => <p key={paragrafo}>{paragrafo}</p>)}
+      {aula.naFormacao?.length > 0 && <div className="faculdade-conexao">
+        <Icon name="Footprints" size={17} /><p><strong>Também está na formação geral:</strong> {aula.naFormacao.join(' · ')}
+          {aula.focoFaculdade && <><br /><span>{aula.focoFaculdade}</span></>}</p>
+      </div>}
     </section>
 
     <section className="card">

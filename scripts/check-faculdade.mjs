@@ -6,7 +6,7 @@
 //   MEDIR=1 node scripts/check-faculdade.mjs   mostra a saída real de cada programa
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
-import { aulasDaFaculdade } from '../src/faculdade.js';
+import { aulasDaFaculdade, unidades } from '../src/faculdade.js';
 import { solucoesDaFaculdade } from '../tests/faculdade-reference.js';
 
 const NL = String.fromCharCode(10);
@@ -72,7 +72,8 @@ for (const aula of aulasDaFaculdade) {
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.getByRole('button', { name: 'Minha faculdade', exact: true }).click();
 await page.getByText(/O conteúdo da sua/).waitFor();
-assert.equal(await page.locator('.unidade-card').count(), 2);
+assert.equal(await page.locator('.unidade-card').count(), unidades.length);
+await page.getByText('PLANO ATÉ 27 DE SETEMBRO').waitFor();
 assert.equal(await page.locator('.faculdade-aula').count(), aulasDaFaculdade.length);
 await page.locator('.faculdade-aula').first().click();
 await page.getByRole('button', { name: 'Executar exemplo', exact: true }).click();

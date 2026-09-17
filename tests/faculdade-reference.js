@@ -4,6 +4,40 @@
 const NL = String.fromCharCode(10);
 
 export const solucoesDaFaculdade = {
+  r1: [
+    'idade = 15',
+    'tem_ingresso = True',
+    'if idade < 12:',
+    '    filme = 1',
+    'elif idade < 18:',
+    '    filme = 2',
+    'else:',
+    '    filme = 3',
+    'if tem_ingresso:',
+    '    print(f"Filme {filme} disponivel")'
+  ].join(NL),
+
+  r2: [
+    'notas = [5, 4, 3, 2, 1]',
+    'total = 0',
+    'for nota in notas:',
+    '    total += nota',
+    'print(total)'
+  ].join(NL),
+
+  r3: [
+    'def calcular_media(notas):',
+    '    return sum(notas) / len(notas)',
+    '',
+    'print(calcular_media([7, 8, 9]))'
+  ].join(NL),
+
+  r4: [
+    'camadas = {"front-end": "HTML", "back-end": "Flask"}',
+    'print("Front-end:", camadas["front-end"])',
+    'print("Back-end:", camadas["back-end"])'
+  ].join(NL),
+
   u2a1: [
     'dias = ("seg", "ter", "qua")',
     'print(len(dias))',
