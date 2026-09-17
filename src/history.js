@@ -38,6 +38,19 @@ export function reviewQuestions(attempt) {
   if (attempt.matched === false) questions.push('O código executou, mas a saída não correspondeu ao desafio. Qual é a diferença?');
   return questions.length ? questions : ['Explique, linha por linha, como esse código chega à saída.', 'Mude um valor e preveja o resultado antes de executar novamente.'];
 }
+export function reviewSummary(state = {}) {
+  const groups = new Map();
+  for (const item of normalizeHistory(state.history)) {
+    if (item.status === 'success' && item.matched !== false) continue;
+    const key = item.title || 'Laboratório livre';
+    const current = groups.get(key) || { titulo: key, tentativas: 0, ultimo: item, pergunta: '' };
+    current.tentativas += 1;
+    current.ultimo = item;
+    current.pergunta = reviewQuestions(item)[0] || 'Qual pequena mudança você testaria primeiro?';
+    groups.set(key, current);
+  }
+  return [...groups.values()].sort((a, b) => b.tentativas - a.tentativas || Date.parse(b.ultimo.startedAt) - Date.parse(a.ultimo.startedAt)).slice(0, 4);
+}
 export function historyReport(state) {
   const items = normalizeHistory(state.history);
   const lumiNotes = normalizeLumiNotes(state.lumiNotes);

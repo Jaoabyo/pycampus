@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeHistory, appendAttempt, historyReport, reviewQuestions, HISTORY_LIMIT } from '../src/history.js';
+import { normalizeHistory, appendAttempt, historyReport, reviewQuestions, reviewSummary, HISTORY_LIMIT } from '../src/history.js';
 import { initialState, normalizeState } from '../src/progress.js';
 const attempt = (id = 'test', fields = {}) => ({ id, startedAt: '2026-09-08T18:00:00.000Z', source: 'playground', code: 'print(1)', stdin: '', output: '1\n', status: 'success', ...fields });
 test('old backups retain progress and gain an empty history', () => {
@@ -44,4 +44,19 @@ test('report preserves code, inputs, errors, reflections and evaluation context'
   for (const text of ['Condições', 'if idade >= 18:', '15', 'adolescente', 'Usei uma dica.', 'correspondeu', 'não uma avaliação de domínio']) assert.ok(report.includes(text), text);
   assert.ok(reviewQuestions(state.history[0]).some(q => q.includes('primeira condição')));
   assert.ok(reviewQuestions(attempt('err', { status: 'error' })).some(q => q.includes('erro')));
+});
+
+test('review summary groups only unsuccessful attempts and gives a next question', () => {
+  const state = initialState();
+  state.history = [
+    attempt('a', { title: 'Condicionais', status: 'error', code: 'if idade > 18:', output: 'SyntaxError' }),
+    attempt('b', { title: 'Condicionais', status: 'error', code: 'if idade > 18:', output: 'SyntaxError' }),
+    attempt('c', { title: 'Listas', status: 'success', code: 'for item in itens:', matched: false })
+  ];
+  const summary = reviewSummary(state);
+  assert.equal(summary.length, 2);
+  assert.equal(summary[0].titulo, 'Condicionais');
+  assert.equal(summary[0].tentativas, 2);
+  assert.match(summary[0].pergunta, /erro|mudança/i);
+  assert.equal(summary[1].titulo, 'Listas');
 });
