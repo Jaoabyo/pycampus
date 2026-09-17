@@ -37,14 +37,22 @@ export function FlyingLumi() {
 
 function FirstVisitGuide() {
   const [aberto, setAberto] = useState(() => { try { return localStorage.getItem('pycampus.guia-inicial.v1') !== 'ok'; } catch { return false; } });
+  const primeiroBotao = useRef(null);
+  useEffect(() => {
+    if (!aberto) return undefined;
+    primeiroBotao.current?.focus();
+    const fecharComEsc = event => { if (event.key === 'Escape') fechar(); };
+    window.addEventListener('keydown', fecharComEsc);
+    return () => window.removeEventListener('keydown', fecharComEsc);
+  }, [aberto]);
   if (!aberto) return null;
   const fechar = () => { try { localStorage.setItem('pycampus.guia-inicial.v1', 'ok'); } catch { /* segue nesta visita */ } setAberto(false); };
-  return <aside className="first-visit-guide" role="dialog" aria-labelledby="titulo-guia-inicial">
+  return <aside className="first-visit-guide" role="dialog" aria-modal="true" aria-labelledby="titulo-guia-inicial" aria-describedby="descricao-guia-inicial">
     <div className="first-visit-guide-head"><LumiArt size={34} /><div><div className="eyebrow">BEM-VINDO AO PYCAMPUS</div><h2 id="titulo-guia-inicial">Você só precisa dar o próximo passo</h2></div></div>
-    <p>Comece pela ação roxa da tela. Leia a explicação, execute o exemplo e depois tente com seu próprio código.</p>
+    <p id="descricao-guia-inicial">Comece pela ação roxa da tela. Leia a explicação, execute o exemplo e depois tente com seu próprio código.</p>
     <div className="first-visit-guide-steps"><span><b>1</b> Entenda</span><span><b>2</b> Execute</span><span><b>3</b> Tente</span></div>
     <p className="small">Seu progresso fica salvo neste navegador. Você pode revisar tudo depois.</p>
-    <button className="button primary full" onClick={fechar}>Entendi, vamos começar <Icon name="ArrowRight" size={16} /></button>
+    <button ref={primeiroBotao} className="button primary full" onClick={fechar}>Entendi, vamos começar <Icon name="ArrowRight" size={16} /></button>
     <button className="text-button first-visit-dismiss" onClick={fechar}>Agora não</button>
   </aside>;
 }

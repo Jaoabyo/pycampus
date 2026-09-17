@@ -12,7 +12,11 @@ await page.goto(base, { waitUntil: 'networkidle' });
 await page.evaluate(() => localStorage.clear());
 await page.reload({ waitUntil: 'networkidle' });
 assert.match(await page.title(), /Visão geral.*PyCampus/);
-await page.getByRole('dialog', { name: /Você só precisa/ }).getByRole('button', { name: /Entendi/ }).click();
+const guiaInicial = page.getByRole('dialog', { name: /Você só precisa/ });
+await guiaInicial.getByRole('button', { name: /Entendi/ }).waitFor();
+assert.equal(await page.evaluate(() => document.activeElement?.textContent?.includes('Entendi, vamos começar')), true, 'o guia inicial deve começar no primeiro botão');
+await page.keyboard.press('Escape');
+assert.equal(await guiaInicial.count(), 0, 'Esc deve fechar o guia inicial');
 assert.ok(await page.getByRole('button', { name: /Começar agora|próximo passo/i }).count(), 'a primeira visita precisa ter uma ação visível');
 
 await page.getByRole('button', { name: 'Mais', exact: true }).click();
