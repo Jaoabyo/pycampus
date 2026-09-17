@@ -9,6 +9,7 @@ import './lesson.css';
 // em que versão do Python roda, o que o ambiente não faz, e por onde reclamar quando algo
 // estiver errado. Sem isso, um colega encontra uma limitação e conclui que a plataforma mente.
 const REPO = 'https://github.com/Jaoabyo/pycampus';
+const LINKEDIN = 'https://www.linkedin.com/in/joão-vitor-nunes-de-quevedo-435b64328/';
 
 export default function Sobre({ navigate }) {
   return <>
@@ -21,6 +22,14 @@ export default function Sobre({ navigate }) {
     </div>
 
     <div className="settings-list sobre-grid">
+    <section className="card autor-card">
+      <div className="step-head"><span className="icon-tile purple"><Icon name="UserRound" size={21} /></span>
+        <div><div className="eyebrow">QUEM ESTÁ POR TRÁS</div><h3>João Vitor Nunes de Quevedo</h3></div></div>
+      <p>Estudante de Análise e Desenvolvimento de Sistemas e Analista NOC. Este projeto nasceu para transformar o estudo de Python, lógica, automação e desenvolvimento de software em uma experiência prática e acessível.</p>
+      <div className="autor-tags"><span>Python</span><span>Automação</span><span>Redes</span><span>Git/GitHub</span></div>
+      <div className="button-row"><a className="button primary" href={LINKEDIN} target="_blank" rel="noreferrer"><Icon name="Link" size={16} /> Ver LinkedIn</a><a className="button outline" href={REPO} target="_blank" rel="noreferrer"><Icon name="FolderCode" size={16} /> Ver GitHub</a></div>
+    </section>
+
     <section className="card sobre-aviso">
       <div className="step-head"><span className="icon-tile yellow"><Icon name="Lightbulb" size={21} /></span>
         <div><div className="eyebrow">ANTES DE MAIS NADA</div><h3>Isto é material complementar</h3></div></div>

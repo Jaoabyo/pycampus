@@ -1,4 +1,7 @@
 .sobre-aviso{border-color:#f3e4c8;background:#fffdf7}
+.autor-card{border-color:#e4daf7;background:linear-gradient(135deg,#fff,#faf7ff)}
+.autor-card p{max-width:850px;font-size:13px;line-height:1.8;color:#625571}
+.autor-tags{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 0}.autor-tags span{padding:5px 9px;border-radius:999px;background:#f0eafa;color:#6d51af;font-size:11px;font-weight:650}
 .sobre-lista{margin:12px 0 0;padding-left:20px}
 .sobre-lista>li{font-size:13px;line-height:1.85;color:#544a68;margin-bottom:7px}
 .sobre-lista code{font-family:Consolas,monospace;font-size:12px;background:#f4f1fd;border-radius:4px;padding:1px 5px}
