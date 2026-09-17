@@ -1,4 +1,3 @@
-import Sobre from './Sobre.jsx';
 import CodeEditor, { interativo } from './CodeEditor.jsx';
 import ParsonsPuzzle from './ParsonsPuzzle.jsx';
 import Mentor, { FlyingLumi } from './Mentor.jsx';
@@ -39,6 +38,7 @@ const Prova = lazy(() => import('./Prova.jsx'));
 const Visualizador = lazy(() => import('./Visualizador.jsx'));
 const HistoryView = lazy(() => import('./HistoryView.jsx'));
 const Faculdade = lazy(() => import('./Faculdade.jsx'));
+const Sobre = lazy(() => import('./Sobre.jsx'));
 
 const dateLabel = date => new Date(`${date}T12:00:00`).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
 const navItems = [{ id: 'dashboard', title: 'Visão geral', icon: 'LayoutDashboard' }, { id: 'course', title: 'Minha formação', icon: 'GraduationCap' }, { id: 'practice', title: 'Oficina de prática', icon: 'Hammer' }, { id: 'projects', title: 'Projetos', icon: 'FolderCode' }, { id: 'playground', title: 'Laboratório Python', icon: 'SquareTerminal' }, { id: 'faculdade', title: 'Minha faculdade', icon: 'GraduationCap' }, { id: 'targeted', title: 'Treino dirigido', icon: 'Target' }, { id: 'prova', title: 'Modo prova', icon: 'ShieldCheck' }, { id: 'history', title: 'Diário de aprendizagem', icon: 'BookOpenCheck' }, { id: 'calendar', title: 'Meu calendário', icon: 'CalendarDays' }, { id: 'badges', title: 'Conquistas', icon: 'Award' }];
