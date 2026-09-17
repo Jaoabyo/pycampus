@@ -110,7 +110,7 @@ export default function Prova({ state, update, openLesson }) {
       <span className="pill purple">Questão {indice + 1} de {questoes.length}</span>
       <span className="pill blue"><Icon name="Clock3" size={12} /> {relogio(segundos)}</span>
       <span className="pill teal">{feitas} aceitas</span>
-      <Progress value={feitas / questoes.length * 100} />
+      <Progress value={feitas / questoes.length * 100} label={`Questões respondidas: ${feitas} de ${questoes.length}`} />
     </div>
     <section className="card prova-questao">
       <div className="eyebrow">SEM CONSULTAR · {questao.titulo}</div>

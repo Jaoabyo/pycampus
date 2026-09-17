@@ -113,7 +113,7 @@ export default function PracticeStudio({ state, update, openLesson, openProject,
           <h2>{p.title}</h2>
           <p>{p.story}</p>
           <p className="practice-support"><Icon name="BookOpen" size={13} /> Apoio: {lesson.title}{state.completed.includes(p.prerequisite) ? ' · aula feita' : ''}</p>
-          <Progress value={steps / 3 * 100} />
+          <Progress value={steps / 3 * 100} label={`Etapas do miniprojeto: ${steps} de 3`} />
           {!pOpen && <div className="practice-locked"><p><Icon name="LockKeyhole" size={14} /> {blocked || `Conclua a aula ${lesson.title} para começar.`}</p><button className="text-button" onClick={() => openLesson(p.prerequisite)}>Ver aula de apoio <Icon name="BookOpen" size={13} /></button></div>}
           <div className="project-card-footer"><span>{!pOpen ? 'Ainda não liberado' : item?.rating ? `Revisar em ${brDate(nextReview(item))}` : `${steps}/3 conferências`}</span><button className="text-button" disabled={!pOpen} onClick={() => select(p)}>{steps ? 'Continuar' : 'Abrir miniprojeto'} <Icon name="ArrowRight" size={15} /></button></div>
         </div>

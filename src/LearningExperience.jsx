@@ -18,7 +18,7 @@ export function DailyMission({ mission, state, today, onOpen }) {
       <div><span className="eyebrow">SEU PLANO PARA HOJE</span><h2><Icon name="Sparkles" size={20} /> Missão do dia</h2><p>Faça uma coisa de cada vez. O próximo passo aparece quando você termina o atual.</p></div>
       <div className="mission-score" aria-label={`${progress.done} de ${progress.total} atividades concluídas`}><strong>{progress.done}</strong><span>/ {progress.total}</span></div>
     </div>
-    <Progress value={progress.percent} />
+    <Progress value={progress.percent} label={`Progresso da etapa: ${progress.percent}%`} />
     <ol className="mission-list">
       {(mission?.items || []).map((item, index) => {
         const done = missionItemDone(item, state, today);
@@ -57,7 +57,7 @@ export function LearningMap({ state, openLesson, openProject, navigate }) {
         {active && <div className="map-details">
           {!open && <p className="map-blocked"><Icon name="LockKeyhole" size={15} /> {stage.blocker}</p>}
           {open && <>
-            <div className="map-progress"><span>{totals.done} de {totals.total} atividades</span><Progress value={totals.total ? totals.done / totals.total * 100 : 0} /></div>
+            <div className="map-progress"><span>{totals.done} de {totals.total} atividades</span><Progress value={totals.total ? totals.done / totals.total * 100 : 0} label={`Atividades concluídas: ${totals.done} de ${totals.total}`} /></div>
             <div className="map-lessons">{module.lessons.map((lesson, lessonIndex) => {
               const allowed = lessonAllowed(state, lesson.id), done = state.completed.includes(lesson.id);
               return <button disabled={!allowed} key={lesson.id} onClick={() => openLesson(lesson.id)}><span>{done ? <Icon name="CheckCircle2" size={18} /> : allowed ? lessonIndex + 1 : <Icon name="LockKeyhole" size={15} />}</span><strong>{lesson.title}</strong><em>{lesson.minutes} min</em></button>;
