@@ -4,6 +4,15 @@
 const NL = String.fromCharCode(10);
 
 export const solucoesDaFaculdade = {
+  u1a1: [
+    'nota_1 = "6"',
+    'nota_2 = "7"',
+    'nota_3 = "7"',
+    'nota_4 = "8"',
+    'media = (float(nota_1) + float(nota_2) + float(nota_3) + float(nota_4)) / 4',
+    'print("Media:", media)'
+  ].join(NL),
+
   r1: [
     'idade = 15',
     'tem_ingresso = True',
@@ -103,5 +112,43 @@ export const solucoesDaFaculdade = {
     'plt.bar(["Jan", "Fev"], [120, 90])',
     'plt.title("Vendas")',
     'print("Barras:", len(plt.gca().patches))'
+  ].join(NL),
+
+  u4a2: [
+    'abas = ["Inicio", "Calculadora", "Historico"]',
+    'for numero, aba in enumerate(abas, start=1):',
+    '    print(numero, aba)'
+  ].join(NL),
+
+  u4a3: [
+    'import unittest',
+    'import io',
+    '',
+    'def dobro(numero):',
+    '    return numero * 2',
+    '',
+    'class TestDobro(unittest.TestCase):',
+    '    def test_zero(self):',
+    '        self.assertEqual(dobro(0), 0)',
+    '',
+    '    def test_positivo(self):',
+    '        self.assertEqual(dobro(4), 8)',
+    '',
+    '    def test_negativo(self):',
+    '        self.assertEqual(dobro(-2), -4)',
+    '',
+    'suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestDobro)',
+    'resultado = unittest.TextTestRunner(stream=io.StringIO()).run(suite)',
+    'print("Testes executados:", resultado.testsRun)',
+    'print("Falhas:", len(resultado.failures) + len(resultado.errors))'
+  ].join(NL),
+
+  u4a4: [
+    'import numpy as np',
+    'meses = np.array([1, 2, 3, 4])',
+    'vendas = np.array([100, 120, 140, 160])',
+    'coeficientes = np.polyfit(meses, vendas, 1)',
+    'previsao = np.polyval(coeficientes, 5)',
+    'print("Previsao:", round(float(previsao)))'
   ].join(NL)
 };

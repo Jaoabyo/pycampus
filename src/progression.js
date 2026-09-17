@@ -115,7 +115,16 @@ export function practiceIsOpen(state, id) {
 export function projectIsOpen(state, id) {
   const project = projects.find(item => item.id === id);
   if (!project || !moduleIsOpen(state, project.module)) return false;
+  // Uma atualização pode acrescentar prática à etapa depois que alguém já começou o projeto.
+  // O trabalho iniciado continua acessível para revisão e conclusão; isso não abre projetos de
+  // etapas futuras, pois a própria etapa ainda precisa estar aberta.
   const pending = moduleRequirements(state, project.module);
+  const iniciado = Boolean(state?.projectStepsDone?.[id]?.length
+    || state?.projectChecks?.[id]?.length
+    || state?.projectCodes?.[id]?.some?.(codigo => String(codigo || '').trim()));
+  // Pontes de função são parte da própria preparação para alguns projetos; não são dispensadas.
+  // A exceção serve apenas para práticas acrescentadas depois que o projeto já tinha começado.
+  if (iniciado && pending.missingBridges.length === 0) return true;
   return pending.missingLessons.length === 0
     && pending.missingPractices.length === 0
     && pending.missingBridges.length === 0;

@@ -1,5 +1,8 @@
-.faculdade-hero{background:linear-gradient(120deg,#4b3a86,#7755d9 60%,#9b7ae6)}
-.unidade-card{margin-bottom:22px}
+.faculdade-hero{min-height:238px;background:linear-gradient(120deg,#4b3a86,#7755d9 60%,#9b7ae6);box-shadow:0 16px 38px #51369018}
+.faculdade-hero::after{content:'{ py }';position:absolute;right:7%;top:50%;transform:translateY(-50%) rotate(-7deg);font:800 82px/1 Consolas,monospace;color:#fff;opacity:.08;letter-spacing:-8px}
+.faculdade-hero .hero-copy{max-width:850px}
+.unidade-card{margin-bottom:22px;padding:24px;box-shadow:0 9px 28px #4a355f07}
+.unidade-card:hover{border-color:#e2daf0}
 .unidade-card>p{margin:6px 0}
 .faculdade-aulas{display:flex;flex-direction:column;gap:9px;margin:18px 0}
 .faculdade-aula{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:13px 15px;border:1px solid #e9e3f4;border-radius:12px;background:#fff;transition:border-color .18s,background .18s}
@@ -14,7 +17,7 @@
 .faculdade-tarefa{margin:14px 0;padding:14px 16px;border-left:3px solid #e0d3f5;background:#faf8fe;border-radius:0 10px 10px 0}
 .faculdade-tarefa strong{display:block;margin:3px 0 6px;font-family:var(--heading);font-size:15px;color:#3d2f4d}
 .faculdade-tarefa p{margin:0 0 6px}
-.prova-plano{border:1px solid #e4daf7;background:linear-gradient(135deg,#fff 45%,#faf6ff);margin-bottom:22px}
+.prova-plano{border:1px solid #e4daf7;background:linear-gradient(135deg,#fff 45%,#faf6ff);margin:22px 0;padding:24px;box-shadow:0 10px 30px #5d3c8309}
 .prova-plano-topo{display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
 .prova-plano-topo h3{margin:5px 0}.prova-plano-topo p{margin:5px 0 0}
 .prova-medidor{display:grid;grid-template-columns:auto auto;align-items:baseline;flex:0 0 auto;color:#6f4bd1}
@@ -24,8 +27,15 @@
 .prova-acao{display:flex;width:100%;min-height:58px;justify-content:space-between;text-align:left}.prova-acao span{display:flex;flex-direction:column;gap:3px}.prova-acao small{font-size:10px;letter-spacing:.12em;opacity:.78}
 .prova-fonte{display:flex;align-items:center;gap:7px;margin:13px 0 0;color:#777080}
 .faculdade-conexao{display:flex;align-items:flex-start;gap:9px;margin-top:16px;padding:12px 14px;border-radius:10px;background:#f5f9ff;color:#50556b}.faculdade-conexao svg{flex:0 0 auto;margin-top:3px;color:#5b83d7}.faculdade-conexao p{margin:0}
+.faculdade-ideias{display:grid;gap:10px;margin:16px 0}.faculdade-ideias>div{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #eee9f5;border-radius:11px;background:#fcfbfe}.faculdade-ideias>div>span{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#eee8fb;color:#6d4bc6;font-size:11px;font-weight:800}.faculdade-ideias p{margin:0;color:#5f6070;font-size:13px;line-height:1.75}
+.faculdade-limite{display:flex;align-items:flex-start;gap:9px;margin:12px 0 16px;padding:12px 14px;border-radius:10px;background:#fff8e8;border:1px solid #f2dfae}.faculdade-limite svg{margin-top:3px;color:#b68a2f}.faculdade-limite p{margin:0;color:#6f634b;font-size:12px}
+.faculdade-requisitos{margin-top:12px;padding:13px 15px;border:1px solid #ead7a2;border-radius:10px;background:#fffaf0;color:#695c3c;font-size:12px}.faculdade-requisitos strong{display:block;margin-bottom:5px}.faculdade-requisitos ul{margin:0;padding-left:19px;line-height:1.7}
+.faculdade-passo{padding:24px;margin-bottom:18px;box-shadow:0 8px 26px #4a355f06}.faculdade-passo>.step-head{padding-bottom:14px;border-bottom:1px solid #f0edf5}
 @media(max-width:600px){
-  .prova-plano-topo{gap:12px}.prova-medidor strong{font-size:28px}.prova-acao{min-height:64px}
+  .faculdade-hero{min-height:250px}.faculdade-hero::after{right:-12%;font-size:62px}
+  .prova-plano,.unidade-card,.faculdade-passo{padding:18px 15px}.prova-plano{margin:16px 0 18px}
+  .prova-plano-topo{gap:12px}.prova-medidor strong{font-size:28px}.prova-acao{min-height:64px;padding:12px}
+  .prova-fonte{align-items:flex-start;line-height:1.55}
   .faculdade-aula{align-items:flex-start;padding:12px}
   .faculdade-aula>svg{display:none}
   .faculdade-aula strong{font-size:14px}

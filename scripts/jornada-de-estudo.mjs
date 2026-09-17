@@ -14,7 +14,7 @@
 import { chromium } from 'playwright';
 import { readFileSync, existsSync } from 'node:fs';
 import { lessons } from '../src/curriculum.js';
-import { initialState } from '../src/progress.js';
+import { initialState, normalizeState } from '../src/progress.js';
 
 const NL = String.fromCharCode(10);
 const BASE = process.argv[2] || process.env.PYCAMPUS_TEST_URL || 'http://127.0.0.1:5176/';
@@ -35,7 +35,10 @@ const estadoParcial = () => JSON.stringify({
   projectPositions: { calculadora: 'saldo' },
   projectCodes: { calculadora: ['renda = 3000.0', 'despesa_1 = 1200.0', 'despesa_2 = 450.0', 'despesa_3 = 300.0', 'subtotal = despesa_1 + despesa_2 + despesa_3', 'total = renda - subtotal', 'print(f"{total:.2f}")'].join(NL) }
 });
-const estado = existsSync(BACKUP) ? readFileSync(BACKUP, 'utf8') : estadoParcial();
+const estadoBruto = existsSync(BACKUP) ? readFileSync(BACKUP, 'utf8') : estadoParcial();
+// A aplicação normaliza backups antigos e recupera atividades de passos já concluídos. A
+// expectativa precisa ler o mesmo estado migrado que a tela recebe, não o JSON anterior.
+const estado = JSON.stringify(normalizeState(JSON.parse(estadoBruto)));
 const diaDoEstado = (() => {
   const dias = Object.entries(JSON.parse(estado).activities || {}).sort();
   return dias.at(-1) || [hoje, []];

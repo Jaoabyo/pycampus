@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Icon, irAoTopo } from './ui.jsx';
-import { unidades, aulasDaUnidade, tarefasDaUnidade, aulasDaFaculdade, tarefasDaFaculdade, diasAteProva } from './faculdade.js';
+import { unidades, aulasDaUnidade, tarefasDaUnidade, aulasDaFaculdade, tarefasDaFaculdade, diasAteProva, requisitosFaltandoDaFaculdade } from './faculdade.js';
 import { localDate } from './progress.js';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
@@ -34,8 +34,8 @@ export default function Faculdade({ state, update, navigate }) {
       <div className="hero-copy">
         <div className="hero-kicker"><span /> LINGUAGEM DE PROGRAMAÇÃO · ANHANGUERA</div>
         <h2>O conteúdo da sua<br />disciplina, <em>rodando.</em></h2>
-        <p>Revisão dos slides e das Unidades 2 e 3, com os exemplos do professor executando de verdade —
-          de condicionais a NumPy, pandas, Matplotlib e SQLite.</p>
+        <p>As quatro unidades da disciplina em aulas curtas, exemplos executáveis e prática guiada —
+          dos primeiros tipos de dados a bancos, testes e machine learning.</p>
         <div className="hero-foot"><Icon name="GraduationCap" size={14} /> {total} aulas <span>·</span> {feitas.length} estudadas <span>·</span> {tarefasDaFaculdade.length} tarefas do professor</div>
       </div>
     </section>
@@ -58,7 +58,7 @@ export default function Faculdade({ state, update, navigate }) {
         <span><small>{pendentes.length ? 'COMECE AGORA' : 'REVISAR'}</small>{proxima.titulo}</span>
         <Icon name="ArrowRight" size={18} />
       </button>}
-      <p className="small prova-fonte"><Icon name="BookOpen" size={15} /> Conferido em 7 materiais diferentes: um dos 8 PDFs enviados era uma cópia repetida.</p>
+      <p className="small prova-fonte"><Icon name="BookOpen" size={15} /> Conferido nos 8 PDFs: quatro apostilas completas e quatro apresentações que aprofundam a primeira aula de cada unidade.</p>
     </section>
 
     {unidades.map(unidade => {
@@ -67,7 +67,7 @@ export default function Faculdade({ state, update, navigate }) {
       return <section className="card unidade-card" key={unidade.id}>
         <div className="step-head">
           <span className={`icon-tile ${unidade.cor}`}><Icon name={unidade.icone} size={21} /></span>
-          <div><div className="eyebrow">{unidade.id === 'revisao' ? 'REVISÃO PARA A PROVA' : `UNIDADE ${unidade.numero}`} · {prontas} DE {aulas.length} ESTUDADAS</div><h3>{unidade.titulo}</h3></div>
+          <div><div className="eyebrow">UNIDADE {unidade.numero} · {prontas} DE {aulas.length} ESTUDADAS</div><h3>{unidade.titulo}</h3></div>
         </div>
         <p>{unidade.resumo}</p>
         <p className="small"><strong>Competência da unidade:</strong> {unidade.competencia}</p>
@@ -112,6 +112,8 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
   const [diferenca, setDiferenca] = useState(null);
   const [tentativas, setTentativas] = useState(0);
   const [celebrar, setCelebrar] = useState(0);
+  const [requisitosPendentes, setRequisitosPendentes] = useState([]);
+  const unidade = unidades.find(item => item.id === aula.unidade);
   const codigo = guardado ?? aula.starter;
   const python = usePython({
     source: 'playground', title: `Faculdade · ${aula.titulo}`, expected: aula.esperado,
@@ -119,18 +121,22 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
   });
   const exemploPython = usePython({ title: `Exemplo da faculdade · ${aula.titulo}` });
   const setCodigo = valor => {
-    setSaidaOk(false); setAviso(''); setDiferenca(null);
+    setSaidaOk(false); setAviso(''); setDiferenca(null); setRequisitosPendentes([]);
     update(s => ({ ...s, faculdade: { ...s.faculdade, codigos: { ...s.faculdade?.codigos, [aula.id]: valor } } }));
   };
   const executar = () => {
     setAviso(''); setDiferenca(null);
     python.run(codigo, '', resultado => {
-      const bate = resultado.ok && resultado.output.trim() === aula.esperado.trim();
+      const bateSaida = resultado.ok && resultado.output.trim() === aula.esperado.trim();
+      const faltando = bateSaida ? requisitosFaltandoDaFaculdade(aula, codigo) : [];
+      const bate = bateSaida && faltando.length === 0;
+      setRequisitosPendentes(faltando);
       setSaidaOk(bate);
       setTentativas(n => bate ? 0 : n + 1);
-      setDiferenca(resultado.ok && !bate ? resultado.output : null);
+      setDiferenca(resultado.ok && !bateSaida ? resultado.output : null);
       setAviso(!resultado.ok ? 'Vamos ler o erro. A ajuda abaixo indica por onde começar.'
         : bate ? 'Saída correta. Agora responda à revisão para registrar a aula.'
+          : bateSaida ? 'A saída bateu, mas o código ainda não demonstra a lógica pedida. Veja o item abaixo.'
           : 'A saída ficou diferente da esperada. Compare linha a linha.');
       if (bate) setCelebrar(n => n + 1);
     });
@@ -150,25 +156,28 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
   return <>
     <button className="text-button back" disabled={python.busy} onClick={voltar}><Icon name="ArrowLeft" size={16} /> Voltar para a minha faculdade</button>
     <div className="page-heading"><div>
-      <div className="eyebrow">{aula.unidade === 'revisao' ? 'REVISÃO PARA A PROVA' : `UNIDADE ${aula.unidade === 'u2' ? '2' : '3'}`} · LINGUAGEM DE PROGRAMAÇÃO</div>
+      <div className="eyebrow">UNIDADE {unidade?.numero || ''} · LINGUAGEM DE PROGRAMAÇÃO</div>
       <h1>{aula.titulo}</h1>
       <p>{aula.minutos} min {feita ? '· já estudada' : ''}</p>
     </div></div>
 
-    <section className="card">
+    <section className="card faculdade-passo">
       <div className="step-head"><span className="icon-tile purple"><Icon name="BookOpen" size={21} /></span>
-        <div><div className="eyebrow">PASSO 1 DE 3</div><h3>A ideia</h3></div></div>
-      {aula.teoria.map(paragrafo => <p key={paragrafo}>{paragrafo}</p>)}
+        <div><div className="eyebrow">PASSO 1 DE 3</div><h3>Entenda em poucas ideias</h3></div></div>
+      <div className="faculdade-ideias">{aula.teoria.map((paragrafo, indice) => <div key={paragrafo}>
+        <span>{indice + 1}</span><p>{paragrafo}</p>
+      </div>)}</div>
       {aula.naFormacao?.length > 0 && <div className="faculdade-conexao">
         <Icon name="Footprints" size={17} /><p><strong>Também está na formação geral:</strong> {aula.naFormacao.join(' · ')}
           {aula.focoFaculdade && <><br /><span>{aula.focoFaculdade}</span></>}</p>
       </div>}
     </section>
 
-    <section className="card">
+    <section className="card faculdade-passo">
       <div className="step-head"><span className="icon-tile blue"><Icon name="Code2" size={21} /></span>
         <div><div className="eyebrow">PASSO 2 DE 3</div><h3>O exemplo do professor, rodando</h3></div></div>
-      <p className="small">Este é o código da apostila. Execute aqui, observe a saída e depois faça o desafio com seu próprio código.</p>
+      <p className="small">Este exemplo segue o material da faculdade. Execute, observe a saída e só depois faça o desafio com seu próprio código.</p>
+      {aula.notaAmbiente && <div className="faculdade-limite"><Icon name="Info" size={16} /><p>{aula.notaAmbiente}</p></div>}
       <CodeEditor code={aula.exemplo} readOnly busy={exemploPython.busy}
         onRun={() => exemploPython.run(aula.exemplo)} onStop={exemploPython.stop}
         output={exemploPython.output} success={exemploPython.success}
@@ -176,7 +185,7 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
         emptyOutput="Execute o exemplo para conferir o que o código do professor produz." />
     </section>
 
-    <section className="card">
+    <section className="card faculdade-passo">
       <div className="step-head"><span className="icon-tile orange"><Icon name="Target" size={21} /></span>
         <div><div className="eyebrow">PASSO 3 DE 3</div><h3>Agora você</h3></div></div>
       <p className="coach-task">{aula.desafio}</p>
@@ -187,6 +196,10 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
         inputRequest={python.inputRequest} onReply={python.reply}
         filename={`${aula.id}.py`} emptyOutput="Sua saída aparece aqui depois de executar." />
       {aviso && <p role="status" className="practice-feedback">{aviso}</p>}
+      {requisitosPendentes.length > 0 && <div className="faculdade-requisitos" role="status">
+        <strong>Ainda falta mostrar no código:</strong>
+        <ul>{requisitosPendentes.map(item => <li key={item.id}>{item.descricao}</li>)}</ul>
+      </div>}
       {python.success === false && <ErrorHelp output={python.output} code={codigo} />}
       {diferenca !== null && <OutputCompare actual={diferenca} expected={aula.esperado} />}
       <Mentor activityId={`faculdade:${aula.id}`} lumiNotes={state.lumiNotes}
@@ -195,7 +208,7 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
         expected={aula.esperado} code={codigo} output={python.output} lessonId="" />
     </section>
 
-    <section className="card review">
+    <section className="card review faculdade-passo">
       <div className="step-head"><span className="icon-tile teal"><Icon name="BookOpenCheck" size={21} /></span>
         <div><div className="eyebrow">REVISÃO</div><h3>Uma pergunta, do jeito que a prova pergunta</h3></div></div>
       <h4 className="review-question">{aula.pergunta}</h4>
@@ -212,7 +225,7 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
         <div><div className="eyebrow">{feita ? 'AULA REGISTRADA' : 'PARA REGISTRAR'}</div>
           <h3>{feita ? 'Esta aula já conta no seu estudo' : pronta ? 'Tudo pronto' : 'Faltam dois itens'}</h3></div></div>
       {!feita && <ul className="complete-checklist">
-        {[['Desafio com a saída esperada', saidaOk], ['Revisão correta', resposta === aula.resposta]].map(([rotulo, ok]) =>
+        {[["Desafio com a lógica pedida e a saída esperada", saidaOk], ['Revisão correta', resposta === aula.resposta]].map(([rotulo, ok]) =>
           <li key={rotulo} className={ok ? 'done' : ''}><Icon name={ok ? 'CheckCircle2' : 'Circle'} size={16} /> {rotulo}</li>)}
       </ul>}
       {!feita && <button className="button primary full" disabled={!pronta || python.busy} aria-describedby={`portao-${aula.id}`} onClick={registrar}>

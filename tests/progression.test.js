@@ -171,6 +171,18 @@ test('a finished lesson stays open for review even when its stage would be locke
   assert.equal(lessonAllowed(veteran, 'listas'), false, 'território novo permanece travado');
   assert.equal(lessonAllowed(initialState(), 'ola'), true, 'a primeira aula está sempre aberta');
 });
+test('um projeto já iniciado continua aberto quando a etapa ganha novos requisitos', () => {
+  const veteran = blank();
+  veteran.completed = modules[0].lessons.map(lesson => lesson.id);
+  veteran.projectStepsDone.calculadora = [stepsFor('calculadora')[0].id];
+  assert.ok(moduleRequirements(veteran, 0).missingPractices.length > 0);
+  assert.equal(projectIsOpen(veteran, 'calculadora'), true);
+
+  const projetoFuturo = projects[1];
+  veteran.projectStepsDone[projetoFuturo.id] = [stepsFor(projetoFuturo.id)[0].id];
+  assert.equal(moduleIsOpen(veteran, projetoFuturo.module), false);
+  assert.equal(projectIsOpen(veteran, projetoFuturo.id), false, 'progresso futuro não ignora uma etapa anterior');
+});
 test('the missing summary names lessons, bridges, miniprojects and the project of the stage', () => {
   const summary = missingSummary(initialState(), 0);
   for (const part of ['6 aulas', 'miniprojeto', 'projeto', 'etapa 01']) assert.ok(summary.includes(part), `${part} fora de: ${summary}`);

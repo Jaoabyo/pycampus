@@ -34,7 +34,7 @@ export default function Sobre({ navigate }) {
       <ul className="sobre-lista">
         <li><strong>Python {PYTHON_VERSAO}</strong>, compilado para o navegador (Pyodide). É CPython de verdade, não um simulador.</li>
         <li><strong>SQLite {SQLITE_VERSAO}</strong>, usado nas aulas de banco de dados.</li>
-        <li>A biblioteca padrão está disponível. <strong>Pacotes externos não</strong>: nada de <code>pip install</code>, <code>requests</code>, <code>pandas</code> ou <code>numpy</code>.</li>
+        <li>A biblioteca padrão está disponível. O ambiente carrega automaticamente os pacotes compatíveis usados nas aulas da faculdade, como <strong>NumPy, pandas e Matplotlib</strong>. Não há <code>pip install</code> livre, e pacotes de aplicativo ou servidor como KivyMD e TensorFlow precisam do ambiente local.</li>
         <li>Seu programa <strong>não acessa a internet</strong> nem a rede.</li>
         <li>Arquivos criados pelo seu código são <strong>temporários</strong>: somem quando a aba fecha.</li>
         <li>Cada execução tem limite de <strong>15 segundos</strong>. Laço infinito é interrompido em vez de travar o navegador.</li>
@@ -68,7 +68,7 @@ export default function Sobre({ navigate }) {
     <section className="card">
       <div className="step-head"><span className="icon-tile pink"><Icon name="BookOpenCheck" size={21} /></span>
         <div><div className="eyebrow">O QUE TEM AQUI</div><h3>{lessons.length} aulas, {practiceProjects.length} miniprojetos e {projects.length} projetos</h3></div></div>
-      <p>A sequência segue o método PRIMM: prever a saída, investigar por que ela acontece, mudar uma parte e só então criar a sua versão. Cada exercício é conferido comparando a saída do seu programa com a esperada, no Python de verdade.</p>
+      <p>A sequência segue o método PRIMM: prever a saída, investigar por que ela acontece, mudar uma parte e só então criar a sua versão. A conferência combina a saída do Python com requisitos mínimos da técnica pedida; ainda assim, nenhum teste automático substitui avaliação humana.</p>
       <div className="button-row"><button className="button outline" onClick={() => navigate('course')}>Ver a formação <Icon name="ArrowRight" size={15} /></button></div>
     </section>
 
