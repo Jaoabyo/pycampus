@@ -30,6 +30,8 @@ jobs:
       - run: npm ci
       # A suíte roda antes de publicar: site no ar com teste vermelho não ajuda ninguém.
       - run: npm test
+      # Dependências vulneráveis não devem chegar ao site publicado.
+      - run: npm audit --omit=dev
       # O site vive em /pycampus/, e o worker do Python é carregado a partir dessa base.
       - run: npm run build
         env:
