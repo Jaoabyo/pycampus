@@ -73,6 +73,10 @@ try {
   const celular = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
   acompanharErros(celular, erros, 'celular');
   await celular.goto(base, { waitUntil: 'networkidle' });
+  await celular.getByRole('button', { name: 'Mais', exact: true }).click();
+  await celular.locator('aside.sidebar.open').waitFor();
+  await celular.keyboard.press('Escape');
+  await celular.locator('aside.sidebar.open').waitFor({ state: 'detached' });
   for (const pagina of paginas) await navegarCelular(celular, pagina);
 
   assert.deepEqual(erros, [], `erros do navegador:\n${erros.join('\n')}`);

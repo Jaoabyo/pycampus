@@ -287,6 +287,11 @@ export default function App() {
       else button.removeAttribute('aria-current');
     });
   }, [page]);
+  useEffect(() => {
+    const fecharMenu = event => { if (event.key === 'Escape') setMobileOpen(false); };
+    window.addEventListener('keydown', fecharMenu);
+    return () => window.removeEventListener('keydown', fecharMenu);
+  }, []);
   const importRef = useRef(null), toastTimer = useRef(null);
   const update = fn => setState(fn);
   const info = levelInfo(state), fire = streak(state, today);
