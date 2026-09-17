@@ -92,6 +92,7 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
     source: 'playground', title: `Faculdade · ${aula.titulo}`, expected: aula.esperado,
     onRecord: tentativa => update(s => appendAttempt(s, tentativa))
   });
+  const exemploPython = usePython({ title: `Exemplo da faculdade · ${aula.titulo}` });
   const setCodigo = valor => {
     setSaidaOk(false); setAviso(''); setDiferenca(null);
     update(s => ({ ...s, faculdade: { ...s.faculdade, codigos: { ...s.faculdade?.codigos, [aula.id]: valor } } }));
@@ -138,8 +139,12 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
     <section className="card">
       <div className="step-head"><span className="icon-tile blue"><Icon name="Code2" size={21} /></span>
         <div><div className="eyebrow">PASSO 2 DE 3</div><h3>O exemplo do professor, rodando</h3></div></div>
-      <p className="small">Este é o código da apostila. Copie para o editor abaixo e execute para ver a saída antes de fazer o desafio.</p>
-      <pre className="example-code">{aula.exemplo}</pre>
+      <p className="small">Este é o código da apostila. Execute aqui, observe a saída e depois faça o desafio com seu próprio código.</p>
+      <CodeEditor code={aula.exemplo} readOnly busy={exemploPython.busy}
+        onRun={() => exemploPython.run(aula.exemplo)} onStop={exemploPython.stop}
+        output={exemploPython.output} success={exemploPython.success}
+        filename={`${aula.id}-exemplo.py`} runLabel="Executar exemplo"
+        emptyOutput="Execute o exemplo para conferir o que o código do professor produz." />
     </section>
 
     <section className="card">

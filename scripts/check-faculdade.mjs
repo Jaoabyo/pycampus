@@ -5,6 +5,7 @@
 //   node scripts/check-faculdade.mjs        confere
 //   MEDIR=1 node scripts/check-faculdade.mjs   mostra a saída real de cada programa
 import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
 import { aulasDaFaculdade } from '../src/faculdade.js';
 import { solucoesDaFaculdade } from '../tests/faculdade-reference.js';
 
@@ -15,7 +16,7 @@ const MEDIR = process.env.MEDIR === '1';
 const browser = await chromium.launch({ channel: 'msedge' });
 const ctx = await browser.newContext();
 const page = await ctx.newPage();
-await page.goto(BASE).catch(() => {});
+await page.goto(BASE, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(4000);
 
 // Um worker por programa: pandas e matplotlib deixam estado global, e um exemplo não pode
@@ -66,6 +67,25 @@ for (const aula of aulasDaFaculdade) {
   else if (!aula.esperado) problemas.push(`${aula.id}: o desafio não tem saída esperada`);
   else if (medido !== aula.esperado.trim()) problemas.push(`${aula.id}: a solução produz ${JSON.stringify(medido)} e o desafio espera ${JSON.stringify(aula.esperado.trim())}`);
 }
+
+// A lista e a primeira aula precisam continuar utilizáveis, além de o conteúdo executar isolado.
+await page.goto(BASE, { waitUntil: 'networkidle' });
+await page.getByRole('button', { name: 'Minha faculdade', exact: true }).click();
+await page.getByText(/O conteúdo da sua/).waitFor();
+assert.equal(await page.locator('.unidade-card').count(), 2);
+assert.equal(await page.locator('.faculdade-aula').count(), aulasDaFaculdade.length);
+await page.locator('.faculdade-aula').first().click();
+await page.getByRole('button', { name: 'Executar exemplo', exact: true }).click();
+await page.locator('.code-workspace').first().getByText('✓ Executado').waitFor({ timeout: 120000 });
+
+const mobile = await ctx.newPage();
+await mobile.setViewportSize({ width: 390, height: 844 });
+await mobile.goto(BASE, { waitUntil: 'networkidle' });
+await mobile.getByRole('button', { name: 'Mais', exact: true }).click();
+await mobile.getByRole('button', { name: 'Minha faculdade', exact: true }).click();
+await mobile.getByText(/O conteúdo da sua/).waitFor();
+assert.equal(await mobile.locator('.faculdade-aula').count(), aulasDaFaculdade.length);
+assert.ok(await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Minha faculdade criou rolagem horizontal no celular');
 
 await browser.close();
 if (MEDIR) { console.log(`${programas} programas executados.`); process.exit(0); }
