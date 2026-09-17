@@ -45,7 +45,7 @@ const navItems = [{ id: 'dashboard', title: 'Visão geral', icon: 'LayoutDashboa
 function PageSkeleton() { return <div className="page-skeleton" role="status" aria-label="Abrindo conteúdo"><span /><span /><span /><span /></div>; }
 function MobileBottomNav({ page, navigate, openMore }) {
   const items = [['dashboard', 'House', 'Início'], ['course', 'GraduationCap', 'Formação'], ['practice', 'Hammer', 'Prática'], ['projects', 'FolderCode', 'Projetos']];
-  return <nav className="mobile-bottom-nav" aria-label="Atalhos principais">{items.map(([id, icon, label]) => <button key={id} className={page === id || page === 'lesson' && id === 'course' || page === 'project' && id === 'projects' ? 'active' : ''} onClick={() => navigate(id)}><Icon name={icon} size={20} /><span>{label}</span></button>)}<button onClick={openMore}><Icon name="Menu" size={20} /><span>Mais</span></button></nav>;
+  return <nav className="mobile-bottom-nav" aria-label="Atalhos principais">{items.map(([id, icon, label]) => { const ativo = page === id || page === 'lesson' && id === 'course' || page === 'project' && id === 'projects'; return <button key={id} className={ativo ? 'active' : ''} aria-current={ativo ? 'page' : undefined} onClick={() => navigate(id)}><Icon name={icon} size={20} /><span>{label}</span></button>; })}<button onClick={openMore}><Icon name="Menu" size={20} /><span>Mais</span></button></nav>;
 }
 function Modal({ title, children, onClose, wide = false }) {
   const ref = useRef(null);
@@ -277,6 +277,10 @@ export default function App() {
     previousProgress.current = state;
     if (reward) setCelebrations(queue => [...queue, reward]);
   }, [state]);
+  useEffect(() => {
+    const titulo = page === 'dashboard' ? 'Visão geral' : navItems.find(item => item.id === page)?.title || (page === 'lesson' ? 'Aula' : page === 'project' ? 'Projeto' : page === 'sobre' ? 'Sobre e limites' : 'PyCampus');
+    document.title = `${titulo} · PyCampus`;
+  }, [page]);
   const importRef = useRef(null), toastTimer = useRef(null);
   const update = fn => setState(fn);
   const info = levelInfo(state), fire = streak(state, today);
