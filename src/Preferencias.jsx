@@ -143,6 +143,7 @@ export function ProgressoNaNuvem({ state, aoBaixar }) {
   const [estado, setEstado] = useState(conectado() ? 'conectado' : 'desligado');
   const [aviso, setAviso] = useState('');
   const [ocupado, setOcupado] = useState('');
+  const itensGuardados = state.completed.length + (state.faculdade?.feitas?.length || 0) + Object.values(state.projectStepsDone || {}).reduce((total, itens) => total + (Array.isArray(itens) ? itens.length : 0), 0);
 
   useEffect(() => { if (conectado()) conferirToken().then(setDono).catch(() => setEstado('desligado')); }, []);
 
@@ -177,6 +178,7 @@ export function ProgressoNaNuvem({ state, aoBaixar }) {
     {estado === 'conectado'
       ? <>
           <p>Conectado como <strong>{dono || '…'}</strong>. Cada coisa que você conclui sobe para um <strong>Gist privado</strong> da sua conta, e pode ser trazida em qualquer aparelho.</p>
+          <div className="sync-snapshot" aria-label="Resumo do que será sincronizado"><strong>{itensGuardados}</strong><span>registros de estudo protegidos neste aparelho</span><small>Aulas, trilha da Faculdade e passos de projetos entram no próximo salvamento.</small></div>
           <div className="button-row">
             <button className="button primary" disabled={Boolean(ocupado)} onClick={salvar}><Icon name="Upload" size={16} /> Salvar agora</button>
             <button className="button outline" disabled={Boolean(ocupado)} onClick={baixar}><Icon name="Download" size={16} /> Trazer de outro aparelho</button>

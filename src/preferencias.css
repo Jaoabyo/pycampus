@@ -18,3 +18,4 @@
 .settings-list:has(.relatorio-texto)>.card:has(.relatorio-texto),.settings-list:has(.relatorio-texto)>.card:last-child{grid-column:1/-1}
 .settings-list:has(.relatorio-texto)>.card:hover{border-color:#ded5e9}
 @media(max-width:860px){.settings-list:has(.relatorio-texto){grid-template-columns:1fr}.settings-list:has(.relatorio-texto)>.card:has(.relatorio-texto),.settings-list:has(.relatorio-texto)>.card:last-child{grid-column:auto}}
+.sync-snapshot{display:grid;grid-template-columns:auto 1fr;column-gap:9px;align-items:baseline;margin:14px 0;padding:12px 14px;border:1px solid #e1d6f3;border-radius:10px;background:#faf8ff;color:#67557f}.sync-snapshot strong{font:800 24px/1 var(--heading);color:#7654c7}.sync-snapshot span{font-size:12px;font-weight:650}.sync-snapshot small{grid-column:2;color:#9286a1;font-size:11px;line-height:1.5}@media(max-width:520px){.sync-snapshot{grid-template-columns:auto 1fr}.sync-snapshot small{grid-column:1/-1;margin-top:5px}}
