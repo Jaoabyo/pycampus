@@ -12,6 +12,7 @@ await page.goto(base, { waitUntil: 'networkidle' });
 await page.evaluate(() => localStorage.clear());
 await page.reload({ waitUntil: 'networkidle' });
 assert.match(await page.title(), /Visão geral.*PyCampus/);
+await page.getByRole('dialog', { name: /Você só precisa/ }).getByRole('button', { name: /Entendi/ }).click();
 assert.ok(await page.getByRole('button', { name: /Começar agora|próximo passo/i }).count(), 'a primeira visita precisa ter uma ação visível');
 
 await page.getByRole('button', { name: 'Mais', exact: true }).click();
