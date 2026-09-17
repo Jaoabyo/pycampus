@@ -74,6 +74,9 @@ await page.getByRole('button', { name: 'Minha faculdade', exact: true }).click()
 await page.getByText(/O conteúdo da sua/).waitFor();
 assert.equal(await page.locator('.unidade-card').count(), unidades.length);
 await page.getByText('PLANO ATÉ 27 DE SETEMBRO').waitFor();
+await page.getByText('PRÓXIMA AÇÃO').waitFor();
+assert.equal(await page.locator('.prova-proxima').count(), 1);
+assert.equal(await page.locator('.prova-acao').count(), 1);
 assert.equal(await page.locator('.faculdade-aula').count(), aulasDaFaculdade.length);
 await page.locator('.faculdade-aula').first().click();
 await page.getByRole('button', { name: 'Executar exemplo', exact: true }).click();

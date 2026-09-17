@@ -24,6 +24,10 @@
 .prova-medidor strong{font:800 34px/1 var(--heading)}.prova-medidor span{font-weight:700;color:#9f8bc9}.prova-medidor small{grid-column:1/3;margin-top:4px;color:#797283;text-align:center}
 .prova-progresso{height:7px;margin:18px 0;border-radius:20px;background:#eee9f5;overflow:hidden}
 .prova-progresso span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#7755d9,#a688ef);transition:width .35s ease}
+.prova-proxima{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:stretch}
+.prova-proxima-context{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:13px 15px;border:1px solid #e7def5;border-radius:12px;background:#fff}
+.prova-proxima-context strong{margin-top:3px;color:#3d2f4d;font-family:var(--heading);font-size:15px;line-height:1.35}
+.prova-proxima-context p{margin:5px 0 0;color:#70677c;font-size:13px;line-height:1.5}
 .prova-acao{display:flex;width:100%;min-height:58px;justify-content:space-between;text-align:left}.prova-acao span{display:flex;flex-direction:column;gap:3px}.prova-acao small{font-size:10px;letter-spacing:.12em;opacity:.78}
 .prova-fonte{display:flex;align-items:center;gap:7px;margin:13px 0 0;color:#777080}
 .faculdade-conexao{display:flex;align-items:flex-start;gap:9px;margin-top:16px;padding:12px 14px;border-radius:10px;background:#f5f9ff;color:#50556b}.faculdade-conexao svg{flex:0 0 auto;margin-top:3px;color:#5b83d7}.faculdade-conexao p{margin:0}
@@ -34,7 +38,7 @@
 @media(max-width:600px){
   .faculdade-hero{min-height:250px}.faculdade-hero::after{right:-12%;font-size:62px}
   .prova-plano,.unidade-card,.faculdade-passo{padding:18px 15px}.prova-plano{margin:16px 0 18px}
-  .prova-plano-topo{gap:12px}.prova-medidor strong{font-size:28px}.prova-acao{min-height:64px;padding:12px}
+  .prova-plano-topo{gap:12px}.prova-medidor strong{font-size:28px}.prova-proxima{grid-template-columns:1fr}.prova-acao{min-height:64px;padding:12px}
   .prova-fonte{align-items:flex-start;line-height:1.55}
   .faculdade-aula{align-items:flex-start;padding:12px}
   .faculdade-aula>svg{display:none}

@@ -485,3 +485,28 @@ export const tarefasDaFaculdade = [
 export const aulasDaUnidade = id => aulasDaFaculdade.filter(a => a.unidade === id);
 export const tarefasDaUnidade = id => tarefasDaFaculdade.filter(t => t.unidade === id);
 export const aulaDaFaculdade = id => aulasDaFaculdade.find(a => a.id === id) || null;
+
+// A página e os testes usam a mesma regra: sempre existe uma ação concreta para continuar.
+// IDs antigos ou desconhecidos não podem fazer o contador avançar nem apontar para uma aula falsa.
+export const proximaAcaoDaFaculdade = (state = {}) => {
+  const feitas = new Set(state.faculdade?.feitas || []);
+  const conhecidas = aulasDaFaculdade.filter(aula => feitas.has(aula.id));
+  const concluida = conhecidas.length === aulasDaFaculdade.length;
+  const aula = concluida
+    ? aulasDaFaculdade[0]
+    : aulasDaFaculdade.find(item => !feitas.has(item.id)) || aulasDaFaculdade[0];
+  const unidade = unidades.find(item => item.id === aula.unidade);
+  const tarefa = tarefasDaUnidade(aula.unidade)[0];
+
+  return {
+    aula,
+    unidade,
+    tarefa,
+    feitas: conhecidas.length,
+    concluida,
+    titulo: concluida ? 'Revisar a primeira aula' : aula.titulo,
+    explicacao: concluida
+      ? 'Você já passou por todo o conteúdo. Revise a primeira aula e refaça um desafio para fixar antes da prova.'
+      : `A Unidade ${unidade?.numero || ''} começa por esta ideia. Depois desta aula, pratique: ${tarefa?.titulo || 'o desafio da unidade'}.`
+  };
+};

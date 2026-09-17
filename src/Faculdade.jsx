@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Icon, irAoTopo } from './ui.jsx';
-import { unidades, aulasDaUnidade, tarefasDaUnidade, aulasDaFaculdade, tarefasDaFaculdade, diasAteProva, requisitosFaltandoDaFaculdade } from './faculdade.js';
+import { unidades, aulasDaUnidade, tarefasDaUnidade, aulasDaFaculdade, tarefasDaFaculdade, diasAteProva, requisitosFaltandoDaFaculdade, proximaAcaoDaFaculdade } from './faculdade.js';
 import { localDate } from './progress.js';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
@@ -26,7 +26,9 @@ export default function Faculdade({ state, update, navigate }) {
   const abrir = aula => { irAoTopo(); setAberta(aula); };
   const total = aulasDaFaculdade.length;
   const pendentes = aulasDaFaculdade.filter(aula => !feitas.includes(aula.id));
-  const proxima = pendentes[0] || aulasDaFaculdade[0];
+  const proximaAcao = proximaAcaoDaFaculdade(state);
+  const proxima = proximaAcao.aula;
+  const estudadas = proximaAcao.feitas;
   const dias = diasAteProva();
   const ritmo = dias > 0 ? Math.max(1, Math.ceil(pendentes.length / dias)) : pendentes.length;
   return <>
@@ -36,7 +38,7 @@ export default function Faculdade({ state, update, navigate }) {
         <h2>O conteúdo da sua<br />disciplina, <em>rodando.</em></h2>
         <p>As quatro unidades da disciplina em aulas curtas, exemplos executáveis e prática guiada —
           dos primeiros tipos de dados a bancos, testes e machine learning.</p>
-        <div className="hero-foot"><Icon name="GraduationCap" size={14} /> {total} aulas <span>·</span> {feitas.length} estudadas <span>·</span> {tarefasDaFaculdade.length} tarefas do professor</div>
+        <div className="hero-foot"><Icon name="GraduationCap" size={14} /> {total} aulas <span>·</span> {estudadas} estudadas <span>·</span> {tarefasDaFaculdade.length} tarefas do professor</div>
       </div>
     </section>
 
@@ -49,15 +51,22 @@ export default function Faculdade({ state, update, navigate }) {
             : dias > 0 ? `${dias} ${dias === 1 ? 'dia restante' : 'dias restantes'} · faça ${ritmo} ${ritmo === 1 ? 'aula' : 'aulas'} por dia e deixe o último dia para revisão.`
               : 'A data da prova chegou. Priorize os exercícios marcados pelo professor.'}</p>
         </div>
-        <div className="prova-medidor" aria-label={`${feitas.length} de ${total} aulas estudadas`}>
-          <strong>{feitas.length}</strong><span>/{total}</span><small>estudadas</small>
+        <div className="prova-medidor" aria-label={`${estudadas} de ${total} aulas estudadas`}>
+          <strong>{estudadas}</strong><span>/{total}</span><small>estudadas</small>
         </div>
       </div>
-      <div className="prova-progresso"><span style={{ width: `${Math.round(feitas.length / total * 100)}%` }} /></div>
-      {proxima && <button className="button primary prova-acao" onClick={() => abrir(proxima)}>
-        <span><small>{pendentes.length ? 'COMECE AGORA' : 'REVISAR'}</small>{proxima.titulo}</span>
+      <div className="prova-progresso" aria-label={`${Math.round(estudadas / total * 100)}% concluído`}><span style={{ width: `${Math.round(estudadas / total * 100)}%` }} /></div>
+      {proxima && <div className="prova-proxima">
+        <div className="prova-proxima-context">
+          <div className="eyebrow">PRÓXIMA AÇÃO</div>
+          <strong>{proximaAcao.titulo}</strong>
+          <p>{proximaAcao.explicacao}</p>
+        </div>
+        <button className="button primary prova-acao" aria-label={`${proximaAcao.concluida ? 'Revisar' : 'Estudar'} ${proxima.titulo}`} onClick={() => abrir(proxima)}>
+        <span><small>{proximaAcao.concluida ? 'REVISAR' : 'COMECE AGORA'}</small>{proxima.titulo}</span>
         <Icon name="ArrowRight" size={18} />
-      </button>}
+        </button>
+      </div>}
       <p className="small prova-fonte"><Icon name="BookOpen" size={15} /> Conferido nos 8 PDFs: quatro apostilas completas e quatro apresentações que aprofundam a primeira aula de cada unidade.</p>
     </section>
 

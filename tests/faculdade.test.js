@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { aulasDaFaculdade, tarefasDaFaculdade, unidades, diasAteProva, requisitosFaltandoDaFaculdade } from '../src/faculdade.js';
+import { aulasDaFaculdade, tarefasDaFaculdade, unidades, diasAteProva, requisitosFaltandoDaFaculdade, proximaAcaoDaFaculdade } from '../src/faculdade.js';
 import { solucoesDaFaculdade } from './faculdade-reference.js';
 
 test('a trilha cobre as quatro unidades dos oito PDFs', () => {
@@ -41,4 +41,27 @@ test('a contagem do prazo usa dias civis e chega a zero em 27 de setembro', () =
   assert.equal(diasAteProva(new Date(2026, 8, 17, 23, 30)), 10);
   assert.equal(diasAteProva(new Date(2026, 8, 27, 8, 0)), 0);
   assert.equal(diasAteProva(new Date(2026, 8, 28, 8, 0)), -1);
+});
+
+test('a próxima ação começa na primeira aula e explica o motivo', () => {
+  const acao = proximaAcaoDaFaculdade({ faculdade: { feitas: [] } });
+  assert.equal(acao.aula.id, aulasDaFaculdade[0].id);
+  assert.equal(acao.feitas, 0);
+  assert.match(acao.explicacao, /Unidade 1/);
+  assert.equal(acao.concluida, false);
+});
+
+test('a próxima ação avança apenas pelas aulas conhecidas', () => {
+  const acao = proximaAcaoDaFaculdade({ faculdade: { feitas: ['desconhecida', 'u1a1'] } });
+  assert.equal(acao.aula.id, 'r1');
+  assert.equal(acao.feitas, 1);
+  assert.match(acao.explicacao, /Depois desta aula/);
+});
+
+test('quando tudo foi estudado, a ação vira revisão sem criar aula falsa', () => {
+  const acao = proximaAcaoDaFaculdade({ faculdade: { feitas: aulasDaFaculdade.map(aula => aula.id) } });
+  assert.equal(acao.aula.id, aulasDaFaculdade[0].id);
+  assert.equal(acao.feitas, aulasDaFaculdade.length);
+  assert.equal(acao.concluida, true);
+  assert.match(acao.titulo, /Revisar/);
 });
