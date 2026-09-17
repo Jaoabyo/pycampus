@@ -25,7 +25,8 @@
     "verificar": "npm test && npm run test:curriculum && npm run test:estudo && npm run test:lumi-chat && npm run test:projetos && npm run test:visual && npm run test:abas && npm run test:faculdade && npm run test:jornada",
     "lumi:fixo": "node scripts/lumi-fixo.mjs",
     "auditar:perguntas": "node scripts/auditar-perguntas.mjs",
-    "test:faculdade": "node scripts/check-faculdade.mjs"
+    "test:faculdade": "node scripts/check-faculdade.mjs",
+    "test:iniciante": "node scripts/check-beginner-journey.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
