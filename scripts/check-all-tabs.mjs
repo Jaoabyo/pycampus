@@ -40,6 +40,10 @@ async function conferirPagina(page, nome, tamanho) {
   assert.equal(await ativo.getAttribute('aria-current'), 'page', `${tamanho}: ${nome} não informou a página atual para acessibilidade`);
   assert.match(await page.title(), /PyCampus$/, `${tamanho}: ${nome} não atualizou o título da página`);
   assert.equal(await carregamento.count(), 0, `${tamanho}: ${nome} ficou presa no carregamento`);
+  const barras = page.getByRole('progressbar');
+  for (let i = 0; i < await barras.count(); i += 1) {
+    assert.ok((await barras.nth(i).getAttribute('aria-label'))?.trim(), `${tamanho}: ${nome} tem uma barra de progresso sem nome acessível`);
+  }
   assert.ok(
     await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
     `${tamanho}: ${nome} criou rolagem horizontal`
