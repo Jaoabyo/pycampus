@@ -27,7 +27,8 @@
     "auditar:perguntas": "node scripts/auditar-perguntas.mjs",
     "test:faculdade": "node scripts/check-faculdade.mjs",
     "test:iniciante": "node scripts/check-beginner-journey.mjs",
-    "test:revisao": "node scripts/check-review-queue.mjs"
+    "test:revisao": "node scripts/check-review-queue.mjs",
+    "test:bundle": "node scripts/check-bundle-size.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
