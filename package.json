@@ -26,7 +26,8 @@
     "lumi:fixo": "node scripts/lumi-fixo.mjs",
     "auditar:perguntas": "node scripts/auditar-perguntas.mjs",
     "test:faculdade": "node scripts/check-faculdade.mjs",
-    "test:iniciante": "node scripts/check-beginner-journey.mjs"
+    "test:iniciante": "node scripts/check-beginner-journey.mjs",
+    "test:revisao": "node scripts/check-review-queue.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
