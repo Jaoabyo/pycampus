@@ -523,7 +523,7 @@ export const planoDeEstudosDaFaculdade = (state = {}, hoje = new Date()) => {
   const diasRestantes = diasAteProva(hoje);
   const diasDeEstudo = Math.max(1, diasRestantes - 1);
   const porDia = Math.max(1, Math.min(2, Math.ceil(pendentes.length / diasDeEstudo)));
-  const dias = diasRestantes > 0
+  const dias = diasRestantes > 0 && pendentes.length > 0
     ? Array.from({ length: diasRestantes }, (_, indice) => {
       const data = somarDias(hoje, indice);
       const revisao = indice === diasRestantes - 1;

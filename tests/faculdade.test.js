@@ -80,3 +80,9 @@ test('o plano não considera aulas desconhecidas e informa revisão quando o pra
   assert.equal(plano.estudadas, 1);
   assert.equal(plano.hoje.aulas.length, 0);
 });
+
+test('quem termina a trilha antes da prova recebe revisão, nunca um dia vazio de aulas', () => {
+  const plano = planoDeEstudosDaFaculdade({ faculdade: { feitas: aulasDaFaculdade.map(aula => aula.id) } }, new Date(2026, 8, 17));
+  assert.equal(plano.hoje.tipo, 'revisao');
+  assert.ok(plano.dias.every(dia => dia.tipo === 'revisao'));
+});
