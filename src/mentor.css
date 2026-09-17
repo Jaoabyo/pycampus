@@ -1,5 +1,7 @@
 /* O Lumi vive junto do erro, dentro do fluxo da atividade, e não numa bolha flutuante:
    a ajuda precisa estar onde o estudante já está olhando. */
+.connection-status{position:fixed;z-index:80;left:50%;top:12px;transform:translateX(-50%);display:flex;align-items:center;gap:9px;max-width:min(620px,calc(100vw - 28px));padding:10px 14px;border:1px solid #f1d7a8;border-radius:10px;background:#fff9ed;color:#765b2d;box-shadow:0 8px 24px #49310d18;font-size:12px;line-height:1.4}
+.connection-status svg{flex:0 0 auto;color:#c58735}
 .lumi-call{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:16px;padding:12px 15px;border:1px solid #e6dcf8;border-radius:11px;background:linear-gradient(100deg,#faf7ff,#f5efff);transition:border-color .15s,transform .15s}
 .lumi-call:hover{border-color:#c4aef0;transform:translateY(-1px)}
 .lumi-call strong{display:block;font-size:13px;color:#4a3d63}

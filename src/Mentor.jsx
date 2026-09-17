@@ -30,9 +30,19 @@ export function LumiArt({ size = 34, awake = true }) {
 // Um vaga-lume de verdade atravessa o cômodo devagar. Ele não clica em nada (pointer-events
 // none), fica discreto e some por completo para quem pediu menos movimento no sistema.
 export function FlyingLumi() {
-  return <div className="lumi-flight" aria-hidden="true">
+  return <><div className="lumi-flight" aria-hidden="true">
     <div className="lumi-bob"><LumiArt size={26} /></div>
-  </div>;
+  </div><ConnectionStatus /></>;
+}
+
+function ConnectionStatus() {
+  const [online, setOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine);
+  useEffect(() => {
+    const on = () => setOnline(true); const off = () => setOnline(false);
+    window.addEventListener('online', on); window.addEventListener('offline', off);
+    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); };
+  }, []);
+  return online ? null : <div className="connection-status" role="status"><Icon name="TriangleAlert" size={15} /><span>Sem internet: aulas e progresso local continuam disponíveis. O Lumi e a nuvem voltam quando a conexão retornar.</span></div>;
 }
 
 // O modelo responde em markdown simples. Em vez de carregar uma biblioteca, tratamos os

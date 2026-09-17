@@ -79,6 +79,11 @@ export default function Faculdade({ state, update, navigate }) {
       <p className="small muted">O último dia fica reservado para revisar. O plano se ajusta sozinho quando você registra uma aula.</p>
     </section>
 
+    <details className="card como-estudar">
+      <summary><Icon name="Sparkles" size={17} /><span><strong>Como estudar aqui sem se perder</strong><small>Um roteiro simples para cada aula</small></span><Icon name="ChevronDown" size={16} /></summary>
+      <div className="como-estudar-passos"><p><b>1</b><span><strong>Leia as ideias</strong><small>Entenda o conceito em poucas linhas.</small></span></p><p><b>2</b><span><strong>Execute o exemplo</strong><small>Observe a saída antes de escrever.</small></span></p><p><b>3</b><span><strong>Resolva e explique</strong><small>O desafio só conta quando sua lógica funciona e você acerta a revisão.</small></span></p></div>
+    </details>
+
     {unidades.map(unidade => {
       const aulas = aulasDaUnidade(unidade.id);
       const prontas = aulas.filter(a => feitas.includes(a.id)).length;

@@ -63,6 +63,10 @@ try {
   const desktop = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   acompanharErros(desktop, erros, 'desktop');
   await desktop.goto(base, { waitUntil: 'networkidle' });
+  await desktop.evaluate(() => window.dispatchEvent(new Event('offline')));
+  await desktop.locator('.connection-status').waitFor();
+  await desktop.evaluate(() => window.dispatchEvent(new Event('online')));
+  await desktop.locator('.connection-status').waitFor({ state: 'detached' });
   for (const pagina of paginas) await navegarDesktop(desktop, pagina);
 
   const celular = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });

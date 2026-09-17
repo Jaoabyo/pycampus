@@ -35,6 +35,9 @@
 .plano-hoje-lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
 .plano-hoje-item{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:10px 12px;border:1px solid #e8e0f4;border-radius:10px;background:#fbfaff;color:#3d2f4d;text-align:left;font:inherit;cursor:pointer}
 .plano-hoje-item:hover{border-color:#bfa6eb;background:#f7f2ff}.plano-hoje-item svg{flex:0 0 auto;color:#7854d7}
+.como-estudar{margin:0 0 22px;padding:0;overflow:hidden;border-color:#eee8f7}
+.como-estudar summary{display:flex;align-items:center;gap:10px;min-height:58px;padding:13px 18px;cursor:pointer;list-style:none;color:#5e4b82}.como-estudar summary::-webkit-details-marker{display:none}.como-estudar summary>svg:first-child{color:#bf9a43}.como-estudar summary>svg:last-child{margin-left:auto;transition:transform .2s}.como-estudar[open] summary>svg:last-child{transform:rotate(180deg)}
+.como-estudar summary span{display:flex;flex-direction:column;gap:2px}.como-estudar summary strong{font-family:var(--heading);font-size:13px}.como-estudar summary small{font-size:11px;color:#9690a4}.como-estudar-passos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 18px 16px;border-top:1px solid #f0edf5}.como-estudar-passos p{display:flex;gap:9px;margin:15px 0 0}.como-estudar-passos b{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:25px;height:25px;border-radius:50%;background:#f1ecfa;color:#7655c8;font-size:12px}.como-estudar-passos span{display:flex;flex-direction:column;gap:2px}.como-estudar-passos strong{font-size:12px;color:#514465}.como-estudar-passos small{font-size:11px;line-height:1.45;color:#928a9e}
 .faculdade-conexao{display:flex;align-items:flex-start;gap:9px;margin-top:16px;padding:12px 14px;border-radius:10px;background:#f5f9ff;color:#50556b}.faculdade-conexao svg{flex:0 0 auto;margin-top:3px;color:#5b83d7}.faculdade-conexao p{margin:0}
 .faculdade-ideias{display:grid;gap:10px;margin:16px 0}.faculdade-ideias>div{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #eee9f5;border-radius:11px;background:#fcfbfe}.faculdade-ideias>div>span{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#eee8fb;color:#6d4bc6;font-size:11px;font-weight:800}.faculdade-ideias p{margin:0;color:#5f6070;font-size:13px;line-height:1.75}
 .faculdade-limite{display:flex;align-items:flex-start;gap:9px;margin:12px 0 16px;padding:12px 14px;border-radius:10px;background:#fff8e8;border:1px solid #f2dfae}.faculdade-limite svg{margin-top:3px;color:#b68a2f}.faculdade-limite p{margin:0;color:#6f634b;font-size:12px}
@@ -43,7 +46,7 @@
 @media(max-width:600px){
   .faculdade-hero{min-height:250px}.faculdade-hero::after{right:-12%;font-size:62px}
   .prova-plano,.unidade-card,.faculdade-passo{padding:18px 15px}.prova-plano{margin:16px 0 18px}
-  .prova-plano-topo{gap:12px}.prova-medidor strong{font-size:28px}.prova-proxima{grid-template-columns:1fr}.prova-acao{min-height:64px;padding:12px}.plano-hoje{padding:18px 15px;margin-bottom:18px}.plano-hoje-lista{grid-template-columns:1fr}
+  .prova-plano-topo{gap:12px}.prova-medidor strong{font-size:28px}.prova-proxima{grid-template-columns:1fr}.prova-acao{min-height:64px;padding:12px}.plano-hoje{padding:18px 15px;margin-bottom:18px}.plano-hoje-lista{grid-template-columns:1fr}.como-estudar summary{padding:13px 15px}.como-estudar-passos{grid-template-columns:1fr;padding:0 15px 14px}
   .prova-fonte{align-items:flex-start;line-height:1.55}
   .faculdade-aula{align-items:flex-start;padding:12px}
   .faculdade-aula>svg{display:none}
