@@ -37,6 +37,7 @@ async function conferirPagina(page, nome, tamanho) {
   if (await carregamento.count()) await carregamento.waitFor({ state: 'detached', timeout: 10_000 });
   const ativo = page.locator('aside.sidebar button.active').filter({ hasText: nome });
   assert.equal(await ativo.count(), 1, `${tamanho}: ${nome} não ficou marcada como página ativa`);
+  assert.equal(await ativo.getAttribute('aria-current'), 'page', `${tamanho}: ${nome} não informou a página atual para acessibilidade`);
   assert.match(await page.title(), /PyCampus$/, `${tamanho}: ${nome} não atualizou o título da página`);
   assert.equal(await carregamento.count(), 0, `${tamanho}: ${nome} ficou presa no carregamento`);
   assert.ok(

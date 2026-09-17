@@ -281,6 +281,12 @@ export default function App() {
     const titulo = page === 'dashboard' ? 'Visão geral' : navItems.find(item => item.id === page)?.title || (page === 'lesson' ? 'Aula' : page === 'project' ? 'Projeto' : page === 'sobre' ? 'Sobre e limites' : 'PyCampus');
     document.title = `${titulo} · PyCampus`;
   }, [page]);
+  useEffect(() => {
+    document.querySelectorAll('aside.sidebar nav button').forEach(button => {
+      if (button.classList.contains('active')) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
+    });
+  }, [page]);
   const importRef = useRef(null), toastTimer = useRef(null);
   const update = fn => setState(fn);
   const info = levelInfo(state), fire = streak(state, today);
