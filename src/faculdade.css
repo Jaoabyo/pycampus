@@ -30,6 +30,11 @@
 .prova-proxima-context p{margin:5px 0 0;color:#70677c;font-size:13px;line-height:1.5}
 .prova-acao{display:flex;width:100%;min-height:58px;justify-content:space-between;text-align:left}.prova-acao span{display:flex;flex-direction:column;gap:3px}.prova-acao small{font-size:10px;letter-spacing:.12em;opacity:.78}
 .prova-fonte{display:flex;align-items:center;gap:7px;margin:13px 0 0;color:#777080}
+.plano-hoje{margin:0 0 22px;padding:20px 24px;border:1px solid #e8e0f4;background:#fff}
+.plano-hoje .step-head{margin-bottom:10px}.plano-hoje p{margin:7px 0;color:#70677c;line-height:1.5}
+.plano-hoje-lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.plano-hoje-item{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:10px 12px;border:1px solid #e8e0f4;border-radius:10px;background:#fbfaff;color:#3d2f4d;text-align:left;font:inherit;cursor:pointer}
+.plano-hoje-item:hover{border-color:#bfa6eb;background:#f7f2ff}.plano-hoje-item svg{flex:0 0 auto;color:#7854d7}
 .faculdade-conexao{display:flex;align-items:flex-start;gap:9px;margin-top:16px;padding:12px 14px;border-radius:10px;background:#f5f9ff;color:#50556b}.faculdade-conexao svg{flex:0 0 auto;margin-top:3px;color:#5b83d7}.faculdade-conexao p{margin:0}
 .faculdade-ideias{display:grid;gap:10px;margin:16px 0}.faculdade-ideias>div{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #eee9f5;border-radius:11px;background:#fcfbfe}.faculdade-ideias>div>span{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#eee8fb;color:#6d4bc6;font-size:11px;font-weight:800}.faculdade-ideias p{margin:0;color:#5f6070;font-size:13px;line-height:1.75}
 .faculdade-limite{display:flex;align-items:flex-start;gap:9px;margin:12px 0 16px;padding:12px 14px;border-radius:10px;background:#fff8e8;border:1px solid #f2dfae}.faculdade-limite svg{margin-top:3px;color:#b68a2f}.faculdade-limite p{margin:0;color:#6f634b;font-size:12px}
@@ -38,7 +43,7 @@
 @media(max-width:600px){
   .faculdade-hero{min-height:250px}.faculdade-hero::after{right:-12%;font-size:62px}
   .prova-plano,.unidade-card,.faculdade-passo{padding:18px 15px}.prova-plano{margin:16px 0 18px}
-  .prova-plano-topo{gap:12px}.prova-medidor strong{font-size:28px}.prova-proxima{grid-template-columns:1fr}.prova-acao{min-height:64px;padding:12px}
+  .prova-plano-topo{gap:12px}.prova-medidor strong{font-size:28px}.prova-proxima{grid-template-columns:1fr}.prova-acao{min-height:64px;padding:12px}.plano-hoje{padding:18px 15px;margin-bottom:18px}.plano-hoje-lista{grid-template-columns:1fr}
   .prova-fonte{align-items:flex-start;line-height:1.55}
   .faculdade-aula{align-items:flex-start;padding:12px}
   .faculdade-aula>svg{display:none}

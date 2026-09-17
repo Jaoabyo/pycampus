@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { aulasDaFaculdade, tarefasDaFaculdade, unidades, diasAteProva, requisitosFaltandoDaFaculdade, proximaAcaoDaFaculdade } from '../src/faculdade.js';
+import { aulasDaFaculdade, tarefasDaFaculdade, unidades, diasAteProva, requisitosFaltandoDaFaculdade, proximaAcaoDaFaculdade, planoDeEstudosDaFaculdade } from '../src/faculdade.js';
 import { solucoesDaFaculdade } from './faculdade-reference.js';
 
 test('a trilha cobre as quatro unidades dos oito PDFs', () => {
@@ -64,4 +64,19 @@ test('quando tudo foi estudado, a ação vira revisão sem criar aula falsa', ()
   assert.equal(acao.feitas, aulasDaFaculdade.length);
   assert.equal(acao.concluida, true);
   assert.match(acao.titulo, /Revisar/);
+});
+
+test('o plano diário reserva o último dia para revisão e limita o ritmo a duas aulas', () => {
+  const plano = planoDeEstudosDaFaculdade({ faculdade: { feitas: [] } }, new Date(2026, 8, 17));
+  assert.equal(plano.dias.length, 10);
+  assert.equal(plano.dias.at(-1).tipo, 'revisao');
+  assert.ok(plano.dias.slice(0, -1).every(dia => dia.aulas.length <= 2));
+  assert.deepEqual(plano.hoje.aulas.map(aula => aula.id), ['u1a1', 'r1']);
+});
+
+test('o plano não considera aulas desconhecidas e informa revisão quando o prazo acabou', () => {
+  const plano = planoDeEstudosDaFaculdade({ faculdade: { feitas: ['u1a1', 'fantasma'] } }, new Date(2026, 8, 28));
+  assert.equal(plano.hoje.tipo, 'revisao');
+  assert.equal(plano.estudadas, 1);
+  assert.equal(plano.hoje.aulas.length, 0);
 });

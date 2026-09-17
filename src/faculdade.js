@@ -510,3 +510,26 @@ export const proximaAcaoDaFaculdade = (state = {}) => {
       : `A Unidade ${unidade?.numero || ''} começa por esta ideia. Depois desta aula, pratique: ${tarefa?.titulo || 'o desafio da unidade'}.`
   };
 };
+
+const isoLocal = data => [data.getFullYear(), String(data.getMonth() + 1).padStart(2, '0'), String(data.getDate()).padStart(2, '0')].join('-');
+const somarDias = (data, quantidade) => new Date(data.getFullYear(), data.getMonth(), data.getDate() + quantidade);
+
+// Divide as aulas pendentes em blocos pequenos e deixa o último dia livre para revisão.
+// A agenda é derivada do estado: editar ou importar o progresso nunca apaga aulas concluídas.
+export const planoDeEstudosDaFaculdade = (state = {}, hoje = new Date()) => {
+  const feitas = new Set(state.faculdade?.feitas || []);
+  const pendentes = aulasDaFaculdade.filter(aula => !feitas.has(aula.id));
+  const estudadas = aulasDaFaculdade.length - pendentes.length;
+  const diasRestantes = diasAteProva(hoje);
+  const diasDeEstudo = Math.max(1, diasRestantes - 1);
+  const porDia = Math.max(1, Math.min(2, Math.ceil(pendentes.length / diasDeEstudo)));
+  const dias = diasRestantes > 0
+    ? Array.from({ length: diasRestantes }, (_, indice) => {
+      const data = somarDias(hoje, indice);
+      const revisao = indice === diasRestantes - 1;
+      return { data: isoLocal(data), tipo: revisao ? 'revisao' : 'aulas', aulas: revisao ? [] : pendentes.slice(indice * porDia, (indice + 1) * porDia) };
+    })
+    : [{ data: isoLocal(hoje), tipo: 'revisao', aulas: [] }];
+  const hojeIso = isoLocal(hoje);
+  return { diasRestantes, estudadas, dias, hoje: dias.find(dia => dia.data === hojeIso) || dias[0] };
+};

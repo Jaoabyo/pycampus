@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Icon, irAoTopo } from './ui.jsx';
-import { unidades, aulasDaUnidade, tarefasDaUnidade, aulasDaFaculdade, tarefasDaFaculdade, diasAteProva, requisitosFaltandoDaFaculdade, proximaAcaoDaFaculdade } from './faculdade.js';
+import { unidades, aulasDaUnidade, tarefasDaUnidade, aulasDaFaculdade, tarefasDaFaculdade, diasAteProva, requisitosFaltandoDaFaculdade, proximaAcaoDaFaculdade, planoDeEstudosDaFaculdade } from './faculdade.js';
 import { localDate } from './progress.js';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
@@ -27,6 +27,7 @@ export default function Faculdade({ state, update, navigate }) {
   const total = aulasDaFaculdade.length;
   const pendentes = aulasDaFaculdade.filter(aula => !feitas.includes(aula.id));
   const proximaAcao = proximaAcaoDaFaculdade(state);
+  const plano = planoDeEstudosDaFaculdade(state);
   const proxima = proximaAcao.aula;
   const estudadas = proximaAcao.feitas;
   const dias = diasAteProva();
@@ -68,6 +69,14 @@ export default function Faculdade({ state, update, navigate }) {
         </button>
       </div>}
       <p className="small prova-fonte"><Icon name="BookOpen" size={15} /> Conferido nos 8 PDFs: quatro apostilas completas e quatro apresentações que aprofundam a primeira aula de cada unidade.</p>
+    </section>
+
+    <section className="card plano-hoje" aria-labelledby="titulo-plano-hoje">
+      <div className="step-head"><span className="icon-tile yellow"><Icon name="CalendarDays" size={20} /></span>
+        <div><div className="eyebrow">SEU PLANO DE HOJE</div><h3 id="titulo-plano-hoje">Duas aulas curtas, um passo de cada vez</h3></div></div>
+      {plano.hoje.tipo === 'revisao' ? <p>Hoje é dia de revisão: refaça um desafio sem olhar a resposta e explique o que o código faz.</p>
+        : <><p>Para chegar preparado à prova, estude estas aulas hoje:</p><div className="plano-hoje-lista">{plano.hoje.aulas.map(aula => <button className="plano-hoje-item" key={aula.id} onClick={() => abrir(aula)}><span>{aula.titulo}</span><Icon name="ArrowRight" size={16} /></button>)}</div></>}
+      <p className="small muted">O último dia fica reservado para revisar. O plano se ajusta sozinho quando você registra uma aula.</p>
     </section>
 
     {unidades.map(unidade => {
