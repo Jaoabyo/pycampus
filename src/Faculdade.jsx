@@ -56,7 +56,7 @@ export default function Faculdade({ state, update, navigate }) {
           <strong>{estudadas}</strong><span>/{total}</span><small>estudadas</small>
         </div>
       </div>
-      <div className="prova-progresso" aria-label={`${Math.round(estudadas / total * 100)}% concluído`}><span style={{ width: `${Math.round(estudadas / total * 100)}%` }} /></div>
+      <div className="prova-progresso" role="progressbar" aria-label="Progresso das aulas da faculdade" aria-valuenow={Math.round(estudadas / total * 100)} aria-valuemin="0" aria-valuemax="100"><span style={{ width: `${Math.round(estudadas / total * 100)}%` }} /></div>
       {proxima && <div className="prova-proxima">
         <div className="prova-proxima-context">
           <div className="eyebrow">PRÓXIMA AÇÃO</div>
