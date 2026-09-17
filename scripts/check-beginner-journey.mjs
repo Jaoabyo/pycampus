@@ -31,6 +31,8 @@ await page.locator('.code-workspace').first().getByText('✓ Executado').waitFor
 await page.getByRole('button', { name: /Voltar para a minha faculdade/ }).click();
 await page.getByText('SEU PLANO DE HOJE').waitFor();
 assert.equal(await page.locator('.plano-hoje-item').count(), 2, 'voltar deve preservar o plano');
+await page.reload({ waitUntil: 'networkidle' });
+assert.equal(await page.getByRole('dialog', { name: /Você só precisa/ }).count(), 0, 'o guia inicial não deve reaparecer depois de dispensado');
 assert.deepEqual(erros, [], `erros durante a jornada iniciante: ${erros.join(' | ')}`);
 console.log('Jornada iniciante: primeira visita, guia, plano, exemplo e retorno aprovados.');
 await browser.close();
