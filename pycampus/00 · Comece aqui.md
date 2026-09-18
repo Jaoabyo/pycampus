@@ -16,6 +16,7 @@ entender as decisões de uma plataforma que é sua.
 - Quer mexer em **XP, emblemas ou progresso**? → [[Estado e progresso]]
 - Quer entender por que uma etapa está **travada**? → [[Liberação de etapas]]
 - Quer saber **o que não pode ser quebrado**? → [[Regras que não se quebram]]
+- Quer saber **em que estado a plataforma está hoje**? → [[Estado atual · auditoria]]
 - Quer publicar? → [[Publicação e hospedagem]]
 - Procurando uma receita pronta? → [[Receitas · como fazer]]
 
@@ -29,12 +30,16 @@ não há conta de usuário. Todo o progresso vive no `localStorage` do aparelho.
 | --- | --- |
 | Etapas (módulos) | 8 |
 | Aulas | 48 |
-| Miniprojetos da oficina | 24 |
+| Miniprojetos da oficina | 35 |
 | Pontes de função | 8 |
 | Projetos | 8 |
 | Passos de projeto | 53 |
 | Padrões de diagnóstico | 5 |
-| Arquivos de teste | 20 |
+| Unidades da faculdade | 4 |
+| Aulas da faculdade | 16 |
+| Aplicações do professor | 20 |
+| Projetos da faculdade | 4 |
+| Arquivos de teste | 41 |
 
 XP: **100** por aula, **40** por miniprojeto, **250** por projeto. Nível a cada 500 XP.
 

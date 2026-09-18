@@ -23,17 +23,22 @@ As seis frentes foram verificadas. O que sobrou não é dúvida, é trabalho nom
 Estudar no celular e no computador cria duas jornadas separadas. Hoje só o backup manual
 transfere. Ver [[Publicação e hospedagem]].
 
-## O Lumi não alcança o celular
+> [!done] O Lumi alcança o celular: pago
+> Ollama com `qwen2.5-coder:14b` no computador e um túnel HTTPS do Cloudflare. O endereço é
+> configurável em Configurações. Ver [[Lumi no celular]].
 
-A IA vive em `localhost` do computador. Um endereço configurável na rede local resolveria.
+> [!done] Visualizador de execução: pago
+> O Laboratório Python mostra a execução passo a passo.
 
-## Sem visualizador de execução
+## src/App.jsx foi reformatado
 
-Ver os valores mudando na memória, estilo Python Tutor, é a maior lacuna pedagógica apontada
-pela pesquisa e ainda não existe aqui.
+Uma sessão anterior passou um formatador no arquivo: 416 → 2273 linhas. Ele passa em todos os
+testes e no build, mas destoa do estilo denso do resto do código e deixa barulhento qualquer
+diff futuro daquele arquivo. Desfazer isso é cirurgia sobre código que funciona; fica anotado
+para quando não houver prova por perto.
 
 ## Revisões ainda são múltipla escolha
 
 Reconhecer é mais fácil que lembrar. O objetivo é fluência de prova.
 
-Relacionado: [[Regras que não se quebram]] · [[Conteúdo · Projetos]]
+Relacionado: [[Estado atual · auditoria]] · [[Regras que não se quebram]] · [[Conteúdo · Projetos]]
