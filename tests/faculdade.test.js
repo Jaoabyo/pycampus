@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { aulasDaFaculdade, tarefasDaFaculdade, unidades, diasAteProva, requisitosFaltandoDaFaculdade, proximaAcaoDaFaculdade, planoDeEstudosDaFaculdade } from '../src/faculdade.js';
+import { aulasDaFaculdade, tarefasDaFaculdade, unidades, aulasDaUnidade, tarefasDaUnidade, diasAteProva, requisitosFaltandoDaFaculdade, proximaAcaoDaFaculdade, planoDeEstudosDaFaculdade } from '../src/faculdade.js';
 import { solucoesDaFaculdade } from './faculdade-reference.js';
 
 test('a trilha cobre as quatro unidades dos oito PDFs', () => {
@@ -85,4 +85,29 @@ test('quem termina a trilha antes da prova recebe revisão, nunca um dia vazio d
   const plano = planoDeEstudosDaFaculdade({ faculdade: { feitas: aulasDaFaculdade.map(aula => aula.id) } }, new Date(2026, 8, 17));
   assert.equal(plano.hoje.tipo, 'revisao');
   assert.ok(plano.dias.every(dia => dia.tipo === 'revisao'));
+});
+
+// A prova cobre as quatro unidades inteiras. Se uma aula ou uma aplicação do professor sumir
+// da trilha, o estudante descobre isso na prova — então quem descobre aqui é o teste.
+test('cada unidade entrega quatro aulas rotuladas e as cinco aplicações do professor', () => {
+  assert.equal(unidades.length, 4);
+  for (const unidade of unidades) {
+    const aulas = aulasDaUnidade(unidade.id);
+    const tarefas = tarefasDaUnidade(unidade.id);
+    assert.equal(aulas.length, 4, `${unidade.id} precisa das quatro aulas da ementa`);
+    assert.equal(tarefas.length, 5, `${unidade.id} precisa das cinco aplicações propostas`);
+    aulas.forEach((aula, indice) => assert.equal(aula.origem, `Unidade ${unidade.numero} · Aula ${indice + 1}`,
+      `${aula.id} precisa dizer de qual aula da apostila veio`));
+    tarefas.forEach((tarefa, indice) => assert.ok(tarefa.origem.startsWith(`Unidade ${unidade.numero} · Aula ${indice + 1}`),
+      `${tarefa.id} precisa apontar a aula de origem`));
+  }
+});
+
+// Saída certa com código vazio aprovava a aula antes desta trava. O teste guarda a trava.
+test('nenhuma aula é concluída colando a saída esperada em um print', () => {
+  for (const aula of aulasDaFaculdade) {
+    const cola = `print(${JSON.stringify(aula.esperado)})`;
+    assert.ok(requisitosFaltandoDaFaculdade(aula, cola).length > 0,
+      `${aula.id} aceitaria a saída colada sem demonstrar a lógica`);
+  }
 });

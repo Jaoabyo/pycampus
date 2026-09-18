@@ -132,7 +132,7 @@ export const aulasDaFaculdade = [
     '3\n0 seg\n1 ter\n2 qua',
     'Qual é a diferença essencial entre lista e tupla?',
     ['A lista é mutável e a tupla não pode ser alterada depois de criada', 'A tupla só aceita texto e a lista só aceita números', 'A tupla é mais rápida porque não usa índices'],
-    0, { naFormacao: ['Trabalhando com textos', 'Listas e índices', 'Tuplas e conjuntos', 'Compreensões de listas'],
+    0, { origem: 'Unidade 2 · Aula 1', naFormacao: ['Trabalhando com textos', 'Listas e índices', 'Tuplas e conjuntos', 'Compreensões de listas'],
       requisitosCodigo: [regra('tupla', 'guardar os dias numa tupla', /dias\s*=\s*\(/), regra('len', 'mostrar o tamanho com len()', /\blen\s*\(/), regra('enumerate', 'percorrer posição e valor com enumerate()', /\benumerate\s*\(/)] }),
 
   aula('u2a2', 'Estruturas de dados II: conjuntos, dicionários e NumPy', 'u2',
@@ -163,7 +163,7 @@ export const aulasDaFaculdade = [
     '4',
     'Para que serve um conjunto (set)?',
     ['Guardar valores únicos, sem repetição', 'Guardar pares de chave e valor', 'Guardar valores em ordem fixa que não muda'],
-    0, { naFormacao: ['Dicionários: chave e valor', 'Tuplas e conjuntos'], focoFaculdade: 'NumPy e suas operações com arrays são conteúdo específico desta trilha.',
+    0, { origem: 'Unidade 2 · Aula 2', naFormacao: ['Dicionários: chave e valor', 'Tuplas e conjuntos'], focoFaculdade: 'NumPy e suas operações com arrays são conteúdo específico desta trilha.',
       requisitosCodigo: [regra('set', 'eliminar repetições com set()', /\bset\s*\(/), regra('len', 'contar os valores diferentes com len()', /\blen\s*\(/)] }),
 
   aula('u2a3', 'Classes, métodos e herança', 'u2',
@@ -209,7 +209,7 @@ export const aulasDaFaculdade = [
     'Ola, meu nome e Joao.\n31',
     'Para que serve super().__init__(...) na classe-filha?',
     ['Chamar o construtor da classe-pai em vez de repetir o código dele', 'Criar um objeto novo da classe-pai', 'Impedir que a classe-filha altere os atributos'],
-    0, { naFormacao: ['Classes e objetos', 'Construtores e atributos', 'Encapsulamento e propriedades', 'Herança e polimorfismo'],
+    0, { origem: 'Unidade 2 · Aula 3', naFormacao: ['Classes e objetos', 'Construtores e atributos', 'Encapsulamento e propriedades', 'Herança e polimorfismo'],
       requisitosCodigo: [regra('instancia', 'criar pessoa1 chamando Pessoa(...)', /pessoa1\s*=\s*Pessoa\s*\(/), regra('metodo', 'chamar o método aniversario()', /pessoa1\.aniversario\s*\(/)] }),
 
   aula('u2a4', 'Módulos, bibliotecas e Matplotlib', 'u2',
@@ -240,7 +240,7 @@ export const aulasDaFaculdade = [
     '12',
     'O que import math as m muda em relação a import math?',
     ['Passa a chamar as funções por m.sqrt em vez de math.sqrt', 'Carrega só a função sqrt na memória', 'Instala o módulo math antes de usar'],
-    0, { naFormacao: ['Módulos e ambientes virtuais'], focoFaculdade: 'Matplotlib e a criação dos gráficos da apostila são aprofundados aqui.',
+    0, { origem: 'Unidade 2 · Aula 4', naFormacao: ['Módulos e ambientes virtuais'], focoFaculdade: 'Matplotlib e a criação dos gráficos da apostila são aprofundados aqui.',
       requisitosCodigo: [regra('apelido', 'importar math com um apelido', /\bimport\s+math\s+as\s+\w+/), regra('sqrt', 'calcular a raiz com sqrt()', /\.sqrt\s*\(/)] }),
 
   // ————————————————————————————— Unidade 3 —————————————————————————————
@@ -285,7 +285,7 @@ export const aulasDaFaculdade = [
     "[(1, 'Maria', 'maria@email.com')]",
     'CREATE TABLE pertence a qual categoria do SQL?',
     ['DDL, porque define a estrutura do banco', 'DML, porque manipula os dados', 'DCL, porque controla o acesso'],
-    0, { naFormacao: ['Seu primeiro banco SQLite'], focoFaculdade: 'As categorias DDL, DML e DCL e o ciclo CRUD completo são cobrados aqui.',
+    0, { origem: 'Unidade 3 · Aula 1', naFormacao: ['Seu primeiro banco SQLite'], focoFaculdade: 'As categorias DDL, DML e DCL e o ciclo CRUD completo são cobrados aqui.',
       requisitosCodigo: [regra('insert', 'inserir o contato com INSERT', /\bINSERT\s+INTO\b/i), regra('parametros', 'passar os valores por parâmetros com ?', /VALUES\s*\(\s*\?\s*,\s*\?\s*\)/i), regra('commit', 'confirmar a mudança com commit()', /\.commit\s*\(/), regra('select', 'consultar a tabela com SELECT', /\bSELECT\b/i)] }),
 
   aula('u3a2', 'pandas: Series e DataFrame', 'u3',
@@ -312,7 +312,7 @@ export const aulasDaFaculdade = [
     '30.0',
     'Qual é a diferença entre Series e DataFrame?',
     ['A Series é unidimensional e o DataFrame é bidimensional, como uma tabela', 'A Series só guarda números e o DataFrame só guarda texto', 'A Series é imutável e o DataFrame é mutável'],
-    0, { naFormacao: ['Análise de dados e estatística'], focoFaculdade: 'Series, DataFrame e os métodos read_ e to_ são aprofundados nesta trilha.',
+    0, { origem: 'Unidade 3 · Aula 2', naFormacao: ['Análise de dados e estatística'], focoFaculdade: 'Series, DataFrame e os métodos read_ e to_ são aprofundados nesta trilha.',
       requisitosCodigo: [regra('series', 'montar uma Series do pandas', /\bpd\.Series\s*\(/), regra('mean', 'calcular a média com mean()', /\.mean\s*\(/)] }),
 
   aula('u3a3', 'pandas: capturar, transformar e extrair informação', 'u3',
@@ -344,7 +344,7 @@ export const aulasDaFaculdade = [
     "['A', 'C']",
     'O que faz df[df["preco"] > 50]?',
     ['Devolve só as linhas em que a coluna preco passa de 50', 'Troca por 50 todos os preços menores', 'Ordena o DataFrame pela coluna preco'],
-    0, { naFormacao: ['Análise de dados e estatística'], focoFaculdade: 'drop_duplicates, loc, filtros booleanos e criação de colunas são conteúdo específico desta trilha.',
+    0, { origem: 'Unidade 3 · Aula 3', naFormacao: ['Análise de dados e estatística'], focoFaculdade: 'drop_duplicates, loc, filtros booleanos e criação de colunas são conteúdo específico desta trilha.',
       requisitosCodigo: [regra('filtro', 'filtrar o DataFrame com uma comparação maior que 100', /vendas\s*\[[\s\S]*?\[\s*["']receita["']\s*\]\s*>\s*100[\s\S]*?\]/), regra('nomes', 'selecionar a coluna nome do resultado', /\[\s*["']nome["']\s*\]/)] }),
 
   aula('u3a4', 'Visualização de dados: Matplotlib, pandas e Seaborn', 'u3',
@@ -386,7 +386,7 @@ export const aulasDaFaculdade = [
     'Barras: 2',
     'No barplot do Seaborn, o que o parâmetro estimator faz?',
     ['Escolhe a conta da barra: média por padrão, ou sum, ou len', 'Escolhe a cor das barras', 'Escolhe quantas barras cabem no gráfico'],
-    0, { naFormacao: ['Análise de dados e estatística'], focoFaculdade: 'Matplotlib, pandas.plot, Seaborn e estimator são aprofundados nesta trilha.',
+    0, { origem: 'Unidade 3 · Aula 4', naFormacao: ['Análise de dados e estatística'], focoFaculdade: 'Matplotlib, pandas.plot, Seaborn e estimator são aprofundados nesta trilha.',
       requisitosCodigo: [regra('bar', 'montar o gráfico com bar()', /\.bar\s*\(/), regra('titulo', 'definir o título com title()', /\.title\s*\(/), regra('contagem', 'contar as barras criadas na figura', /\.patches\b/)] }),
 
   // ————————————————————————————— Unidade 4 —————————————————————————————
@@ -438,6 +438,9 @@ export const aulasDaFaculdade = [
 // Aplicações "Vamos exercitar" e "É hora de praticar" dos oito PDFs. Elas ficam como roteiro
 // de projeto, separadas do desafio curto de cada aula, porque são maiores e misturam assuntos.
 export const tarefasDaFaculdade = [
+  { id: 't-media-notas', unidade: 'u1', titulo: 'Média de notas do professor', origem: 'Unidade 1 · Aula 1',
+    enunciado: 'O professor precisa avaliar os estudantes constantemente e quer automatizar a média das notas. Receba quatro notas, converta cada uma para número, calcule a média e informe se a pessoa foi aprovada, com média maior ou igual a 6.',
+    pratica: ['input', 'int', 'float', 'if', 'else', 'f-string'] },
   { id: 't-condicionais', unidade: 'u1', titulo: 'Três filmes por faixa etária', origem: 'Unidade 1 · Aula 2',
     enunciado: 'Há 3 filmes por semana. O primeiro é para menores de 12 anos; o segundo para maiores ou iguais a 12 e menores de 18; o terceiro para maiores ou iguais a 18. Considere também a disponibilidade de ingressos.',
     pratica: ['if', 'elif', 'else', 'operadores relacionais', 'and'] },
@@ -459,12 +462,27 @@ export const tarefasDaFaculdade = [
   { id: 't-evento', unidade: 'u2', titulo: 'Evento científico: regiões, afiliações e interesses', origem: 'Unidade 2 · Aula 2',
     enunciado: 'Participantes de várias regiões se inscreveram num evento científico, cada um com localização, afiliação e áreas de interesse. Use conjuntos para as regiões distintas, um dicionário para agrupar as afiliações e NumPy para achar a área de interesse mais popular.',
     pratica: ['set', 'dict', 'numpy', 'np.unique', 'np.argmax'] },
+  { id: 't-veiculo', unidade: 'u2', titulo: 'Classe Veículo com herança', origem: 'Unidade 2 · Aula 3',
+    enunciado: 'A partir das características informadas, mostre um resumo e o status de um veículo. Crie a classe Veiculo com marca, modelo e ano, métodos para acelerar e frear, e depois as classes-filhas Carro e Bicicleta, cada uma com o seu comportamento próprio.',
+    pratica: ['class', '__init__', 'self', 'herança', 'super()', 'sobrescrita de método'] },
+  { id: 't-vendas-grafico', unidade: 'u2', titulo: 'Contagem de vendas em gráfico', origem: 'Unidade 2 · Aula 4',
+    enunciado: 'Visualize a contagem de venda de um produto ao longo dos meses. Monte um gráfico de barras com os meses no eixo X e as vendas no eixo Y, com rótulos nos dois eixos e um título.',
+    pratica: ['import', 'matplotlib.pyplot', 'plt.bar', 'plt.xlabel', 'plt.title'] },
   { id: 't-biblioteca', unidade: 'u2', titulo: 'Catálogo de livros com gráfico', origem: 'Unidade 2 · Aula 5',
     enunciado: 'Gerencie informações de livros de uma biblioteca e faça a contagem de livros por ano de publicação. Use uma classe Livro, uma lista como acervo e um gráfico da distribuição por ano.',
     pratica: ['class', '__init__', '__str__', 'lista', 'matplotlib'] },
   { id: 't-contatos', unidade: 'u3', titulo: 'Tabela de contatos com CRUD', origem: 'Unidade 3 · Aula 1',
     enunciado: 'Crie a tabela Contatos para a comunicação da empresa, guardando nome, e-mail e telefone. Pratique as quatro operações: inserir os contatos, ler e exibir, atualizar um telefone e excluir um contato.',
     pratica: ['sqlite3', 'CREATE TABLE', 'executemany', 'SELECT', 'UPDATE', 'DELETE'] },
+  { id: 't-idade-media', unidade: 'u3', titulo: 'Idade média dos clientes da loja', origem: 'Unidade 3 · Aula 2',
+    enunciado: 'A direção da loja quer saber em qual público investir e pediu a idade média dos clientes. Monte uma Series do pandas com os nomes como índice e as idades como valores, exiba a série e calcule a média.',
+    pratica: ['pandas', 'pd.Series', 'index', 'mean'] },
+  { id: 't-itens-50', unidade: 'u3', titulo: 'Itens acima de R$ 50,00', origem: 'Unidade 3 · Aula 3',
+    enunciado: 'Por um erro no sistema de vendas, o valor unitário não aparece e existem linhas duplicadas. Remova as duplicatas, calcule o preço do item dividindo a receita pela quantidade e mostre apenas os itens acima de R$ 50,00 para a ação de marketing.',
+    pratica: ['DataFrame', 'drop_duplicates', 'nova coluna', 'teste booleano', 'loc'] },
+  { id: 't-gorjetas', unidade: 'u3', titulo: 'Gastos e gorjetas por período', origem: 'Unidade 3 · Aula 4',
+    enunciado: 'Responda com gráficos em qual período os clientes gastam mais em um restaurante e se é o mesmo período em que dão mais gorjeta. Compare o total e a média por período e explique por que as duas leituras podem divergir.',
+    pratica: ['seaborn', 'barplot', 'estimator', 'groupby', 'matplotlib'] },
   { id: 't-funcionarios', unidade: 'u3', titulo: 'Funcionários no SQLite', origem: 'Unidade 3 · Aula 5',
     enunciado: 'Desenvolva um programa de gerenciamento de funcionários numa tabela SQLite, com id, nome, cargo e salário. Percorra o ciclo completo: criar, inserir, consultar, atualizar e deletar.',
     pratica: ['sqlite3', 'cursor', 'commit', 'CRUD'] },

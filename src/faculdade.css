@@ -52,3 +52,34 @@
   .faculdade-aula>svg{display:none}
   .faculdade-aula strong{font-size:14px}
 }
+.faculdade-guia h2{font-size:22px;line-height:1.5;margin-top:9px}
+.faculdade-guia-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}
+.faculdade-guia-nav button{padding:10px 16px;border:1px solid #d9cee9;border-radius:9px;min-height:44px;background:#fff;color:#604782}
+.faculdade-guia-nav button[aria-current=step]{background:#7755d9;color:#fff;border-color:#7755d9}
+.faculdade-trecho{padding:20px;border:1px solid #e4dcf0;border-radius:12px;background:#faf8fd}
+.faculdade-trecho p,.faculdade-treino>p,.faculdade-roteiro li{font-size:16px;line-height:1.85;color:#42354f}
+.faculdade-guia pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.faculdade-treino{margin-top:28px;padding-top:22px;border-top:1px solid #e4dcf0}
+.faculdade-projeto{margin-top:22px;padding:22px;border:1px solid #dacceb;border-radius:12px;background:#faf7ff}
+.faculdade-projeto h3{margin-top:8px}
+.faculdade-roteiro{padding-left:25px}.faculdade-roteiro li{padding:8px 0}
+.faculdade-passo>summary{cursor:pointer;font-weight:650;line-height:1.6;min-height:44px}
+@media(max-width:520px){.faculdade-trecho,.faculdade-projeto{padding:15px}.faculdade-guia h2{font-size:19px}.faculdade-guia .button-row .button{white-space:normal}.faculdade-guia-nav button{padding:9px 11px}}
+
+.faculdade-integrada{margin:22px 0;padding:24px}
+.faculdade-integrada-dashboard{display:grid;gap:14px;background:linear-gradient(135deg,#fff 55%,#f6f1ff);border-color:#e4d9f6}
+.faculdade-integrada-dashboard .step-head{margin:0}
+.faculdade-integrada-dashboard>h3{margin:0;font-size:20px}.faculdade-integrada-dashboard>p{margin:0;max-width:72ch;line-height:1.65;color:#625b6b}
+.faculdade-integrada-footer{display:flex;align-items:center;justify-content:space-between;gap:16px}.faculdade-integrada-footer>span{font-size:13px;color:#716879}
+.faculdade-integrada .section-heading{align-items:flex-start;gap:18px}.faculdade-integrada .section-heading p{margin:7px 0 0;max-width:68ch;line-height:1.6}
+.faculdade-unidades-resumo{display:grid;gap:10px;margin-top:18px}
+.faculdade-unidades-resumo details{border:1px solid #e7e0f1;border-radius:12px;background:#fcfbfe;overflow:hidden}
+.faculdade-unidades-resumo summary{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;min-height:52px;padding:10px 14px;cursor:pointer}
+.faculdade-unidades-resumo summary span{color:#7453ce;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.faculdade-unidades-resumo summary strong{color:#41354e;font-family:var(--heading);font-size:14px}.faculdade-unidades-resumo summary small{color:#81788a}
+.faculdade-unidades-resumo ul{display:grid;gap:4px;margin:0;padding:4px 12px 12px;list-style:none;border-top:1px solid #eee9f5}
+.faculdade-unidades-resumo li button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:44px;padding:8px 10px;border:0;border-radius:8px;background:transparent;color:#554960;text-align:left;font:inherit;cursor:pointer}
+.faculdade-unidades-resumo li button:hover,.faculdade-unidades-resumo li button:focus-visible{background:#f2ecfb;color:#5938b7}.faculdade-unidades-resumo .is-project button{justify-content:flex-start;font-weight:700}.faculdade-unidades-resumo .is-project button svg:last-child{margin-left:auto}
+.faculdade-integrada-projetos{margin-top:22px}.faculdade-projetos-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.faculdade-projeto-resumo{position:relative;display:grid;align-content:start;gap:8px;min-width:0;padding:18px;text-align:left;cursor:pointer;transition:border-color .18s,box-shadow .18s}.faculdade-projeto-resumo:hover,.faculdade-projeto-resumo:focus-visible{border-color:#bda7e6;box-shadow:0 10px 28px #583f7b14}.faculdade-projeto-resumo small{margin-top:4px;color:#7a5dc5;font-weight:800;letter-spacing:.08em}.faculdade-projeto-resumo h3{margin:0;font-size:16px;line-height:1.4}.faculdade-projeto-resumo p{margin:0;color:#696171;font-size:13px;line-height:1.6}.faculdade-projeto-resumo>span:not(.icon-tile){margin-top:auto;padding-top:6px;color:#69508f;font-size:12px;font-weight:700}.faculdade-projeto-seta{position:absolute;right:16px;top:18px;color:#8a70cd}
+@media(max-width:980px){.faculdade-projetos-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.faculdade-integrada{margin:16px 0;padding:18px 15px}.faculdade-integrada-footer,.faculdade-integrada .section-heading{align-items:stretch;flex-direction:column}.faculdade-integrada-footer .button,.faculdade-integrada .section-heading .button{width:100%}.faculdade-unidades-resumo summary{grid-template-columns:1fr auto}.faculdade-unidades-resumo summary span{grid-column:1/3}.faculdade-projetos-grid{grid-template-columns:1fr}}

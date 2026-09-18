@@ -23,6 +23,7 @@ import { SimpleConcept, LessonOrientation, ExampleWalkthrough, GuidedHints, Proj
 import { DailyMission, LearningMap } from './LearningExperience.jsx';
 import { loadUiPreferences, saveUiPreferences } from './ui-preferences.js';
 import { updateDailyMission } from './daily-mission.js';
+import { buscarNaFaculdade } from './faculdade-integrada.js';
 import './lesson.css';
 import './guidance.css';
 import './grade.css';
@@ -38,36 +39,189 @@ const Prova = lazy(() => import('./Prova.jsx'));
 const Visualizador = lazy(() => import('./Visualizador.jsx'));
 const HistoryView = lazy(() => import('./HistoryView.jsx'));
 const Faculdade = lazy(() => import('./Faculdade.jsx'));
+const FaculdadeIntegrada = lazy(() => import('./FaculdadeIntegrada.jsx'));
 const Sobre = lazy(() => import('./Sobre.jsx'));
 
-const dateLabel = date => new Date(`${date}T12:00:00`).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
-const navItems = [{ id: 'dashboard', title: 'Visão geral', icon: 'LayoutDashboard' }, { id: 'course', title: 'Minha formação', icon: 'GraduationCap' }, { id: 'practice', title: 'Oficina de prática', icon: 'Hammer' }, { id: 'projects', title: 'Projetos', icon: 'FolderCode' }, { id: 'playground', title: 'Laboratório Python', icon: 'SquareTerminal' }, { id: 'faculdade', title: 'Minha faculdade', icon: 'GraduationCap' }, { id: 'targeted', title: 'Treino dirigido', icon: 'Target' }, { id: 'prova', title: 'Modo prova', icon: 'ShieldCheck' }, { id: 'history', title: 'Diário de aprendizagem', icon: 'BookOpenCheck' }, { id: 'calendar', title: 'Meu calendário', icon: 'CalendarDays' }, { id: 'badges', title: 'Conquistas', icon: 'Award' }];
-function PageSkeleton() { return <div className="page-skeleton" role="status" aria-label="Abrindo conteúdo"><span /><span /><span /><span /></div>; }
+const dateLabel = (date) =>
+  new Date(`${date}T12:00:00`).toLocaleDateString('pt-BR', {
+    day: 'numeric',
+    month: 'long',
+  });
+const navItems = [
+  { id: 'dashboard', title: 'Visão geral', icon: 'LayoutDashboard' },
+  { id: 'course', title: 'Minha formação', icon: 'GraduationCap' },
+  { id: 'practice', title: 'Oficina de prática', icon: 'Hammer' },
+  { id: 'projects', title: 'Projetos', icon: 'FolderCode' },
+  { id: 'playground', title: 'Laboratório Python', icon: 'SquareTerminal' },
+  { id: 'faculdade', title: 'Minha faculdade', icon: 'GraduationCap' },
+  { id: 'targeted', title: 'Treino dirigido', icon: 'Target' },
+  { id: 'prova', title: 'Modo prova', icon: 'ShieldCheck' },
+  { id: 'history', title: 'Diário de aprendizagem', icon: 'BookOpenCheck' },
+  { id: 'calendar', title: 'Meu calendário', icon: 'CalendarDays' },
+  { id: 'badges', title: 'Conquistas', icon: 'Award' },
+];
+function PageSkeleton() {
+  return (
+    <div className="page-skeleton" role="status" aria-label="Abrindo conteúdo">
+      <span />
+      <span />
+      <span />
+      <span />
+    </div>
+  );
+}
 function MobileBottomNav({ page, navigate, openMore }) {
-  const items = [['dashboard', 'House', 'Início'], ['course', 'GraduationCap', 'Formação'], ['practice', 'Hammer', 'Prática'], ['projects', 'FolderCode', 'Projetos']];
-  return <nav className="mobile-bottom-nav" aria-label="Atalhos principais">{items.map(([id, icon, label]) => { const ativo = page === id || page === 'lesson' && id === 'course' || page === 'project' && id === 'projects'; return <button key={id} className={ativo ? 'active' : ''} aria-current={ativo ? 'page' : undefined} onClick={() => navigate(id)}><Icon name={icon} size={20} /><span>{label}</span></button>; })}<button onClick={openMore}><Icon name="Menu" size={20} /><span>Mais</span></button></nav>;
+  const items = [
+    ['dashboard', 'House', 'Início'],
+    ['course', 'GraduationCap', 'Formação'],
+    ['practice', 'Hammer', 'Prática'],
+    ['projects', 'FolderCode', 'Projetos'],
+  ];
+  return (
+    <nav className="mobile-bottom-nav" aria-label="Atalhos principais">
+      {items.map(([id, icon, label]) => {
+        const ativo = page === id || (page === 'lesson' && id === 'course') || (page === 'project' && id === 'projects');
+        return (
+          <button key={id} className={ativo ? 'active' : ''} aria-current={ativo ? 'page' : undefined} onClick={() => navigate(id)}>
+            <Icon name={icon} size={20} />
+            <span>{label}</span>
+          </button>
+        );
+      })}
+      <button onClick={openMore}>
+        <Icon name="Menu" size={20} />
+        <span>Mais</span>
+      </button>
+    </nav>
+  );
 }
 function Modal({ title, children, onClose, wide = false }) {
   const ref = useRef(null);
-  useEffect(() => { ref.current.showModal(); const dialog = ref.current; const close = () => onClose(); dialog.addEventListener('cancel', close); return () => dialog.removeEventListener('cancel', close); }, []);
-  return <dialog ref={ref} className={`modal ${wide ? 'wide' : ''}`} onClick={e => { if (e.target === ref.current) onClose(); }}><div className="modal-heading"><h2>{title}</h2><button className="icon-button" aria-label="Fechar" onClick={onClose}><Icon name="X" /></button></div>{children}</dialog>;
+  useEffect(() => {
+    ref.current.showModal();
+    const dialog = ref.current;
+    const close = () => onClose();
+    dialog.addEventListener('cancel', close);
+    return () => dialog.removeEventListener('cancel', close);
+  }, []);
+  return (
+    <dialog
+      ref={ref}
+      className={`modal ${wide ? 'wide' : ''}`}
+      onClick={(e) => {
+        if (e.target === ref.current) onClose();
+      }}
+    >
+      <div className="modal-heading">
+        <h2>{title}</h2>
+        <button className="icon-button" aria-label="Fechar" onClick={onClose}>
+          <Icon name="X" />
+        </button>
+      </div>
+      {children}
+    </dialog>
+  );
 }
 function OrbitArt() {
-  return <div className="orbit-art" aria-hidden="true"><div className="orbit orbit-one" /><div className="orbit orbit-two" /><div className="star s1">✦</div><div className="star s2">✧</div><div className="orbit-dot" /><div className="float-code">&lt;/&gt;</div><div className="float-braces">{'{ }'}</div><div className="python-tile"><svg viewBox="0 0 110 110"><path fill="#f3d775" d="M55 14c-22 0-21 10-21 10v16h23v5H25S10 43 10 64s13 21 13 21h12V68s-1-13 13-13h25s12 0 12-13V27S87 14 55 14Z"/><circle cx="44" cy="26" r="3.5" fill="#6c50bb"/><path fill="#fff" d="M55 96c22 0 21-10 21-10V70H53v-5h32s15 2 15-19-13-21-13-21H75v17s1 13-13 13H37S25 55 25 68v15s-2 13 30 13Z" transform="translate(0 0)"/><circle cx="66" cy="84" r="3.5" fill="#6c50bb"/></svg></div><div className="art-caption"><span /> Seu futuro começa com um print()</div></div>;
+  return (
+    <div className="orbit-art" aria-hidden="true">
+      <div className="orbit orbit-one" />
+      <div className="orbit orbit-two" />
+      <div className="star s1">✦</div>
+      <div className="star s2">✧</div>
+      <div className="orbit-dot" />
+      <div className="float-code">&lt;/&gt;</div>
+      <div className="float-braces">{'{ }'}</div>
+      <div className="python-tile">
+        <svg viewBox="0 0 110 110">
+          <path fill="#f3d775" d="M55 14c-22 0-21 10-21 10v16h23v5H25S10 43 10 64s13 21 13 21h12V68s-1-13 13-13h25s12 0 12-13V27S87 14 55 14Z" />
+          <circle cx="44" cy="26" r="3.5" fill="#6c50bb" />
+          <path fill="#fff" d="M55 96c22 0 21-10 21-10V70H53v-5h32s15 2 15-19-13-21-13-21H75v17s1 13-13 13H37S25 55 25 68v15s-2 13 30 13Z" transform="translate(0 0)" />
+          <circle cx="66" cy="84" r="3.5" fill="#6c50bb" />
+        </svg>
+      </div>
+      <div className="art-caption">
+        <span /> Seu futuro começa com um print()
+      </div>
+    </div>
+  );
 }
 function DecisionLab() {
-  const [grade, setGrade] = useState(6), [mode, setMode] = useState('pdf');
-  const branches = mode === 'pdf' ? [['if nota >= 6:', 'Aprovado', 'A nota é pelo menos 6. Esse é o critério do exemplo da aula 1 do seu PDF.'], ['else:', 'Reprovado', 'A condição anterior foi falsa: a nota ficou abaixo de 6.']] : [['if nota >= 7:', 'Aprovado', 'A primeira condição foi verdadeira. O restante é ignorado.'], ['elif nota >= 5:', 'Recuperação', 'A nota não chegou a 7, mas é pelo menos 5.'], ['else:', 'Reprovado', 'Nenhuma das condições anteriores foi verdadeira.']];
-  const branch = mode === 'pdf' ? (grade >= 6 ? 0 : 1) : (grade >= 7 ? 0 : grade >= 5 ? 1 : 2);
-  return <div className="decision-lab"><div className="section-heading"><h3>Veja a decisão acontecer</h3><span className="pill purple">Prática interativa</span></div><div className="tab-row"><button className={mode === 'pdf' ? 'active' : ''} onClick={() => setMode('pdf')}>2 caminhos · seu PDF</button><button className={mode === 'elif' ? 'active' : ''} onClick={() => setMode('elif')}>3 caminhos · com elif</button></div><p>Mova a nota. O Python testa de cima para baixo e executa apenas o primeiro caminho verdadeiro.</p>{mode === 'elif' && <p className="small">Aqui usamos uma regra fictícia para treinar três possibilidades: aprovação a partir de 7, recuperação de 5 até menos de 7 e reprovação abaixo de 5. Não é uma regra informada pela sua faculdade.</p>}<label className="grade-label" htmlFor="grade">nota <strong>{grade.toFixed(1)}</strong></label><input id="grade" type="range" min="0" max="10" step="0.5" value={grade} onChange={e => setGrade(Number(e.target.value))} /><div className="decision-branches">{branches.map(([condition, result, detail], i) => <div key={condition} className={branch === i ? 'selected' : ''}><code>{condition}<br />{'    '}print("{result}")</code>{branch === i && <span><Icon name="ArrowLeft" size={17} /> Executa aqui</span>}{branch === i && <p>{detail}</p>}</div>)}</div><p className="small">Se fossem três <code>if</code> separados, todos seriam testados. Com <code>if / elif / else</code>, os caminhos são alternativas da mesma decisão. A indentação indica quais instruções pertencem a cada bloco.</p></div>;
+  const [grade, setGrade] = useState(6),
+    [mode, setMode] = useState('pdf');
+  const branches =
+    mode === 'pdf'
+      ? [
+          ['if nota >= 6:', 'Aprovado', 'A nota é pelo menos 6. Esse é o critério do exemplo da aula 1 do seu PDF.'],
+          ['else:', 'Reprovado', 'A condição anterior foi falsa: a nota ficou abaixo de 6.'],
+        ]
+      : [
+          ['if nota >= 7:', 'Aprovado', 'A primeira condição foi verdadeira. O restante é ignorado.'],
+          ['elif nota >= 5:', 'Recuperação', 'A nota não chegou a 7, mas é pelo menos 5.'],
+          ['else:', 'Reprovado', 'Nenhuma das condições anteriores foi verdadeira.'],
+        ];
+  const branch = mode === 'pdf' ? (grade >= 6 ? 0 : 1) : grade >= 7 ? 0 : grade >= 5 ? 1 : 2;
+  return (
+    <div className="decision-lab">
+      <div className="section-heading">
+        <h3>Veja a decisão acontecer</h3>
+        <span className="pill purple">Prática interativa</span>
+      </div>
+      <div className="tab-row">
+        <button className={mode === 'pdf' ? 'active' : ''} onClick={() => setMode('pdf')}>
+          2 caminhos · seu PDF
+        </button>
+        <button className={mode === 'elif' ? 'active' : ''} onClick={() => setMode('elif')}>
+          3 caminhos · com elif
+        </button>
+      </div>
+      <p>Mova a nota. O Python testa de cima para baixo e executa apenas o primeiro caminho verdadeiro.</p>
+      {mode === 'elif' && <p className="small">Aqui usamos uma regra fictícia para treinar três possibilidades: aprovação a partir de 7, recuperação de 5 até menos de 7 e reprovação abaixo de 5. Não é uma regra informada pela sua faculdade.</p>}
+      <label className="grade-label" htmlFor="grade">
+        nota <strong>{grade.toFixed(1)}</strong>
+      </label>
+      <input id="grade" type="range" min="0" max="10" step="0.5" value={grade} onChange={(e) => setGrade(Number(e.target.value))} />
+      <div className="decision-branches">
+        {branches.map(([condition, result, detail], i) => (
+          <div key={condition} className={branch === i ? 'selected' : ''}>
+            <code>
+              {condition}
+              <br />
+              {'    '}print("{result}")
+            </code>
+            {branch === i && (
+              <span>
+                <Icon name="ArrowLeft" size={17} /> Executa aqui
+              </span>
+            )}
+            {branch === i && <p>{detail}</p>}
+          </div>
+        ))}
+      </div>
+      <p className="small">
+        Se fossem três <code>if</code> separados, todos seriam testados. Com <code>if / elif / else</code>, os caminhos são alternativas da mesma decisão. A indentação indica quais instruções pertencem a cada bloco.
+      </p>
+    </div>
+  );
 }
 // Cabeçalho de passo da aula: mesmo padrão de tile colorido, sobrenome e título usado na oficina.
 function StepHead({ number, title, icon, color, done = false }) {
-  return <div className="step-head">
-    <span className={`icon-tile ${color}`}><Icon name={icon} size={21} /></span>
-    <div><div className="eyebrow">PASSO {number} DE 4</div><h3>{title}</h3></div>
-    {done && <span className="pill teal"><Icon name="Check" size={12} /> feito</span>}
-  </div>;
+  return (
+    <div className="step-head">
+      <span className={`icon-tile ${color}`}>
+        <Icon name={icon} size={21} />
+      </span>
+      <div>
+        <div className="eyebrow">PASSO {number} DE 4</div>
+        <h3>{title}</h3>
+      </div>
+      {done && (
+        <span className="pill teal">
+          <Icon name="Check" size={12} /> feito
+        </span>
+      )}
+    </div>
+  );
 }
 // "Próxima aula" mandava para lessons[posição + 1] sem olhar se ela estava aberta. No fim da
 // etapa 01 isso levava a um aviso de tela travada — "Faltam 8 pontes de função, 6 miniprojetos
@@ -75,9 +229,15 @@ function StepHead({ number, title, icon, color, done = false }) {
 // soubesse o caminho certo. Aqui a aula passa a ler a mesma fonte, e quando o que vem não é
 // uma aula ela explica o que é antes de o estudante clicar.
 function ProximoDepoisDaAula({ lesson, state, openLesson, openProject, navigate }) {
-  const posicao = lessons.findIndex(item => item.id === lesson.id);
+  const posicao = lessons.findIndex((item) => item.id === lesson.id);
   const seguinte = lessons[posicao + 1];
-  if (seguinte && lessonIsOpen(state, seguinte.id)) return <button className="button primary full" onClick={() => openLesson(seguinte.id)}>Próxima aula: {seguinte.title}<Icon name="ArrowRight" size={17} /></button>;
+  if (seguinte && lessonIsOpen(state, seguinte.id))
+    return (
+      <button className="button primary full" onClick={() => openLesson(seguinte.id)}>
+        Próxima aula: {seguinte.title}
+        <Icon name="ArrowRight" size={17} />
+      </button>
+    );
 
   const work = pendingStageWork(state);
   const explica = explicaTrabalho(work);
@@ -90,23 +250,46 @@ function ProximoDepoisDaAula({ lesson, state, openLesson, openProject, navigate 
   return <ExplicaEtapa explica={explica} onAbrir={abrir} />;
 }
 function LessonView({ lesson, state, update, notify, openLesson, openProject, navigate, uiPrefs, setUiPrefs }) {
-  const python = usePython({ source: 'lesson', lessonId: lesson.id, title: lesson.title, expected: lesson.expected, onRecord: attempt => update(s => appendAttempt(s, attempt)) });
-  const [stdin, setStdin] = useState(() => interativo ? '' : (lesson.stdin || '')), [answer, setAnswer] = useState(null), [saidaOk, setSaidaOk] = useState(false), [feedback, setFeedback] = useState(''), [showHint, setShowHint] = useState(false), [showPuzzle, setShowPuzzle] = useState(false), [mismatch, setMismatch] = useState(null), [fails, setFails] = useState(0), [celebrate, setCelebrate] = useState(0);
+  const python = usePython({
+    source: 'lesson',
+    lessonId: lesson.id,
+    title: lesson.title,
+    expected: lesson.expected,
+    onRecord: (attempt) => update((s) => appendAttempt(s, attempt)),
+  });
+  const [stdin, setStdin] = useState(() => (interativo ? '' : lesson.stdin || '')),
+    [answer, setAnswer] = useState(null),
+    [saidaOk, setSaidaOk] = useState(false),
+    [feedback, setFeedback] = useState(''),
+    [showHint, setShowHint] = useState(false),
+    [showPuzzle, setShowPuzzle] = useState(false),
+    [mismatch, setMismatch] = useState(null),
+    [fails, setFails] = useState(0),
+    [celebrate, setCelebrate] = useState(0);
   // Saída certa é pré-condição, não aprovação: `print("resposta")` produz a saída esperada sem
   // fazer o que a aula ensina. O desafio só conta quando o código também cumpre o objetivo —
   // pela medida automática ou, para quem resolveu de um jeito que ela não reconheceu, pelo Lumi.
-  const [faltando, setFaltando] = useState([]), [aprovacao, setAprovacao] = useState(null);
+  const [faltando, setFaltando] = useState([]),
+    [aprovacao, setAprovacao] = useState(null);
   const code = state.codes[lesson.id] ?? lesson.starter;
   const liberadoPeloLumi = aprovacao?.cumpre === true && aprovacao.codigo === code;
   const passed = saidaOk && (!faltando.length || liberadoPeloLumi);
-  const completed = state.completed.includes(lesson.id), position = lessons.findIndex(l => l.id === lesson.id);
+  const completed = state.completed.includes(lesson.id),
+    position = lessons.findIndex((l) => l.id === lesson.id);
   const focusMode = uiPrefs.lessonMode === 'focus';
   const focusStep = uiPrefs.lessonSteps[lesson.id] || (completed ? 4 : 1);
   const [furthestStep, setFurthestStep] = useState(focusStep);
-  const setFocusStep = step => { setFurthestStep(value => Math.max(value, step)); setUiPrefs(previous => ({ ...previous, lessonSteps: { ...previous.lessonSteps, [lesson.id]: step } })); };
-  const showStep = step => !focusMode || focusStep === step;
-  const stage = modules.find(m => m.id === lesson.moduleId);
-  const moduleColor = stage?.color || 'purple', moduleIcon = stage?.icon || 'Terminal';
+  const setFocusStep = (step) => {
+    setFurthestStep((value) => Math.max(value, step));
+    setUiPrefs((previous) => ({
+      ...previous,
+      lessonSteps: { ...previous.lessonSteps, [lesson.id]: step },
+    }));
+  };
+  const showStep = (step) => !focusMode || focusStep === step;
+  const stage = modules.find((m) => m.id === lesson.moduleId);
+  const moduleColor = stage?.color || 'purple',
+    moduleIcon = stage?.icon || 'Terminal';
   const ready = passed && answer === lesson.answer && !completed && !python.busy;
   const previousReady = useRef(false);
   const [readyNotice, setReadyNotice] = useState(false);
@@ -115,105 +298,343 @@ function LessonView({ lesson, state, update, notify, openLesson, openProject, na
     if (!ready) setReadyNotice(false);
     previousReady.current = ready;
   }, [ready]);
-  const setCode = value => { update(s => ({ ...s, codes: { ...s.codes, [lesson.id]: value }, codeRevisions: { ...s.codeRevisions, [lesson.id]: lesson.revision } })); setSaidaOk(false); setFaltando([]); setFeedback(''); setMismatch(null); };
+  const setCode = (value) => {
+    update((s) => ({
+      ...s,
+      codes: { ...s.codes, [lesson.id]: value },
+      codeRevisions: { ...s.codeRevisions, [lesson.id]: lesson.revision },
+    }));
+    setSaidaOk(false);
+    setFaltando([]);
+    setFeedback('');
+    setMismatch(null);
+  };
   const run = () => {
-    setSaidaOk(false); setFaltando([]);
-    python.run(code, stdin, result => {
+    setSaidaOk(false);
+    setFaltando([]);
+    python.run(code, stdin, (result) => {
       const bate = result.ok && result.output.trim() === lesson.expected.trim();
       const pendentes = bate ? requisitosFaltando(lesson, code) : [];
       const cumpriu = bate && (!pendentes.length || (aprovacao?.cumpre === true && aprovacao.codigo === code));
-      setSaidaOk(bate); setFaltando(pendentes);
+      setSaidaOk(bate);
+      setFaltando(pendentes);
       setMismatch(result.ok && !bate ? result.output : null);
-      setFeedback(cumpriu ? 'Saída correta e objetivo cumprido! Agora responda à revisão para concluir.'
-        : bate ? 'A saída está certa, mas o objetivo da aula ainda não foi cumprido — veja abaixo.'
-        : result.ok ? 'O programa executou. Compare a saída com o resultado esperado e tente novamente.'
-        : 'Leia a mensagem de erro, ajuste o código e tente novamente.');
-      setFails(n => cumpriu ? 0 : n + 1);
-      if (cumpriu) setCelebrate(n => n + 1);
+      setFeedback(cumpriu ? 'Saída correta e objetivo cumprido! Agora responda à revisão para concluir.' : bate ? 'A saída está certa, mas o objetivo da aula ainda não foi cumprido — veja abaixo.' : result.ok ? 'O programa executou. Compare a saída com o resultado esperado e tente novamente.' : 'Leia a mensagem de erro, ajuste o código e tente novamente.');
+      setFails((n) => (cumpriu ? 0 : n + 1));
+      if (cumpriu) setCelebrate((n) => n + 1);
     });
   };
-  const finish = () => { if (!ready) return; setReadyNotice(false); update(s => completeLesson(s, lesson.id, undefined, faltando.length && liberadoPeloLumi ? aprovacao : null)); };
-  const steps = [[1, 'Ideia', 'Lightbulb', null], [2, 'Exemplo', 'Code2', null], [3, 'Desafio', 'SquareTerminal', passed], [4, 'Revisão', 'BookOpenCheck', answer === lesson.answer]];
-  const goToStep = number => {
-    if (focusMode) { setFocusStep(number); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  const finish = () => {
+    if (!ready) return;
+    setReadyNotice(false);
+    update((s) => completeLesson(s, lesson.id, undefined, faltando.length && liberadoPeloLumi ? aprovacao : null));
+  };
+  const steps = [
+    [1, 'Ideia', 'Lightbulb', null],
+    [2, 'Exemplo', 'Code2', null],
+    [3, 'Desafio', 'SquareTerminal', passed],
+    [4, 'Revisão', 'BookOpenCheck', answer === lesson.answer],
+  ];
+  const goToStep = (number) => {
+    if (focusMode) {
+      setFocusStep(number);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     document.getElementById(`passo-${number}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
-  return <>{readyNotice && ready && <ReadyToComplete onComplete={finish} onClose={() => setReadyNotice(false)} />}
-    <button className="text-button back" onClick={() => navigate('course')}><Icon name="ArrowLeft" size={16} /> Voltar para a formação</button>
-    <div className="page-heading lesson-heading">
-      <div className="lesson-title">
-        <span className={`icon-tile ${moduleColor}`}><Icon name={moduleIcon} size={25} /></span>
-        <div><div className="eyebrow">ETAPA {lesson.moduleNumber} · {lesson.moduleTitle}</div><h1>{lesson.title}</h1><p><Icon name="Clock3" size={15} /> Cerca de {lesson.minutes} min <span>·</span> +{lesson.xp} XP {completed && <span className="pill teal">Concluída</span>}</p></div>
-      </div>
-      <div className="lesson-heading-actions"><span className="lesson-count">Aula {position + 1} de {lessons.length}</span><button className="button outline lesson-mode-toggle" onClick={() => setUiPrefs(previous => ({ ...previous, lessonMode: focusMode ? 'complete' : 'focus' }))}><Icon name={focusMode ? 'Layers' : 'Target'} size={15} /> {focusMode ? 'Ver aula completa' : 'Ativar modo foco'}</button></div>
-    </div>
-    <div className={`lesson-steps tab-row ${focusMode ? 'is-focus' : ''}`} aria-label="Passos desta aula">{steps.map(([number, label, icon, done]) => <button disabled={focusMode && number > furthestStep} aria-current={focusMode && focusStep === number ? 'step' : undefined} className={focusMode && focusStep === number ? 'active' : ''} key={number} onClick={() => goToStep(number)}><Icon name={done ? 'CheckCircle2' : icon} size={14} className={done ? 'step-check' : ''} />{number} · {label}</button>)}</div>
-    <div className={`lesson-layout ${focusMode ? 'focus-layout' : ''}`}>
-      {(!focusMode || focusStep <= 2) && <div className="focus-panel">
-        {showStep(1) && <LessonOrientation lesson={lesson} lessons={lessons} completed={state.completed} openLesson={openLesson} />}
-        {showStep(1) && <section className="card theory focus-enter" id="passo-1">
-          <StepHead number={1} title="Entenda a ideia" icon="Lightbulb" color="purple" />
-          <SimpleConcept lesson={lesson} />
-          {focusMode && <button className="button primary focus-next" onClick={() => setFocusStep(2)}>Continuar para o exemplo <Icon name="ArrowRight" size={16} /></button>}
-        </section>}
-        {showStep(2) && <section className="card theory focus-enter" id="passo-2">
-          <StepHead number={2} title="Veja como se escreve" icon="Code2" color="blue" />
-          <pre className="example-code">{lesson.example}</pre>
-          <ExampleWalkthrough lesson={lesson} />
-          <button className="text-button" onClick={() => { setCode(lesson.example); notify('Exemplo copiado para o editor. Adapte-o ao desafio.'); }}><Icon name="Copy" size={15} /> Experimentar este exemplo</button>
-          <Visualizador code={lesson.example} stdin={lesson.stdin || ''} titulo={`Veja ${lesson.title} executando`} />
-          {focusMode && <div className="focus-actions"><button className="button outline" onClick={() => setFocusStep(1)}><Icon name="ArrowLeft" size={15} /> Voltar</button><button className="button primary" onClick={() => setFocusStep(3)}>Agora quero tentar <Icon name="ArrowRight" size={16} /></button></div>}
-        </section>}
-        {showStep(2) && lesson.id === 'condicoes' && <DecisionLab />}
-      </div>}
-      {(!focusMode || focusStep >= 3) && <div className="focus-panel">
-        {showStep(3) && <section className="card lesson-work focus-enter" id="passo-3">
-        <div className="challenge">
-          <StepHead number={3} title="Agora tente você" icon="SquareTerminal" color="orange" done={passed} />
-          <p>{lesson.challenge}</p>
-          <div className="expected"><span>SAÍDA ESPERADA</span><pre>{lesson.expected}</pre></div>
+  return (
+    <>
+      {readyNotice && ready && <ReadyToComplete onComplete={finish} onClose={() => setReadyNotice(false)} />}
+      <button className="text-button back" onClick={() => navigate('course')}>
+        <Icon name="ArrowLeft" size={16} /> Voltar para a formação
+      </button>
+      <div className="page-heading lesson-heading">
+        <div className="lesson-title">
+          <span className={`icon-tile ${moduleColor}`}>
+            <Icon name={moduleIcon} size={25} />
+          </span>
+          <div>
+            <div className="eyebrow">
+              ETAPA {lesson.moduleNumber} · {lesson.moduleTitle}
+            </div>
+            <h1>{lesson.title}</h1>
+            <p>
+              <Icon name="Clock3" size={15} /> Cerca de {lesson.minutes} min <span>·</span> +{lesson.xp} XP {completed && <span className="pill teal">Concluída</span>}
+            </p>
+          </div>
         </div>
-        {state.codes[lesson.id] !== undefined && (state.codeRevisions?.[lesson.id] || 0) < lesson.revision && <div className="revision-notice"><strong>Esta aula foi revisada para explicar os passos antes do desafio.</strong><p>Seu código anterior foi preservado. Confira o novo enunciado; suas aulas concluídas e seu XP continuam registrados.</p><button className="text-button" disabled={python.busy} onClick={() => { setCode(lesson.starter); python.reset(); }}>Usar o início do exercício revisado</button></div>}
-        {lesson.stdin && <p className="hint">{interativo
-          ? <>Execute e responda <strong>{lesson.stdin}</strong> quando a pergunta aparecer abaixo do editor. Se preferir, preencha esse valor em “Entradas para input()” antes de executar.</>
-          : <>Já deixei <strong>{lesson.stdin}</strong> preenchido em “Entradas para input()”, logo abaixo do editor: aqui as respostas são lidas dali. É só executar.</>}</p>}
-        <CodeEditor aoVivo={{ inicial: lesson.starter, lessonId: lesson.id, challenge: lesson.challenge }} code={code} onChange={setCode} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} celebrate={celebrate} inputRequest={python.inputRequest} onReply={python.reply} stdin={stdin} setStdin={setStdin} />
-        {python.success === false && <ErrorHelp output={python.output} code={code} />}
-        {mismatch !== null && <OutputCompare actual={mismatch} expected={lesson.expected} />}
-        {saidaOk && <CodeReview lesson={lesson} codigo={code} saida={python.output} faltando={faltando} aprovacao={aprovacao} onAprovacao={setAprovacao} />}
-        {<Mentor activityId={`lesson:${lesson.id}`} lumiNotes={state.lumiNotes} onSaveNote={note => update(s => appendLumiNote(s, note))} title={lesson.title} challenge={lesson.challenge} expected={lesson.expected} code={code} output={python.output} lessonId={lesson.id} attempts={fails} history={state.history} screenContext={{
-          etapa: '3 · Agora tente você', entrada: stdin, feedback,
-          perguntaRevisao: lesson.question,
-          respostaRevisao: answer === null ? '' : lesson.options[answer],
-          status: `Desafio ${passed ? 'confirmado' : 'pendente'}; revisão ${answer === lesson.answer ? 'correta' : 'pendente'}.`
-        }} />}
-        <StyleTips code={code} show={python.success === true} />
-        <div className="exercise-tools"><button className="text-button" disabled={python.busy} onClick={() => { setCode(lesson.starter); python.reset(); }}><Icon name="RotateCcw" size={14} /> Reiniciar código</button><button className="text-button" onClick={() => setShowHint(!showHint)}><Icon name="Lightbulb" size={15} /> Uma ajudinha</button>{lesson.puzzle && <button className="text-button" onClick={() => setShowPuzzle(!showPuzzle)}><Icon name="Boxes" size={15} /> {showPuzzle ? 'Fechar o quebra-cabeça' : 'Travou? Monte o código embaralhado'}</button>}</div>
-        {showHint && <GuidedHints lesson={lesson} />}
-        {showPuzzle && lesson.puzzle && <ParsonsPuzzle item={lesson} />}
-        {feedback && <p className={passed ? 'success-text' : 'muted'} role="status">{feedback}</p>}
-        {focusMode && <div className="focus-actions"><button className="button outline" onClick={() => setFocusStep(2)}><Icon name="ArrowLeft" size={15} /> Rever exemplo</button><button className="button primary" disabled={!passed} onClick={() => setFocusStep(4)}>Continuar para a revisão <Icon name="ArrowRight" size={16} /></button></div>}
-        </section>}
-        {showStep(4) && <section className="card review focus-enter" id="passo-4">
-          <StepHead number={4} title="Revisão rápida" icon="BookOpenCheck" color="teal" done={answer === lesson.answer} />
-          <h4 className="review-question">{lesson.question}</h4>
-          {lesson.options.map((option, i) => <label className={`answer ${answer === i ? 'selected' : ''}`} key={option}><input type="radio" name="answer" checked={answer === i} onChange={() => setAnswer(i)} /><span>{String.fromCharCode(65 + i)}</span>{option}</label>)}
-          {answer !== null && <p className={answer === lesson.answer ? 'success-text' : 'error-text'}>{answer === lesson.answer ? 'Isso mesmo! Você acertou esta pergunta.' : 'Ainda não. Releia a explicação e tente novamente.'}</p>}
-          {focusMode && <button className="button outline focus-back" onClick={() => setFocusStep(3)}><Icon name="ArrowLeft" size={15} /> Voltar ao desafio</button>}
-        </section>}
-        {showStep(4) && <div className={`complete-box focus-enter ${completed ? "is-complete" : ready ? "is-ready" : ""}`} aria-live="polite">
-          <div className="step-head"><span className={`icon-tile ${completed ? 'teal' : 'yellow'}`}><Icon name={completed ? 'Trophy' : 'Target'} size={21} /></span><div><div className="eyebrow">{completed ? 'AULA REGISTRADA' : 'PARA CONCLUIR'}</div><h3>{completed ? 'Aula concluída · +100 XP' : ready ? 'Tudo pronto! Confirme abaixo' : 'Faltam dois passos'}</h3></div></div>
-          <p>{completed ? 'Esta aula já faz parte das suas conquistas. Revisar é sempre bem-vindo!' : ready ? 'Desafio e revisão resolvidos. Confirmar registra a aula e soma os XP.' : 'A aula é registrada quando as duas coisas abaixo estiverem certas.'}</p>
-          {!completed && <ul className="complete-checklist">{[['Desafio com a saída esperada e o objetivo cumprido', passed], ['Revisão rápida correta', answer === lesson.answer]].map(([label, done]) => <li key={label} className={done ? 'done' : ''}><Icon name={done ? 'CheckCircle2' : 'Circle'} size={16} /> {label}</li>)}</ul>}
-          {completed ? <ProximoDepoisDaAula lesson={lesson} state={state} openLesson={openLesson} openProject={openProject} navigate={navigate} /> : <button className="button primary full" disabled={!passed || answer !== lesson.answer || python.busy} onClick={finish}>Concluir aula <span>+100 XP</span><Icon name="Check" size={17} /></button>}
-        </div>}
-        {showStep(4) && <section className="card lesson-workshop">
-          <div className="step-head"><span className="icon-tile pink"><Icon name="Hammer" size={21} /></span><div><div className="eyebrow">APOIO OPCIONAL</div><h3>Quer treinar com mais apoio?</h3></div></div>
-          <p>Na oficina você começa com um exemplo pronto, descobre por que funciona, muda uma parte e só então cria a sua versão.</p>
-          <button className="text-button" onClick={() => navigate('practice')}>Abrir oficina de prática <Icon name="ArrowRight" size={15} /></button>
-        </section>}
-      </div>}
-    </div></>;
+        <div className="lesson-heading-actions">
+          <span className="lesson-count">
+            Aula {position + 1} de {lessons.length}
+          </span>
+          <button
+            className="button outline lesson-mode-toggle"
+            onClick={() =>
+              setUiPrefs((previous) => ({
+                ...previous,
+                lessonMode: focusMode ? 'complete' : 'focus',
+              }))
+            }
+          >
+            <Icon name={focusMode ? 'Layers' : 'Target'} size={15} /> {focusMode ? 'Ver aula completa' : 'Ativar modo foco'}
+          </button>
+        </div>
+      </div>
+      <div className={`lesson-steps tab-row ${focusMode ? 'is-focus' : ''}`} aria-label="Passos desta aula">
+        {steps.map(([number, label, icon, done]) => (
+          <button disabled={focusMode && number > furthestStep} aria-current={focusMode && focusStep === number ? 'step' : undefined} className={focusMode && focusStep === number ? 'active' : ''} key={number} onClick={() => goToStep(number)}>
+            <Icon name={done ? 'CheckCircle2' : icon} size={14} className={done ? 'step-check' : ''} />
+            {number} · {label}
+          </button>
+        ))}
+      </div>
+      <div className={`lesson-layout ${focusMode ? 'focus-layout' : ''}`}>
+        {(!focusMode || focusStep <= 2) && (
+          <div className="focus-panel">
+            {showStep(1) && <LessonOrientation lesson={lesson} lessons={lessons} completed={state.completed} openLesson={openLesson} />}
+            {showStep(1) && (
+              <section className="card theory focus-enter" id="passo-1">
+                <StepHead number={1} title="Entenda a ideia" icon="Lightbulb" color="purple" />
+                <SimpleConcept lesson={lesson} />
+                {focusMode && (
+                  <button className="button primary focus-next" onClick={() => setFocusStep(2)}>
+                    Continuar para o exemplo <Icon name="ArrowRight" size={16} />
+                  </button>
+                )}
+              </section>
+            )}
+            {showStep(2) && (
+              <section className="card theory focus-enter" id="passo-2">
+                <StepHead number={2} title="Veja como se escreve" icon="Code2" color="blue" />
+                <pre className="example-code">{lesson.example}</pre>
+                <ExampleWalkthrough lesson={lesson} />
+                <button
+                  className="text-button"
+                  onClick={() => {
+                    setCode(lesson.example);
+                    notify('Exemplo copiado para o editor. Adapte-o ao desafio.');
+                  }}
+                >
+                  <Icon name="Copy" size={15} /> Experimentar este exemplo
+                </button>
+                <Visualizador code={lesson.example} stdin={lesson.stdin || ''} titulo={`Veja ${lesson.title} executando`} />
+                {focusMode && (
+                  <div className="focus-actions">
+                    <button className="button outline" onClick={() => setFocusStep(1)}>
+                      <Icon name="ArrowLeft" size={15} /> Voltar
+                    </button>
+                    <button className="button primary" onClick={() => setFocusStep(3)}>
+                      Agora quero tentar <Icon name="ArrowRight" size={16} />
+                    </button>
+                  </div>
+                )}
+              </section>
+            )}
+            {showStep(2) && lesson.id === 'condicoes' && <DecisionLab />}
+          </div>
+        )}
+        {(!focusMode || focusStep >= 3) && (
+          <div className="focus-panel">
+            {showStep(3) && (
+              <section className="card lesson-work focus-enter" id="passo-3">
+                <div className="challenge">
+                  <StepHead number={3} title="Agora tente você" icon="SquareTerminal" color="orange" done={passed} />
+                  <p>{lesson.challenge}</p>
+                  <div className="expected">
+                    <span>SAÍDA ESPERADA</span>
+                    <pre>{lesson.expected}</pre>
+                  </div>
+                </div>
+                {state.codes[lesson.id] !== undefined && (state.codeRevisions?.[lesson.id] || 0) < lesson.revision && (
+                  <div className="revision-notice">
+                    <strong>Esta aula foi revisada para explicar os passos antes do desafio.</strong>
+                    <p>Seu código anterior foi preservado. Confira o novo enunciado; suas aulas concluídas e seu XP continuam registrados.</p>
+                    <button
+                      className="text-button"
+                      disabled={python.busy}
+                      onClick={() => {
+                        setCode(lesson.starter);
+                        python.reset();
+                      }}
+                    >
+                      Usar o início do exercício revisado
+                    </button>
+                  </div>
+                )}
+                {lesson.stdin && (
+                  <p className="hint">
+                    {interativo ? (
+                      <>
+                        Execute e responda <strong>{lesson.stdin}</strong> quando a pergunta aparecer abaixo do editor. Se preferir, preencha esse valor em “Entradas para input()” antes de executar.
+                      </>
+                    ) : (
+                      <>
+                        Já deixei <strong>{lesson.stdin}</strong> preenchido em “Entradas para input()”, logo abaixo do editor: aqui as respostas são lidas dali. É só executar.
+                      </>
+                    )}
+                  </p>
+                )}
+                <CodeEditor
+                  aoVivo={{
+                    inicial: lesson.starter,
+                    lessonId: lesson.id,
+                    challenge: lesson.challenge,
+                  }}
+                  code={code}
+                  onChange={setCode}
+                  busy={python.busy}
+                  onRun={run}
+                  onStop={python.stop}
+                  output={python.output}
+                  success={python.success}
+                  celebrate={celebrate}
+                  inputRequest={python.inputRequest}
+                  onReply={python.reply}
+                  stdin={stdin}
+                  setStdin={setStdin}
+                />
+                {python.success === false && <ErrorHelp output={python.output} code={code} />}
+                {mismatch !== null && <OutputCompare actual={mismatch} expected={lesson.expected} />}
+                {saidaOk && <CodeReview lesson={lesson} codigo={code} saida={python.output} faltando={faltando} aprovacao={aprovacao} onAprovacao={setAprovacao} />}
+                {
+                  <Mentor
+                    activityId={`lesson:${lesson.id}`}
+                    lumiNotes={state.lumiNotes}
+                    onSaveNote={(note) => update((s) => appendLumiNote(s, note))}
+                    title={lesson.title}
+                    challenge={lesson.challenge}
+                    expected={lesson.expected}
+                    code={code}
+                    output={python.output}
+                    lessonId={lesson.id}
+                    attempts={fails}
+                    history={state.history}
+                    screenContext={{
+                      etapa: '3 · Agora tente você',
+                      entrada: stdin,
+                      feedback,
+                      perguntaRevisao: lesson.question,
+                      respostaRevisao: answer === null ? '' : lesson.options[answer],
+                      status: `Desafio ${passed ? 'confirmado' : 'pendente'}; revisão ${answer === lesson.answer ? 'correta' : 'pendente'}.`,
+                    }}
+                  />
+                }
+                <StyleTips code={code} show={python.success === true} />
+                <div className="exercise-tools">
+                  <button
+                    className="text-button"
+                    disabled={python.busy}
+                    onClick={() => {
+                      setCode(lesson.starter);
+                      python.reset();
+                    }}
+                  >
+                    <Icon name="RotateCcw" size={14} /> Reiniciar código
+                  </button>
+                  <button className="text-button" onClick={() => setShowHint(!showHint)}>
+                    <Icon name="Lightbulb" size={15} /> Uma ajudinha
+                  </button>
+                  {lesson.puzzle && (
+                    <button className="text-button" onClick={() => setShowPuzzle(!showPuzzle)}>
+                      <Icon name="Boxes" size={15} /> {showPuzzle ? 'Fechar o quebra-cabeça' : 'Travou? Monte o código embaralhado'}
+                    </button>
+                  )}
+                </div>
+                {showHint && <GuidedHints lesson={lesson} />}
+                {showPuzzle && lesson.puzzle && <ParsonsPuzzle item={lesson} />}
+                {feedback && (
+                  <p className={passed ? 'success-text' : 'muted'} role="status">
+                    {feedback}
+                  </p>
+                )}
+                {focusMode && (
+                  <div className="focus-actions">
+                    <button className="button outline" onClick={() => setFocusStep(2)}>
+                      <Icon name="ArrowLeft" size={15} /> Rever exemplo
+                    </button>
+                    <button className="button primary" disabled={!passed} onClick={() => setFocusStep(4)}>
+                      Continuar para a revisão <Icon name="ArrowRight" size={16} />
+                    </button>
+                  </div>
+                )}
+              </section>
+            )}
+            {showStep(4) && (
+              <section className="card review focus-enter" id="passo-4">
+                <StepHead number={4} title="Revisão rápida" icon="BookOpenCheck" color="teal" done={answer === lesson.answer} />
+                <h4 className="review-question">{lesson.question}</h4>
+                {lesson.options.map((option, i) => (
+                  <label className={`answer ${answer === i ? 'selected' : ''}`} key={option}>
+                    <input type="radio" name="answer" checked={answer === i} onChange={() => setAnswer(i)} />
+                    <span>{String.fromCharCode(65 + i)}</span>
+                    {option}
+                  </label>
+                ))}
+                {answer !== null && <p className={answer === lesson.answer ? 'success-text' : 'error-text'}>{answer === lesson.answer ? 'Isso mesmo! Você acertou esta pergunta.' : 'Ainda não. Releia a explicação e tente novamente.'}</p>}
+                {focusMode && (
+                  <button className="button outline focus-back" onClick={() => setFocusStep(3)}>
+                    <Icon name="ArrowLeft" size={15} /> Voltar ao desafio
+                  </button>
+                )}
+              </section>
+            )}
+            {showStep(4) && (
+              <div className={`complete-box focus-enter ${completed ? 'is-complete' : ready ? 'is-ready' : ''}`} aria-live="polite">
+                <div className="step-head">
+                  <span className={`icon-tile ${completed ? 'teal' : 'yellow'}`}>
+                    <Icon name={completed ? 'Trophy' : 'Target'} size={21} />
+                  </span>
+                  <div>
+                    <div className="eyebrow">{completed ? 'AULA REGISTRADA' : 'PARA CONCLUIR'}</div>
+                    <h3>{completed ? 'Aula concluída · +100 XP' : ready ? 'Tudo pronto! Confirme abaixo' : 'Faltam dois passos'}</h3>
+                  </div>
+                </div>
+                <p>{completed ? 'Esta aula já faz parte das suas conquistas. Revisar é sempre bem-vindo!' : ready ? 'Desafio e revisão resolvidos. Confirmar registra a aula e soma os XP.' : 'A aula é registrada quando as duas coisas abaixo estiverem certas.'}</p>
+                {!completed && (
+                  <ul className="complete-checklist">
+                    {[
+                      ['Desafio com a saída esperada e o objetivo cumprido', passed],
+                      ['Revisão rápida correta', answer === lesson.answer],
+                    ].map(([label, done]) => (
+                      <li key={label} className={done ? 'done' : ''}>
+                        <Icon name={done ? 'CheckCircle2' : 'Circle'} size={16} /> {label}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {completed ? (
+                  <ProximoDepoisDaAula lesson={lesson} state={state} openLesson={openLesson} openProject={openProject} navigate={navigate} />
+                ) : (
+                  <button className="button primary full" disabled={!passed || answer !== lesson.answer || python.busy} onClick={finish}>
+                    Concluir aula <span>+100 XP</span>
+                    <Icon name="Check" size={17} />
+                  </button>
+                )}
+              </div>
+            )}
+            {showStep(4) && (
+              <section className="card lesson-workshop">
+                <div className="step-head">
+                  <span className="icon-tile pink">
+                    <Icon name="Hammer" size={21} />
+                  </span>
+                  <div>
+                    <div className="eyebrow">APOIO OPCIONAL</div>
+                    <h3>Quer treinar com mais apoio?</h3>
+                  </div>
+                </div>
+                <p>Na oficina você começa com um exemplo pronto, descobre por que funciona, muda uma parte e só então cria a sua versão.</p>
+                <button className="text-button" onClick={() => navigate('practice')}>
+                  Abrir oficina de prática <Icon name="ArrowRight" size={15} />
+                </button>
+              </section>
+            )}
+          </div>
+        )}
+      </div>
+    </>
+  );
 }
 
 // O herói e o cartão ao lado davam ordens diferentes na mesma tela: "Construir o projeto:
@@ -223,106 +644,232 @@ function LessonView({ lesson, state, update, notify, openLesson, openProject, na
 // Agora os dois leem a mesma fonte, e o cartão muda de cara conforme o tipo de trabalho.
 const passoDaEtapa = (work, state) => {
   const modulo = modules[work.moduleIndex] ?? modules[0];
-  const feitas = modulo.lessons.filter(item => state.completed.includes(item.id)).length;
-  const progresso = feitas / modulo.lessons.length * 100;
+  const feitas = modulo.lessons.filter((item) => state.completed.includes(item.id)).length;
+  const progresso = (feitas / modulo.lessons.length) * 100;
   if (work.kind === 'lesson') {
-    const lesson = lessons.find(item => item.id === work.id) || lessons[0];
-    return { etapa: `ETAPA ${lesson.moduleNumber} · ${modulo.category.toUpperCase()}`, titulo: lesson.title, linha: lesson.moduleTitle, minutos: lesson.minutes, xp: 100, progresso, abrir: 'lesson' };
+    const lesson = lessons.find((item) => item.id === work.id) || lessons[0];
+    return {
+      etapa: `ETAPA ${lesson.moduleNumber} · ${modulo.category.toUpperCase()}`,
+      titulo: lesson.title,
+      linha: lesson.moduleTitle,
+      minutos: lesson.minutes,
+      xp: 100,
+      progresso,
+      abrir: 'lesson',
+    };
   }
   if (work.kind === 'project') {
-    const project = projects.find(item => item.id === work.id) || projects[0];
-    return { etapa: `ETAPA ${modulo.number} · PROJETO DA ETAPA`, titulo: project.title, linha: modulo.title, minutos: null, xp: 250, progresso: 100, abrir: 'project' };
+    const project = projects.find((item) => item.id === work.id) || projects[0];
+    return {
+      etapa: `ETAPA ${modulo.number} · PROJETO DA ETAPA`,
+      titulo: project.title,
+      linha: modulo.title,
+      minutos: null,
+      xp: 250,
+      progresso: 100,
+      abrir: 'project',
+    };
   }
   if (work.kind === 'practice') {
-    return { etapa: `ETAPA ${modulo.number} · OFICINA DE PRÁTICA`, titulo: work.label, linha: 'Treine o que a etapa ensinou antes de abrir o projeto.', minutos: null, xp: 40, progresso, abrir: 'practice' };
+    return {
+      etapa: `ETAPA ${modulo.number} · OFICINA DE PRÁTICA`,
+      titulo: work.label,
+      linha: 'Treine o que a etapa ensinou antes de abrir o projeto.',
+      minutos: null,
+      xp: 40,
+      progresso,
+      abrir: 'practice',
+    };
   }
-  return { etapa: 'FORMAÇÃO CONCLUÍDA', titulo: 'Você terminou as 8 etapas', linha: 'Reveja o que quiser ou volte aos projetos.', minutos: null, xp: 0, progresso: 100, abrir: 'badges' };
+  return {
+    etapa: 'FORMAÇÃO CONCLUÍDA',
+    titulo: 'Você terminou as 8 etapas',
+    linha: 'Reveja o que quiser ou volte aos projetos.',
+    minutos: null,
+    xp: 0,
+    progresso: 100,
+    abrir: 'badges',
+  };
 };
 
 function ProximoPasso({ work, state, onAbrir, onVerFormacao }) {
   const passo = passoDaEtapa(work, state);
-  return <section className="card continue-card">
-    <div className="section-heading"><h2><Icon name="BookOpen" /> Seu próximo passo</h2><button className="text-button" onClick={onVerFormacao}>Ver formação <Icon name="ArrowRight" size={15} /></button></div>
-    <div className="continue-body">
-      <div className="lesson-art"><span className="code-symbol">&gt;_</span><span className="lesson-art-tag">PYTHON ESSENTIALS</span><div className="mini-code"><i /><i /><i /></div></div>
-      <div className="continue-detail">
-        <span className="eyebrow">{passo.etapa}</span>
-        <h3>{passo.titulo}</h3>
-        <p>{passo.linha}</p>
-        <div className="lesson-meta">
-          {passo.minutos && <span><Icon name="Clock3" size={14} /> {passo.minutos} min</span>}
-          {passo.xp > 0 && <span><Icon name="Zap" size={14} /> +{passo.xp} XP</span>}
-          <span className="pill purple">{work.kind === 'done' ? 'Formação completa' : state.completed.length ? 'Em andamento' : 'Pronto para começar'}</span>
-        </div>
-        <Progress value={passo.progresso} />
+  return (
+    <section className="card continue-card">
+      <div className="section-heading">
+        <h2>
+          <Icon name="BookOpen" /> Seu próximo passo
+        </h2>
+        <button className="text-button" onClick={onVerFormacao}>
+          Ver formação <Icon name="ArrowRight" size={15} />
+        </button>
       </div>
-      <button className="round-button" aria-label={`Abrir ${passo.titulo}`} onClick={onAbrir}><Icon name="ArrowRight" size={21} /></button>
-    </div>
-  </section>;
+      <div className="continue-body">
+        <div className="lesson-art">
+          <span className="code-symbol">&gt;_</span>
+          <span className="lesson-art-tag">PYTHON ESSENTIALS</span>
+          <div className="mini-code">
+            <i />
+            <i />
+            <i />
+          </div>
+        </div>
+        <div className="continue-detail">
+          <span className="eyebrow">{passo.etapa}</span>
+          <h3>{passo.titulo}</h3>
+          <p>{passo.linha}</p>
+          <div className="lesson-meta">
+            {passo.minutos && (
+              <span>
+                <Icon name="Clock3" size={14} /> {passo.minutos} min
+              </span>
+            )}
+            {passo.xp > 0 && (
+              <span>
+                <Icon name="Zap" size={14} /> +{passo.xp} XP
+              </span>
+            )}
+            <span className="pill purple">{work.kind === 'done' ? 'Formação completa' : state.completed.length ? 'Em andamento' : 'Pronto para começar'}</span>
+          </div>
+          <Progress value={passo.progresso} />
+        </div>
+        <button className="round-button" aria-label={`Abrir ${passo.titulo}`} onClick={onAbrir}>
+          <Icon name="ArrowRight" size={21} />
+        </button>
+      </div>
+    </section>
+  );
 }
 
 export default function App() {
   const [storageError, setStorageError] = useState('');
-  const [state, setState] = useState(() => { try { const saved = localStorage.getItem(STORAGE_KEY); return saved ? normalizeState(JSON.parse(saved)) : initialState(); } catch { return initialState(); } });
+  const [state, setState] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? normalizeState(JSON.parse(saved)) : initialState();
+    } catch {
+      return initialState();
+    }
+  });
   const [uiPrefs, setUiPrefs] = useState(() => loadUiPreferences());
-  const [page, setPage] = useState('dashboard'), [selectedLesson, setSelectedLesson] = useState('ola'), [selectedProject, setSelectedProject] = useState('calculadora'), [practiceTarget, setPracticeTarget] = useState(null), [mobileOpen, setMobileOpen] = useState(false), [modal, setModal] = useState(null), [toast, setToast] = useState(''), [query, setQuery] = useState(''), [filter, setFilter] = useState('Todas as etapas'), [expanded, setExpanded] = useState('fundamentos');
+  const [page, setPage] = useState('dashboard'),
+    [selectedLesson, setSelectedLesson] = useState('ola'),
+    [selectedProject, setSelectedProject] = useState('calculadora'),
+    [practiceTarget, setPracticeTarget] = useState(null),
+    [facultyTarget, setFacultyTarget] = useState(null),
+    [mobileOpen, setMobileOpen] = useState(false),
+    [modal, setModal] = useState(null),
+    [toast, setToast] = useState(''),
+    [query, setQuery] = useState(''),
+    [filter, setFilter] = useState('Todas as etapas'),
+    [expanded, setExpanded] = useState('fundamentos');
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  const [selectedDate, setSelectedDate] = useState(localDate()), [today, setToday] = useState(localDate());
-  const [sessionDraft, setSessionDraft] = useState({ title: '', time: '19:00', minutes: 30 });
+  const [selectedDate, setSelectedDate] = useState(localDate()),
+    [today, setToday] = useState(localDate());
+  const [sessionDraft, setSessionDraft] = useState({
+    title: '',
+    time: '19:00',
+    minutes: 30,
+  });
   const [profileDraft, setProfileDraft] = useState(null);
   const [celebrations, setCelebrations] = useState([]);
   const previousProgress = useRef(state);
   useEffect(() => {
     const reward = buildCelebration(previousProgress.current, state);
     previousProgress.current = state;
-    if (reward) setCelebrations(queue => [...queue, reward]);
+    if (reward) setCelebrations((queue) => [...queue, reward]);
   }, [state]);
   useEffect(() => {
-    const titulo = page === 'dashboard' ? 'Visão geral' : navItems.find(item => item.id === page)?.title || (page === 'lesson' ? 'Aula' : page === 'project' ? 'Projeto' : page === 'sobre' ? 'Sobre e limites' : 'PyCampus');
+    const titulo = page === 'dashboard' ? 'Visão geral' : navItems.find((item) => item.id === page)?.title || (page === 'lesson' ? 'Aula' : page === 'project' ? 'Projeto' : page === 'sobre' ? 'Sobre e limites' : 'PyCampus');
     document.title = `${titulo} · PyCampus`;
   }, [page]);
   useEffect(() => {
-    document.querySelectorAll('aside.sidebar nav button').forEach(button => {
+    document.querySelectorAll('aside.sidebar nav button').forEach((button) => {
       if (button.classList.contains('active')) button.setAttribute('aria-current', 'page');
       else button.removeAttribute('aria-current');
     });
   }, [page]);
   useEffect(() => {
-    const fecharMenu = event => { if (event.key === 'Escape') setMobileOpen(false); };
+    const fecharMenu = (event) => {
+      if (event.key === 'Escape') setMobileOpen(false);
+    };
     window.addEventListener('keydown', fecharMenu);
     return () => window.removeEventListener('keydown', fecharMenu);
   }, []);
-  const importRef = useRef(null), toastTimer = useRef(null);
-  const update = fn => setState(fn);
-  const info = levelInfo(state), fire = streak(state, today);
-  const progress = state.completed.length / lessons.length * 100, earned = badges.filter(b => b.check(state));
+  const importRef = useRef(null),
+    toastTimer = useRef(null);
+  const update = (fn) => setState(fn);
+  const info = levelInfo(state),
+    fire = streak(state, today);
+  const progress = (state.completed.length / lessons.length) * 100,
+    earned = badges.filter((b) => b.check(state));
   // Contava só ids de aula: um dia com quatro miniprojetos e uma aula mostrava 1/6. O dia de
   // estudo é tudo o que foi registrado nele, igual ao que já conta para a sequência.
   const atividadesHoje = (state.activities[today] || []).length;
-  const week = weekDays(today), activeWeek = week.filter(d => state.activities[d]?.length).length;
-  const notify = text => { setToast(text); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(''), 4500); };
-  const navigate = (target, options = {}) => { if (target === 'practice' && !options.keepPracticeTarget) setPracticeTarget(null); setPage(target); setMobileOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }); };
-  const openPractice = work => {
-    setPracticeTarget({ id: work.id, sub: work.sub || 'miniprojeto', request: Date.now() });
+  const week = weekDays(today),
+    activeWeek = week.filter((d) => state.activities[d]?.length).length;
+  const notify = (text) => {
+    setToast(text);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(''), 4500);
+  };
+  const navigate = (target, options = {}) => {
+    if (target === 'practice' && !options.keepPracticeTarget) setPracticeTarget(null);
+    if (target === 'faculdade') setFacultyTarget(options.facultyItem || null);
+    setPage(target);
+    setMobileOpen(false);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+  const openPractice = (work) => {
+    setPracticeTarget({
+      id: work.id,
+      sub: work.sub || 'miniprojeto',
+      request: Date.now(),
+    });
     navigate('practice', { keepPracticeTarget: true });
   };
-  const openLesson = id => {
-    if (!lessonAllowed(state, id)) { notify(`Esta aula ainda está travada. ${blockingSummary(state, moduleIndexForLesson(id))}`); return; }
-    setSelectedLesson(id); navigate('lesson'); setModal(null);
+  const openLesson = (id) => {
+    if (!lessonAllowed(state, id)) {
+      notify(`Esta aula ainda está travada. ${blockingSummary(state, moduleIndexForLesson(id))}`);
+      return;
+    }
+    setSelectedLesson(id);
+    navigate('lesson');
+    setModal(null);
   };
-  const openProject = id => {
-    if (!projectIsOpen(state, id)) { notify(`O projeto abre quando a etapa estiver completa. ${missingSummary(state, projects.find(p => p.id === id).module)}`); return; }
-    setSelectedProject(id); navigate('project'); setModal(null);
+  const openProject = (id) => {
+    if (!projectIsOpen(state, id)) {
+      notify(`O projeto abre quando a etapa estiver completa. ${missingSummary(state, projects.find((p) => p.id === id).module)}`);
+      return;
+    }
+    setSelectedProject(id);
+    navigate('project');
+    setModal(null);
   };
-  useEffect(() => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); setStorageError(''); } catch { setStorageError('Não foi possível salvar neste navegador. Exporte um backup nas configurações para preservar seu progresso.'); } }, [state]);
-  useEffect(() => { saveUiPreferences(uiPrefs); }, [uiPrefs]);
   useEffect(() => {
-    setUiPrefs(previous => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      setStorageError('');
+    } catch {
+      setStorageError('Não foi possível salvar neste navegador. Exporte um backup nas configurações para preservar seu progresso.');
+    }
+  }, [state]);
+  useEffect(() => {
+    saveUiPreferences(uiPrefs);
+  }, [uiPrefs]);
+  useEffect(() => {
+    setUiPrefs((previous) => {
       const dailyMission = updateDailyMission(previous.dailyMission, state, today);
       return dailyMission === previous.dailyMission ? previous : { ...previous, dailyMission };
     });
   }, [state, today]);
-  useEffect(() => { const interval = setInterval(() => setToday(localDate()), 30000); return () => { clearInterval(interval); clearTimeout(toastTimer.current); }; }, []);
+  useEffect(() => {
+    const interval = setInterval(() => setToday(localDate()), 30000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(toastTimer.current);
+    };
+  }, []);
   // Sobe para o Gist sozinho, 20 segundos depois da última mudança: assim uma aula concluída
   // nunca fica só neste aparelho, e o GitHub não é chamado a cada tecla.
   const ultimoEnviado = useRef('');
@@ -330,87 +877,1397 @@ export default function App() {
     if (!conectado() || !precisaSalvar(state, ultimoEnviado.current)) return;
     const id = setTimeout(() => {
       const copia = JSON.stringify(state);
-      salvarNaNuvem(state).then(() => { ultimoEnviado.current = copia; }).catch(() => {});
+      salvarNaNuvem(state)
+        .then(() => {
+          ultimoEnviado.current = copia;
+        })
+        .catch(() => {});
     }, 20000);
     return () => clearTimeout(id);
   }, [state]);
 
   // Relógio do lembrete: vale enquanto o campus estiver aberto. Quem já estudou hoje não é avisado.
   useEffect(() => relogioDoLembrete(state.lembrete, () => Boolean(state.activities[localDate()]?.length)), [state.lembrete, state.activities]);
-  useEffect(() => { const onKey = e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setModal('search'); } }; document.addEventListener('keydown', onKey); return () => document.removeEventListener('keydown', onKey); }, []);
-  const download = (data, filename, type = 'application/json') => { const url = URL.createObjectURL(new Blob([data], { type })); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); };
-  const importBackup = async event => { const file = event.target.files?.[0]; if (!file) return; try { if (file.size > 5000000) throw new Error('O backup deve ter no máximo 5 MB.'); const parsed = normalizeState(JSON.parse(await file.text())); setModal({ type: 'import', data: parsed }); } catch (e) { notify(e.message.includes('JSON') ? 'Arquivo inválido. Escolha um backup JSON do PyCampus.' : e.message); } event.target.value = ''; };
-  const projectToggle = (project, index) => update(s => { const previous = s.projectChecks[project.id] || []; const next = previous.includes(index) ? previous.filter(i => i !== index) : [...previous, index]; const activities = { ...s.activities }; if (next.length === project.requirements.length && previous.length < next.length) activities[today] = [...new Set([...(activities[today] || []), `project:${project.id}`])]; return { ...s, projectChecks: { ...s.projectChecks, [project.id]: next }, activities }; });
-  const createSession = event => { event.preventDefault(); const session = { ...sessionDraft, minutes: Number(sessionDraft.minutes), date: selectedDate, id: crypto.randomUUID(), done: false }; update(s => ({ ...s, sessions: [...s.sessions, session] })); setModal(null); setSessionDraft({ title: '', time: '19:00', minutes: 30 }); notify('Sessão adicionada ao seu calendário.'); };
-  const toggleSession = session => { if (session.date > today) { notify('Você pode concluir esta sessão na data marcada ou depois.'); return; } update(s => { const activities = { ...s.activities }; const key = `session:${session.id}`; if (!session.done) activities[today] = [...new Set([...(activities[today] || []), key])]; else for (const day of Object.keys(activities)) activities[day] = activities[day].filter(id => id !== key); return { ...s, sessions: s.sessions.map(item => item.id === session.id ? { ...item, done: !item.done } : item), activities }; }); };
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setModal('search');
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+  const download = (data, filename, type = 'application/json') => {
+    const url = URL.createObjectURL(new Blob([data], { type }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  const importBackup = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      if (file.size > 5000000) throw new Error('O backup deve ter no máximo 5 MB.');
+      const parsed = normalizeState(JSON.parse(await file.text()));
+      setModal({ type: 'import', data: parsed });
+    } catch (e) {
+      notify(e.message.includes('JSON') ? 'Arquivo inválido. Escolha um backup JSON do PyCampus.' : e.message);
+    }
+    event.target.value = '';
+  };
+  const projectToggle = (project, index) =>
+    update((s) => {
+      const previous = s.projectChecks[project.id] || [];
+      const next = previous.includes(index) ? previous.filter((i) => i !== index) : [...previous, index];
+      const activities = { ...s.activities };
+      if (next.length === project.requirements.length && previous.length < next.length) activities[today] = [...new Set([...(activities[today] || []), `project:${project.id}`])];
+      return {
+        ...s,
+        projectChecks: { ...s.projectChecks, [project.id]: next },
+        activities,
+      };
+    });
+  const createSession = (event) => {
+    event.preventDefault();
+    const session = {
+      ...sessionDraft,
+      minutes: Number(sessionDraft.minutes),
+      date: selectedDate,
+      id: crypto.randomUUID(),
+      done: false,
+    };
+    update((s) => ({ ...s, sessions: [...s.sessions, session] }));
+    setModal(null);
+    setSessionDraft({ title: '', time: '19:00', minutes: 30 });
+    notify('Sessão adicionada ao seu calendário.');
+  };
+  const toggleSession = (session) => {
+    if (session.date > today) {
+      notify('Você pode concluir esta sessão na data marcada ou depois.');
+      return;
+    }
+    update((s) => {
+      const activities = { ...s.activities };
+      const key = `session:${session.id}`;
+      if (!session.done) activities[today] = [...new Set([...(activities[today] || []), key])];
+      else for (const day of Object.keys(activities)) activities[day] = activities[day].filter((id) => id !== key);
+      return {
+        ...s,
+        sessions: s.sessions.map((item) => (item.id === session.id ? { ...item, done: !item.done } : item)),
+        activities,
+      };
+    });
+  };
 
   function Dashboard() {
     const proximo = pendingStageWork(state);
-    const abrirProximo = () => { if (proximo.kind === 'lesson') openLesson(proximo.id); else if (proximo.kind === 'practice') openPractice(proximo); else if (proximo.kind === 'project') openProject(proximo.id); else navigate('badges'); };
-    const abrirMissao = item => { if (item.kind === 'lesson') openLesson(item.id); else if (item.kind === 'practice') openPractice(item); else if (item.kind === 'project') openProject(item.id); else navigate('targeted'); };
-    return <><div className="page-heading"><div><div className="eyebrow">SEU CAMPUS, SEU RITMO</div><h1>Olá, {state.name.split(' ')[0]} <span className="wave">✌️</span></h1><p>Um pouquinho todos os dias. Um futuro cheio de possibilidades.</p></div><div className="today-label"><Icon name="CalendarDays" size={17} /> {new Date(`${today}T12:00:00`).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</div></div><section className="hero"><div className="hero-copy"><div className="hero-kicker"><span /> SUA JORNADA EM PYTHON</div><h2>Grandes ideias começam<br />com pequenos <em>códigos.</em></h2><p>Do seu primeiro “Olá, mundo!” ao seu próprio sistema.<br className="desktop-br" /> Você tem um caminho. Agora, dê o próximo passo.</p><button className="button hero-button" onClick={abrirProximo}><Icon name="Play" size={16} fill="currentColor" /> {state.completed.length ? proximo.label : 'Começar agora, sem cadastro'}<Icon name="ArrowRight" size={17} /></button><div className="hero-foot"><Icon name="BookOpen" size={14} /> 8 etapas <span>·</span> 48 aulas <span>·</span> 8 projetos <span>·</span> progresso salvo no navegador</div></div><OrbitArt /></section><div className="stats-grid"><Stat icon="Flame" color="orange" label="Sequência de estudos" value={`${fire} ${fire === 1 ? 'dia' : 'dias'}`} note={fire ? 'Mantenha sua chama acesa!' : 'Sua chama começa na primeira atividade'} /><Stat icon="Zap" color="purple" label="Experiência total" value={info.xp.toLocaleString('pt-BR')} suffix="XP" note={`${500 - info.current} XP para o próximo nível`} /><Stat icon="BookOpenCheck" color="blue" label="Aulas concluídas" value={state.completed.length} suffix={`/ ${lessons.length}`} note={`${Math.round(progress)}% da sua formação`} /><Stat icon="Award" color="teal" label="Emblemas conquistados" value={earned.length} suffix={`/ ${badges.length}`} note="Cada conquista conta uma história" /></div><DailyMission mission={uiPrefs.dailyMission} state={state} today={today} onOpen={abrirMissao} /><div className="dashboard-columns"><div className="dashboard-main"><ProximoPasso work={proximo} state={state} onAbrir={abrirProximo} onVerFormacao={() => navigate('course')} /><section className="journey-section"><div className="section-heading"><h2>Sua formação, passo a passo</h2><span className="muted small">Do zero ao avançado</span></div><div className="module-grid">{modules.slice(0, 4).map(m => <ModuleCard key={m.id} module={m} compact />)}</div><button className="text-button formation-link" onClick={() => navigate('course')}>Explorar as 8 etapas da formação <Icon name="ArrowRight" size={15} /></button></section><section className="challenge-banner"><div className="icon-tile yellow"><Icon name="Lightbulb" size={24} /></div><div><span className="eyebrow">DESCOMPLICA PYTHON</span><h3>If, elif ou else? Vamos praticar.</h3><p>Mude a nota e veja qual caminho o programa escolhe.</p></div><button className="button outline" onClick={() => openLesson('condicoes')}>Entender na prática <Icon name="ArrowRight" size={16} /></button></section></div><aside className="dashboard-right"><section className="card goal-card"><div className="section-heading"><h2><Icon name="Target" size={20} /> Meta diária</h2><button className="icon-button" aria-label="Editar metas" onClick={() => setModal('goals')}><Icon name="SlidersHorizontal" size={17} /></button></div><div className="goal-circle" style={{ '--progress': `${Math.min(100, atividadesHoje / state.goal * 100)}%` }}><div><Icon name="BookOpenCheck" size={26} /><strong>{atividadesHoje}<small>/{state.goal}</small></strong><span>{state.goal === 1 ? 'atividade hoje' : 'atividades hoje'}</span></div></div><h3>{atividadesHoje >= state.goal ? 'Meta do dia concluída! 🎉' : 'Reserve um tempo para você.'}</h3><p>{atividadesHoje >= state.goal ? 'Cada passo aproxima você do seu objetivo.' : `Sua meta: ${state.goal} ${state.goal === 1 ? 'atividade por dia' : 'atividades por dia'}. Aula, miniprojeto, ponte ou passo de projeto — tudo conta. Você consegue!`}</p><div className="week-dots">{week.map((day, i) => <div key={day}><span>{['S', 'T', 'Q', 'Q', 'S', 'S', 'D'][i]}</span><div className={`${state.activities[day]?.length ? 'active' : ''} ${day === today ? 'today' : ''}`} title={dateLabel(day)}>{state.activities[day]?.length ? <Icon name="Check" size={14} /> : new Date(`${day}T12:00:00`).getDate()}</div></div>)}</div><div className="goal-footer"><span>{activeWeek} de {state.weeklyGoal} dias na semana</span><span className="orange-text"><Icon name="Flame" size={14} /> Continue firme</span></div></section><section className="card next-badge"><div className="section-heading"><h2>Próxima conquista</h2><Icon name="Sparkles" size={18} /></div>{(() => { const badge = badges.find(b => !b.check(state)) || badges.at(-1); return <><div className={`badge-medallion ${badge.color}`}><Icon name={badge.icon} size={35} /></div><h3>{badge.title}</h3><p>{badge.description}</p><button className="text-button" onClick={() => navigate('badges')}>Ver todas as conquistas <Icon name="ArrowRight" size={14} /></button></>; })()}</section><div className="campus-note"><Icon name="Sprout" size={20} /><p>Você não precisa saber tudo.<br /><strong>Só precisa continuar aprendendo.</strong></p></div></aside></div></>;
+    const abrirProximo = () => {
+      if (proximo.kind === 'lesson') openLesson(proximo.id);
+      else if (proximo.kind === 'practice') openPractice(proximo);
+      else if (proximo.kind === 'project') openProject(proximo.id);
+      else navigate('badges');
+    };
+    const abrirMissao = (item) => {
+      if (item.kind === 'lesson') openLesson(item.id);
+      else if (item.kind === 'practice') openPractice(item);
+      else if (item.kind === 'project') openProject(item.id);
+      else navigate('targeted');
+    };
+    return (
+      <>
+        <div className="page-heading">
+          <div>
+            <div className="eyebrow">SEU CAMPUS, SEU RITMO</div>
+            <h1>
+              Olá, {state.name.split(' ')[0]} <span className="wave">✌️</span>
+            </h1>
+            <p>Um pouquinho todos os dias. Um futuro cheio de possibilidades.</p>
+          </div>
+          <div className="today-label">
+            <Icon name="CalendarDays" size={17} />{' '}
+            {new Date(`${today}T12:00:00`).toLocaleDateString('pt-BR', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </div>
+        </div>
+        <section className="hero">
+          <div className="hero-copy">
+            <div className="hero-kicker">
+              <span /> SUA JORNADA EM PYTHON
+            </div>
+            <h2>
+              Grandes ideias começam
+              <br />
+              com pequenos <em>códigos.</em>
+            </h2>
+            <p>
+              Do seu primeiro “Olá, mundo!” ao seu próprio sistema.
+              <br className="desktop-br" /> Você tem um caminho. Agora, dê o próximo passo.
+            </p>
+            <button className="button hero-button" onClick={abrirProximo}>
+              <Icon name="Play" size={16} fill="currentColor" /> {state.completed.length ? proximo.label : 'Começar agora, sem cadastro'}
+              <Icon name="ArrowRight" size={17} />
+            </button>
+            <div className="hero-foot">
+              <Icon name="BookOpen" size={14} /> 8 etapas <span>·</span> 48 aulas <span>·</span> 8 projetos <span>·</span> progresso salvo no navegador
+            </div>
+          </div>
+          <OrbitArt />
+        </section>
+        <div className="stats-grid">
+          <Stat icon="Flame" color="orange" label="Sequência de estudos" value={`${fire} ${fire === 1 ? 'dia' : 'dias'}`} note={fire ? 'Mantenha sua chama acesa!' : 'Sua chama começa na primeira atividade'} />
+          <Stat icon="Zap" color="purple" label="Experiência total" value={info.xp.toLocaleString('pt-BR')} suffix="XP" note={`${500 - info.current} XP para o próximo nível`} />
+          <Stat icon="BookOpenCheck" color="blue" label="Aulas concluídas" value={state.completed.length} suffix={`/ ${lessons.length}`} note={`${Math.round(progress)}% da sua formação`} />
+          <Stat icon="Award" color="teal" label="Emblemas conquistados" value={earned.length} suffix={`/ ${badges.length}`} note="Cada conquista conta uma história" />
+        </div>
+        <DailyMission mission={uiPrefs.dailyMission} state={state} today={today} onOpen={abrirMissao} />
+        <FaculdadeIntegrada state={state} navigate={navigate} variant="dashboard" />
+        <div className="dashboard-columns">
+          <div className="dashboard-main">
+            <ProximoPasso work={proximo} state={state} onAbrir={abrirProximo} onVerFormacao={() => navigate('course')} />
+            <section className="journey-section">
+              <div className="section-heading">
+                <h2>Sua formação, passo a passo</h2>
+                <span className="muted small">Do zero ao avançado</span>
+              </div>
+              <div className="module-grid">
+                {modules.slice(0, 4).map((m) => (
+                  <ModuleCard key={m.id} module={m} compact />
+                ))}
+              </div>
+              <button className="text-button formation-link" onClick={() => navigate('course')}>
+                Explorar as 8 etapas da formação <Icon name="ArrowRight" size={15} />
+              </button>
+            </section>
+            <section className="challenge-banner">
+              <div className="icon-tile yellow">
+                <Icon name="Lightbulb" size={24} />
+              </div>
+              <div>
+                <span className="eyebrow">DESCOMPLICA PYTHON</span>
+                <h3>If, elif ou else? Vamos praticar.</h3>
+                <p>Mude a nota e veja qual caminho o programa escolhe.</p>
+              </div>
+              <button className="button outline" onClick={() => openLesson('condicoes')}>
+                Entender na prática <Icon name="ArrowRight" size={16} />
+              </button>
+            </section>
+          </div>
+          <aside className="dashboard-right">
+            <section className="card goal-card">
+              <div className="section-heading">
+                <h2>
+                  <Icon name="Target" size={20} /> Meta diária
+                </h2>
+                <button className="icon-button" aria-label="Editar metas" onClick={() => setModal('goals')}>
+                  <Icon name="SlidersHorizontal" size={17} />
+                </button>
+              </div>
+              <div
+                className="goal-circle"
+                style={{
+                  '--progress': `${Math.min(100, (atividadesHoje / state.goal) * 100)}%`,
+                }}
+              >
+                <div>
+                  <Icon name="BookOpenCheck" size={26} />
+                  <strong>
+                    {atividadesHoje}
+                    <small>/{state.goal}</small>
+                  </strong>
+                  <span>{state.goal === 1 ? 'atividade hoje' : 'atividades hoje'}</span>
+                </div>
+              </div>
+              <h3>{atividadesHoje >= state.goal ? 'Meta do dia concluída! 🎉' : 'Reserve um tempo para você.'}</h3>
+              <p>{atividadesHoje >= state.goal ? 'Cada passo aproxima você do seu objetivo.' : `Sua meta: ${state.goal} ${state.goal === 1 ? 'atividade por dia' : 'atividades por dia'}. Aula, miniprojeto, ponte ou passo de projeto — tudo conta. Você consegue!`}</p>
+              <div className="week-dots">
+                {week.map((day, i) => (
+                  <div key={day}>
+                    <span>{['S', 'T', 'Q', 'Q', 'S', 'S', 'D'][i]}</span>
+                    <div className={`${state.activities[day]?.length ? 'active' : ''} ${day === today ? 'today' : ''}`} title={dateLabel(day)}>
+                      {state.activities[day]?.length ? <Icon name="Check" size={14} /> : new Date(`${day}T12:00:00`).getDate()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="goal-footer">
+                <span>
+                  {activeWeek} de {state.weeklyGoal} dias na semana
+                </span>
+                <span className="orange-text">
+                  <Icon name="Flame" size={14} /> Continue firme
+                </span>
+              </div>
+            </section>
+            <section className="card next-badge">
+              <div className="section-heading">
+                <h2>Próxima conquista</h2>
+                <Icon name="Sparkles" size={18} />
+              </div>
+              {(() => {
+                const badge = badges.find((b) => !b.check(state)) || badges.at(-1);
+                return (
+                  <>
+                    <div className={`badge-medallion ${badge.color}`}>
+                      <Icon name={badge.icon} size={35} />
+                    </div>
+                    <h3>{badge.title}</h3>
+                    <p>{badge.description}</p>
+                    <button className="text-button" onClick={() => navigate('badges')}>
+                      Ver todas as conquistas <Icon name="ArrowRight" size={14} />
+                    </button>
+                  </>
+                );
+              })()}
+            </section>
+            <div className="campus-note">
+              <Icon name="Sprout" size={20} />
+              <p>
+                Você não precisa saber tudo.
+                <br />
+                <strong>Só precisa continuar aprendendo.</strong>
+              </p>
+            </div>
+          </aside>
+        </div>
+      </>
+    );
   }
 
-
-  function Stat({ icon, color, label, value, suffix, note }) { return <div className="stat card"><div className={`icon-tile ${color}`}><Icon name={icon} size={22} /></div><span className="stat-label">{label}</span><div className="stat-value">{value} <span>{suffix}</span></div><p>{note}</p></div>; }
+  function Stat({ icon, color, label, value, suffix, note }) {
+    return (
+      <div className="stat card">
+        <div className={`icon-tile ${color}`}>
+          <Icon name={icon} size={22} />
+        </div>
+        <span className="stat-label">{label}</span>
+        <div className="stat-value">
+          {value} <span>{suffix}</span>
+        </div>
+        <p>{note}</p>
+      </div>
+    );
+  }
   function ModuleCard({ module: m, compact = false }) {
-    const done = m.lessons.filter(l => state.completed.includes(l.id)).length;
-    return <button className={`module-card card ${compact ? 'compact' : ''}`} onClick={() => { setExpanded(m.id); navigate('course'); }}><div className="module-card-top"><div className={`icon-tile ${m.color}`}><Icon name={m.icon} size={23} /></div><span className="module-number">{m.number}</span></div><span className="eyebrow">{m.category}</span><h3>{m.title}</h3>{!compact && <p>{m.description}</p>}<div className="module-footer"><span>{done} / 6 aulas</span><span>{done === 6 ? 'Concluída ✓' : done ? 'Em andamento' : 'Explorar'} <Icon name="ArrowUpRight" size={13} /></span></div><Progress value={done / 6 * 100} /></button>;
+    const done = m.lessons.filter((l) => state.completed.includes(l.id)).length;
+    return (
+      <button
+        className={`module-card card ${compact ? 'compact' : ''}`}
+        onClick={() => {
+          setExpanded(m.id);
+          navigate('course');
+        }}
+      >
+        <div className="module-card-top">
+          <div className={`icon-tile ${m.color}`}>
+            <Icon name={m.icon} size={23} />
+          </div>
+          <span className="module-number">{m.number}</span>
+        </div>
+        <span className="eyebrow">{m.category}</span>
+        <h3>{m.title}</h3>
+        {!compact && <p>{m.description}</p>}
+        <div className="module-footer">
+          <span>{done} / 6 aulas</span>
+          <span>
+            {done === 6 ? 'Concluída ✓' : done ? 'Em andamento' : 'Explorar'} <Icon name="ArrowUpRight" size={13} />
+          </span>
+        </div>
+        <Progress value={(done / 6) * 100} />
+      </button>
+    );
   }
-  function CourseList() { const filtered = modules.filter(m => filter === 'Todas as etapas' || filter === 'Concluídas' && m.lessons.every(l => state.completed.includes(l.id)) || filter === 'A fazer' && m.lessons.some(l => !state.completed.includes(l.id))); return <><PageHeading eyebrow="UM CAMINHO PARA IR ALÉM" title="Minha formação" subtitle="Uma sequência de estudos com teoria, prática e projetos. Avance no seu ritmo." /><section className="card course-overview"><div className="icon-tile purple"><Icon name="GraduationCap" size={30} /></div><div><h3>Formação completa em Python</h3><p>8 etapas · 48 aulas · 8 projetos de portfólio</p><Progress value={progress} /></div><strong>{Math.round(progress)}%<small>concluído</small></strong></section><div className="tab-row">{['Todas as etapas', 'A fazer', 'Concluídas'].map(item => <button key={item} className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>{item}</button>)}<span>Cada etapa abre quando a anterior estiver completa</span></div><div className="curriculum-list">{filtered.length === 0 && <Empty icon="BookOpen" title="Sua primeira etapa está esperando" text="Conclua as seis aulas de uma etapa para encontrá-la aqui." />}{filtered.map(m => { const mIndex = modules.indexOf(m), mOpen = moduleIsOpen(state, mIndex), mPending = moduleRequirements(state, mIndex); return <section className={`card curriculum-module ${mOpen ? '' : 'is-locked'}`} key={m.id}><button className="module-heading" aria-expanded={expanded === m.id} onClick={() => setExpanded(expanded === m.id ? null : m.id)}><div className={`icon-tile ${m.color}`}><Icon name={m.icon} size={24} /></div><div><div className="eyebrow">ETAPA {m.number} · {m.category}</div><h2>{m.title}</h2><p>{m.description}</p></div><span className="module-completion">{mOpen ? `${m.lessons.filter(l => state.completed.includes(l.id)).length}/6 aulas` : 'travada'}</span><Icon name={expanded === m.id ? 'ChevronUp' : 'ChevronDown'} /></button>{expanded === m.id && <div className="lesson-list">{!mOpen && <p className="module-locked-note"><Icon name="LockKeyhole" size={14} /> {blockingSummary(state, mIndex)} Aulas já concluídas continuam abertas para revisão.</p>}{m.lessons.map((l, i) => { const lOpen = lessonAllowed(state, l.id); return <button key={l.id} disabled={!lOpen} onClick={() => openLesson(l.id)}><span className={`lesson-status ${state.completed.includes(l.id) ? 'done' : ''}`}>{state.completed.includes(l.id) ? <Icon name="Check" size={17} /> : lOpen ? String(i + 1).padStart(2, '0') : <Icon name="LockKeyhole" size={14} />}</span><span>{l.title}{l.id === 'condicoes' && <small>Com simulador de if / elif / else</small>}</span><span className="lesson-duration">{l.minutes} min <span>·</span> 100 XP</span><Icon name="Play" size={15} /></button>; })}<button className="module-project" disabled={!projectIsOpen(state, projects[Number(m.number) - 1].id)} onClick={() => setModal({ type: 'project', project: projects[Number(m.number) - 1] })}><Icon name="FolderCode" /><span>Projeto: {projects[Number(m.number) - 1].title}</span><Icon name="ArrowRight" size={17} /></button></div>}</section>; })}</div><div className="info-note"><Icon name="Info" size={18} /><p>Formação independente para complementar sua faculdade. As etapas organizam o aprendizado; não representam semestres oficiais nem um diploma reconhecido. As aulas são introdutórias a cada tema; os projetos aprofundam a prática.</p></div></>; }
+  function CourseList() {
+    const filtered = modules.filter((m) => filter === 'Todas as etapas' || (filter === 'Concluídas' && m.lessons.every((l) => state.completed.includes(l.id))) || (filter === 'A fazer' && m.lessons.some((l) => !state.completed.includes(l.id))));
+    return (
+      <>
+        <PageHeading eyebrow="UM CAMINHO PARA IR ALÉM" title="Minha formação" subtitle="Uma sequência de estudos com teoria, prática e projetos. Avance no seu ritmo." />
+        <section className="card course-overview">
+          <div className="icon-tile purple">
+            <Icon name="GraduationCap" size={30} />
+          </div>
+          <div>
+            <h3>Formação completa em Python</h3>
+            <p>8 etapas · 48 aulas · 8 projetos de portfólio</p>
+            <Progress value={progress} />
+          </div>
+          <strong>
+            {Math.round(progress)}%<small>concluído</small>
+          </strong>
+        </section>
+        <div className="tab-row">
+          {['Todas as etapas', 'A fazer', 'Concluídas'].map((item) => (
+            <button key={item} className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
+              {item}
+            </button>
+          ))}
+          <span>Cada etapa abre quando a anterior estiver completa</span>
+        </div>
+        <div className="curriculum-list">
+          {filtered.length === 0 && <Empty icon="BookOpen" title="Sua primeira etapa está esperando" text="Conclua as seis aulas de uma etapa para encontrá-la aqui." />}
+          {filtered.map((m) => {
+            const mIndex = modules.indexOf(m),
+              mOpen = moduleIsOpen(state, mIndex),
+              mPending = moduleRequirements(state, mIndex);
+            return (
+              <section className={`card curriculum-module ${mOpen ? '' : 'is-locked'}`} key={m.id}>
+                <button className="module-heading" aria-expanded={expanded === m.id} onClick={() => setExpanded(expanded === m.id ? null : m.id)}>
+                  <div className={`icon-tile ${m.color}`}>
+                    <Icon name={m.icon} size={24} />
+                  </div>
+                  <div>
+                    <div className="eyebrow">
+                      ETAPA {m.number} · {m.category}
+                    </div>
+                    <h2>{m.title}</h2>
+                    <p>{m.description}</p>
+                  </div>
+                  <span className="module-completion">{mOpen ? `${m.lessons.filter((l) => state.completed.includes(l.id)).length}/6 aulas` : 'travada'}</span>
+                  <Icon name={expanded === m.id ? 'ChevronUp' : 'ChevronDown'} />
+                </button>
+                {expanded === m.id && (
+                  <div className="lesson-list">
+                    {!mOpen && (
+                      <p className="module-locked-note">
+                        <Icon name="LockKeyhole" size={14} /> {blockingSummary(state, mIndex)} Aulas já concluídas continuam abertas para revisão.
+                      </p>
+                    )}
+                    {m.lessons.map((l, i) => {
+                      const lOpen = lessonAllowed(state, l.id);
+                      return (
+                        <button key={l.id} disabled={!lOpen} onClick={() => openLesson(l.id)}>
+                          <span className={`lesson-status ${state.completed.includes(l.id) ? 'done' : ''}`}>{state.completed.includes(l.id) ? <Icon name="Check" size={17} /> : lOpen ? String(i + 1).padStart(2, '0') : <Icon name="LockKeyhole" size={14} />}</span>
+                          <span>
+                            {l.title}
+                            {l.id === 'condicoes' && <small>Com simulador de if / elif / else</small>}
+                          </span>
+                          <span className="lesson-duration">
+                            {l.minutes} min <span>·</span> 100 XP
+                          </span>
+                          <Icon name="Play" size={15} />
+                        </button>
+                      );
+                    })}
+                    <button
+                      className="module-project"
+                      disabled={!projectIsOpen(state, projects[Number(m.number) - 1].id)}
+                      onClick={() =>
+                        setModal({
+                          type: 'project',
+                          project: projects[Number(m.number) - 1],
+                        })
+                      }
+                    >
+                      <Icon name="FolderCode" />
+                      <span>Projeto: {projects[Number(m.number) - 1].title}</span>
+                      <Icon name="ArrowRight" size={17} />
+                    </button>
+                  </div>
+                )}
+              </section>
+            );
+          })}
+        </div>
+        <div className="info-note">
+          <Icon name="Info" size={18} />
+          <p>Formação independente para complementar sua faculdade. As etapas organizam o aprendizado; não representam semestres oficiais nem um diploma reconhecido. As aulas são introdutórias a cada tema; os projetos aprofundam a prática.</p>
+        </div>
+      </>
+    );
+  }
   function Course() {
     const mapView = uiPrefs.courseView === 'map';
-    return <>
-      <PageHeading eyebrow="UM CAMINHO PARA IR ALÉM" title="Minha formação" subtitle="Enxergue onde você está, o que já construiu e qual é o próximo passo." />
-      <section className="card course-overview"><div className="icon-tile purple"><Icon name="GraduationCap" size={30} /></div><div><h3>Formação completa em Python</h3><p>8 etapas · 48 aulas · 8 projetos de portfólio</p><Progress value={progress} /></div><strong>{Math.round(progress)}%<small>concluído</small></strong></section>
-      <div className="course-view-toggle"><div className="tab-row" aria-label="Visualização da formação"><button className={mapView ? 'active' : ''} aria-pressed={mapView} onClick={() => setUiPrefs(previous => ({ ...previous, courseView: 'map' }))}><Icon name="Workflow" size={15} /> Mapa</button><button className={!mapView ? 'active' : ''} aria-pressed={!mapView} onClick={() => setUiPrefs(previous => ({ ...previous, courseView: 'list' }))}><Icon name="ListTodo" size={15} /> Lista</button></div></div>
-      {mapView ? <><p className="course-map-intro">Abra uma etapa para ver as aulas, práticas e o projeto que formam esse trecho da jornada.</p><LearningMap state={state} openLesson={openLesson} openProject={openProject} navigate={navigate} /></> : <div className="course-list-embedded">{CourseList()}</div>}
-      {mapView && <div className="info-note"><Icon name="Info" size={18} /><p>O mapa usa as mesmas regras da formação. Uma etapa só abre quando aulas, práticas, pontes e projeto anteriores estiverem concluídos.</p></div>}
-    </>;
-  }  function Projects() { return <><PageHeading eyebrow="APRENDA CONSTRUINDO" title="Seu próximo projeto começa aqui" subtitle="Transforme conhecimento em sistemas reais e monte um portfólio com a sua cara." /><div className="project-summary"><span><Icon name="FolderCode" /> 8 projetos com roteiro</span><span><Icon name="CheckCheck" /> {doneProjects(state).length} concluídos</span><span><Icon name="Zap" /> +250 XP por projeto</span></div><div className="projects-grid">{projects.map((p, i) => { const checks = state.projectChecks[p.id]?.length || 0, pOpen = projectIsOpen(state, p.id); return <article className={`card project-card ${pOpen ? '' : 'is-locked'}`} key={p.id}><div className={`project-visual ${p.color}`}><Icon name={p.icon} size={56} strokeWidth={1.2} /><span>PROJETO {String(i + 1).padStart(2, '0')}</span><span className="visual-braces">{'{ }'}</span></div><div className="project-content"><div className="project-tags"><span className={`pill ${p.color}`}>{p.level}</span><span><Icon name="Clock3" size={13} /> {p.hours}</span></div><h2>{p.title}</h2><p>{p.subtitle}</p><Progress value={checks / p.requirements.length * 100} /><div className="project-card-footer"><span>{pOpen ? `${checks}/${p.requirements.length} requisitos` : (blockingSummary(state, p.module) || missingSummary(state, p.module) || 'ainda não liberado')}</span>{stepsFor(p.id).length > 0 && <button className="text-button" disabled={!pOpen} onClick={() => openProject(p.id)}>{buildDone(state, p.id) ? 'Abrir estúdio' : 'Construir passo a passo'} <Icon name="Hammer" size={14} /></button>}<button className="text-button" onClick={() => setModal({ type: 'project', project: p })}>{checks === p.requirements.length ? 'Revisar projeto' : checks ? 'Continuar' : 'Ver projeto'} <Icon name="ArrowRight" size={15} /></button></div></div></article>; })}</div><div className="info-note"><Icon name="Info" size={18} /><p>Os oito projetos têm estúdio para escrever, testar e explicar cada passo. As etapas de servidor HTTP são identificadas e executadas no computador. Ao publicar no GitHub, o Lumi lê o código do repositório e dá uma nota por requisito; a partir de 7 o projeto é concluído. Você também pode concluir pela autoavaliação, marcando apenas o que implementou e verificou.</p></div></>; }
-  function Calendar() { const first = (month.getDay() + 6) % 7, monthDays = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate(); const cells = Array.from({ length: Math.ceil((first + monthDays) / 7) * 7 }, (_, i) => localDate(new Date(month.getFullYear(), month.getMonth(), i - first + 1))); const sessions = state.sessions.filter(s => s.date === selectedDate).sort((a, b) => a.time.localeCompare(b.time)); return <><PageHeading eyebrow="CONSTÂNCIA É UM SUPERPODER" title="Meu calendário" subtitle="Dê espaço para seu futuro na agenda. Uma sessão de cada vez." action={<button className="button primary" onClick={() => setModal('session')}><Icon name="Plus" size={18} /> Agendar estudo</button>} /><div className="calendar-layout"><section className="card calendar-card"><div className="section-heading"><h2 className="capitalize">{month.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</h2><div className="calendar-nav"><button className="icon-button" aria-label="Mês anterior" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}><Icon name="ChevronLeft" /></button><button className="text-button" onClick={() => { setMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1)); setSelectedDate(today); }}>Hoje</button><button className="icon-button" aria-label="Próximo mês" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}><Icon name="ChevronRight" /></button></div></div><div className="calendar-weekdays">{['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(d => <span key={d}>{d}</span>)}</div><div className="calendar-grid">{cells.map(d => <button key={d} aria-label={`${dateLabel(d)}${state.activities[d]?.length ? ', atividade registrada' : ''}`} className={`${Number(d.slice(5, 7)) !== month.getMonth() + 1 ? 'outside' : ''} ${d === today ? 'today' : ''} ${d === selectedDate ? 'selected' : ''}`} onClick={() => setSelectedDate(d)}><span>{Number(d.slice(8))}</span><div>{state.activities[d]?.length > 0 && <i className="activity-dot" />}{state.sessions.some(s => s.date === d) && <i className="session-dot" />}</div></button>)}</div><div className="calendar-legend"><span><i className="activity-dot" /> Atividade concluída</span><span><i className="session-dot" /> Estudo agendado</span></div></section><aside><section className="card day-agenda"><div className="eyebrow">SUA AGENDA</div><h2>{dateLabel(selectedDate)}</h2>{sessions.length ? sessions.map(s => <div className={`session ${s.done ? 'done' : ''}`} key={s.id}><button className="session-check" aria-label={s.done ? `Reabrir ${s.title}` : `Concluir ${s.title}`} onClick={() => toggleSession(s)}><Icon name={s.done ? 'CheckCircle2' : 'Circle'} size={21} /></button><div><strong>{s.title}</strong><span>{s.time} · {s.minutes} minutos</span></div><button className="icon-button" aria-label={`Excluir ${s.title}`} onClick={() => setModal({ type: 'delete-session', session: s })}><Icon name="Trash2" size={15} /></button></div>) : <div className="agenda-empty"><Icon name="Coffee" size={30} /><p>Um espaço livre para aprender.</p><span>Agende sua próxima sessão de estudos.</span></div>}<button className="button outline full" onClick={() => setModal('session')}><Icon name="Plus" size={16} /> Adicionar sessão</button>{state.activities[selectedDate]?.length > 0 && <p className="success-text small">{state.activities[selectedDate].length} atividade(s) registrada(s) neste dia.</p>}</section><section className="card week-goal"><Icon name="Target" className="purple-text" /><h3>Seu compromisso semanal</h3><p>{activeWeek} de {state.weeklyGoal} dias de estudo nesta semana.</p><Progress value={activeWeek / state.weeklyGoal * 100} /><button className="text-button" onClick={() => setModal('goals')}>Ajustar minhas metas <Icon name="ArrowRight" size={14} /></button></section><p className="small muted calendar-tip">Sessões concluídas registram estudo no dia da conclusão. Os agendamentos ficam neste navegador; não enviam notificações externas.</p></aside></div></>; }
-  function Achievements() { return <><PageHeading eyebrow="CADA PASSO MERECE SER CELEBRADO" title="Suas conquistas" subtitle="Pequenas vitórias que mostram o quanto você já evoluiu." /><div className="achievement-hero"><div className="big-medal"><Icon name="Trophy" size={55} /></div><div><span className="eyebrow">SUA COLEÇÃO</span><h2>{earned.length} de {badges.length} emblemas conquistados</h2><p>Aprenda, pratique e mantenha sua chama acesa.</p><Progress value={earned.length / badges.length * 100} /></div></div><div className="badges-grid">{badges.map(b => <article className={`card badge-card ${b.check(state) ? 'earned' : 'locked'}`} key={b.id}><span className="badge-state"><Icon name={b.check(state) ? 'CheckCircle2' : 'LockKeyhole'} size={16} />{b.check(state) ? 'Conquistado' : 'A conquistar'}</span><div className={`badge-medallion ${b.color}`}><Icon name={b.icon} size={37} /></div><h3>{b.title}</h3><p>{b.description}</p></article>)}</div></>; }
-  function Profile() { return <><PageHeading eyebrow="A PESSOA POR TRÁS DO CÓDIGO" title="Meu perfil" subtitle="Sua jornada é única. Faça este espaço ter a sua cara." /><section className="card profile-header"><div className="profile-avatar">{state.avatar}</div><div><span className="pill purple">Nível {info.level} · {info.title}</span><h2>{state.name}</h2><p>{state.bio}</p><span className="small muted">No campus desde {dateLabel(state.joined)}</span></div><button className="button outline" onClick={() => { setProfileDraft({ name: state.name, bio: state.bio, avatar: state.avatar }); setModal('profile'); }}><Icon name="Pencil" size={15} /> Editar perfil</button></section><div className="stats-grid"><Stat icon="Zap" color="purple" label="Experiência" value={info.xp} suffix="XP" note={info.title} /><Stat icon="Flame" color="orange" label="Sequência atual" value={fire} suffix="dias" note="Uma atividade por dia conta" /><Stat icon="FolderCode" color="blue" label="Projetos concluídos" value={doneProjects(state).length} suffix="/ 8" note="Seu portfólio em construção" /><Stat icon="Award" color="teal" label="Conquistas" value={earned.length} suffix="/ 8" note="Continue colecionando histórias" /></div><section className="card profile-progress"><div className="section-heading"><h2>Seu desenvolvimento</h2><span className="pill purple">Nível {info.level}</span></div><p>{info.current} / 500 XP para o nível {info.level + 1}</p><Progress value={info.current / 5} /><h3>Atividade nas últimas 12 semanas</h3><div className="heatmap">{Array.from({ length: 84 }, (_, i) => shiftDate(today, i - 83)).map(d => <span key={d} title={`${dateLabel(d)}: ${state.activities[d]?.length || 0} atividades`} className={state.activities[d]?.length ? 'active' : ''} style={state.activities[d]?.length ? { opacity: Math.min(1, 0.4 + state.activities[d].length * 0.15) } : {}} />)}</div><p className="small muted">Cada quadradinho é um dia. Aulas, projetos e sessões concluídas alimentam seu histórico.</p></section><section className="card resources"><h2>Sua biblioteca de apoio</h2>{resources.map(r => <a href={r.url} target="_blank" rel="noreferrer" key={r.title}><Icon name="BookOpen" /><div><strong>{r.title}</strong><p>{r.description}</p></div><Icon name="ArrowUpRight" size={18} /></a>)}</section></>; }
-  function Settings() { return <><PageHeading eyebrow="SEU CAMPUS DO SEU JEITO" title="Configurações" subtitle="Cuide das suas metas e mantenha seu progresso com você." /><div className="settings-list"><section className="card"><div className="section-heading"><h2><Icon name="Target" /> Ritmo de estudos</h2><button className="button outline" onClick={() => setModal('goals')}>Ajustar metas</button></div><p>{state.goal} atividade(s) por dia · {state.weeklyGoal} dia(s) por semana.</p><p className="small muted">XP: 100 por aula validada e 250 por projeto com todos os requisitos marcados. A cada 500 XP você sobe um nível. Revisar uma aula não duplica XP.</p></section><section className="card"><h2><Icon name="HardDriveDownload" /> Seu progresso, com você</h2><p>Seu perfil, código, calendário e conquistas são salvos neste navegador. Exporte um backup para transferir para outro computador ou antes de limpar os dados do navegador.</p><div className="button-row"><button className="button primary" onClick={() => { download(JSON.stringify(state, null, 2), `pycampus-backup-${today}.json`); notify('Backup exportado. Guarde o arquivo em um lugar seguro.'); }}><Icon name="Download" size={16} /> Exportar backup</button><button className="button outline" onClick={() => importRef.current.click()}><Icon name="Upload" size={16} /> Importar backup</button></div></section><InstalarApp /><LembreteDeEstudo horario={state.lembrete} onHorario={valor => update(s => ({ ...s, lembrete: valor }))} /><ProgressoNaNuvem state={state} aoBaixar={dados => setModal({ type: 'import', data: normalizeState(dados) })} /><RelatorioDeEstudo state={state} aoGerar={() => update(s => ({ ...s, ultimoRelatorio: today }))} /><EnderecoDaIA /><RecomecarDoZero onExportar={() => download(JSON.stringify(state, null, 2), `pycampus-antes-de-recomecar-${today}.json`)} onZerar={() => { previousProgress.current = initialState(); setCelebrations([]); setState(initialState()); notify('Campus zerado. Boa jornada de novo.'); }} /><section className="card"><h2><Icon name="Info" /> Sobre o PyCampus</h2><p>Seu ambiente pessoal para aprender Python em português, com 48 aulas e oito projetos. Você entra direto, sem login ou cadastro no PyCampus.</p><p className="small muted">Por padrão, seu progresso fica neste navegador. Se quiser estudar em mais de um aparelho, você pode ativar a nuvem com um Gist privado da sua conta do GitHub ou usar o backup acima.</p><p className="small muted">O laboratório usa Pyodide para executar Python no navegador. Arquivos criados nele são temporários. Projetos web completos são desenvolvidos no seu computador. Os exercícios verificam a saída e uma revisão conceitual; não fazem análise completa do algoritmo.</p><p className="small muted">Material independente de apoio aos estudos. Não oferece diploma oficial ou correção docente.</p></section></div></>; }
+    return (
+      <>
+        <PageHeading eyebrow="UM CAMINHO PARA IR ALÉM" title="Minha formação" subtitle="Enxergue onde você está, o que já construiu e qual é o próximo passo." />
+        <section className="card course-overview">
+          <div className="icon-tile purple">
+            <Icon name="GraduationCap" size={30} />
+          </div>
+          <div>
+            <h3>Formação completa em Python</h3>
+            <p>8 etapas · 48 aulas · 8 projetos de portfólio</p>
+            <Progress value={progress} />
+          </div>
+          <strong>
+            {Math.round(progress)}%<small>concluído</small>
+          </strong>
+        </section>
+        <FaculdadeIntegrada state={state} navigate={navigate} variant="formacao" />
+        <div className="course-view-toggle">
+          <div className="tab-row" aria-label="Visualização da formação">
+            <button className={mapView ? 'active' : ''} aria-pressed={mapView} onClick={() => setUiPrefs((previous) => ({ ...previous, courseView: 'map' }))}>
+              <Icon name="Workflow" size={15} /> Mapa
+            </button>
+            <button className={!mapView ? 'active' : ''} aria-pressed={!mapView} onClick={() => setUiPrefs((previous) => ({ ...previous, courseView: 'list' }))}>
+              <Icon name="ListTodo" size={15} /> Lista
+            </button>
+          </div>
+        </div>
+        {mapView ? (
+          <>
+            <p className="course-map-intro">Abra uma etapa para ver as aulas, práticas e o projeto que formam esse trecho da jornada.</p>
+            <LearningMap state={state} openLesson={openLesson} openProject={openProject} navigate={navigate} />
+          </>
+        ) : (
+          <div className="course-list-embedded">{CourseList()}</div>
+        )}
+        {mapView && (
+          <div className="info-note">
+            <Icon name="Info" size={18} />
+            <p>O mapa usa as mesmas regras da formação. Uma etapa só abre quando aulas, práticas, pontes e projeto anteriores estiverem concluídos.</p>
+          </div>
+        )}
+      </>
+    );
+  }
+  function Projects() {
+    return (
+      <>
+        <PageHeading eyebrow="APRENDA CONSTRUINDO" title="Seu próximo projeto começa aqui" subtitle="Transforme conhecimento em sistemas reais e monte um portfólio com a sua cara." />
+        <FaculdadeIntegrada state={state} navigate={navigate} variant="projetos" />
+        <div className="project-summary">
+          <span>
+            <Icon name="FolderCode" /> 8 projetos com roteiro
+          </span>
+          <span>
+            <Icon name="CheckCheck" /> {doneProjects(state).length} concluídos
+          </span>
+          <span>
+            <Icon name="Zap" /> +250 XP por projeto
+          </span>
+        </div>
+        <div className="projects-grid">
+          {projects.map((p, i) => {
+            const checks = state.projectChecks[p.id]?.length || 0,
+              pOpen = projectIsOpen(state, p.id);
+            return (
+              <article className={`card project-card ${pOpen ? '' : 'is-locked'}`} key={p.id}>
+                <div className={`project-visual ${p.color}`}>
+                  <Icon name={p.icon} size={56} strokeWidth={1.2} />
+                  <span>PROJETO {String(i + 1).padStart(2, '0')}</span>
+                  <span className="visual-braces">{'{ }'}</span>
+                </div>
+                <div className="project-content">
+                  <div className="project-tags">
+                    <span className={`pill ${p.color}`}>{p.level}</span>
+                    <span>
+                      <Icon name="Clock3" size={13} /> {p.hours}
+                    </span>
+                  </div>
+                  <h2>{p.title}</h2>
+                  <p>{p.subtitle}</p>
+                  <Progress value={(checks / p.requirements.length) * 100} />
+                  <div className="project-card-footer">
+                    <span>{pOpen ? `${checks}/${p.requirements.length} requisitos` : blockingSummary(state, p.module) || missingSummary(state, p.module) || 'ainda não liberado'}</span>
+                    {stepsFor(p.id).length > 0 && (
+                      <button className="text-button" disabled={!pOpen} onClick={() => openProject(p.id)}>
+                        {buildDone(state, p.id) ? 'Abrir estúdio' : 'Construir passo a passo'} <Icon name="Hammer" size={14} />
+                      </button>
+                    )}
+                    <button className="text-button" onClick={() => setModal({ type: 'project', project: p })}>
+                      {checks === p.requirements.length ? 'Revisar projeto' : checks ? 'Continuar' : 'Ver projeto'} <Icon name="ArrowRight" size={15} />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+        <div className="info-note">
+          <Icon name="Info" size={18} />
+          <p>Os oito projetos têm estúdio para escrever, testar e explicar cada passo. As etapas de servidor HTTP são identificadas e executadas no computador. Ao publicar no GitHub, o Lumi lê o código do repositório e dá uma nota por requisito; a partir de 7 o projeto é concluído. Você também pode concluir pela autoavaliação, marcando apenas o que implementou e verificou.</p>
+        </div>
+      </>
+    );
+  }
+  function Calendar() {
+    const first = (month.getDay() + 6) % 7,
+      monthDays = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+    const cells = Array.from({ length: Math.ceil((first + monthDays) / 7) * 7 }, (_, i) => localDate(new Date(month.getFullYear(), month.getMonth(), i - first + 1)));
+    const sessions = state.sessions.filter((s) => s.date === selectedDate).sort((a, b) => a.time.localeCompare(b.time));
+    return (
+      <>
+        <PageHeading
+          eyebrow="CONSTÂNCIA É UM SUPERPODER"
+          title="Meu calendário"
+          subtitle="Dê espaço para seu futuro na agenda. Uma sessão de cada vez."
+          action={
+            <button className="button primary" onClick={() => setModal('session')}>
+              <Icon name="Plus" size={18} /> Agendar estudo
+            </button>
+          }
+        />
+        <div className="calendar-layout">
+          <section className="card calendar-card">
+            <div className="section-heading">
+              <h2 className="capitalize">
+                {month.toLocaleDateString('pt-BR', {
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </h2>
+              <div className="calendar-nav">
+                <button className="icon-button" aria-label="Mês anterior" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}>
+                  <Icon name="ChevronLeft" />
+                </button>
+                <button
+                  className="text-button"
+                  onClick={() => {
+                    setMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+                    setSelectedDate(today);
+                  }}
+                >
+                  Hoje
+                </button>
+                <button className="icon-button" aria-label="Próximo mês" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}>
+                  <Icon name="ChevronRight" />
+                </button>
+              </div>
+            </div>
+            <div className="calendar-weekdays">
+              {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((d) => (
+                <span key={d}>{d}</span>
+              ))}
+            </div>
+            <div className="calendar-grid">
+              {cells.map((d) => (
+                <button key={d} aria-label={`${dateLabel(d)}${state.activities[d]?.length ? ', atividade registrada' : ''}`} className={`${Number(d.slice(5, 7)) !== month.getMonth() + 1 ? 'outside' : ''} ${d === today ? 'today' : ''} ${d === selectedDate ? 'selected' : ''}`} onClick={() => setSelectedDate(d)}>
+                  <span>{Number(d.slice(8))}</span>
+                  <div>
+                    {state.activities[d]?.length > 0 && <i className="activity-dot" />}
+                    {state.sessions.some((s) => s.date === d) && <i className="session-dot" />}
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="calendar-legend">
+              <span>
+                <i className="activity-dot" /> Atividade concluída
+              </span>
+              <span>
+                <i className="session-dot" /> Estudo agendado
+              </span>
+            </div>
+          </section>
+          <aside>
+            <section className="card day-agenda">
+              <div className="eyebrow">SUA AGENDA</div>
+              <h2>{dateLabel(selectedDate)}</h2>
+              {sessions.length ? (
+                sessions.map((s) => (
+                  <div className={`session ${s.done ? 'done' : ''}`} key={s.id}>
+                    <button className="session-check" aria-label={s.done ? `Reabrir ${s.title}` : `Concluir ${s.title}`} onClick={() => toggleSession(s)}>
+                      <Icon name={s.done ? 'CheckCircle2' : 'Circle'} size={21} />
+                    </button>
+                    <div>
+                      <strong>{s.title}</strong>
+                      <span>
+                        {s.time} · {s.minutes} minutos
+                      </span>
+                    </div>
+                    <button className="icon-button" aria-label={`Excluir ${s.title}`} onClick={() => setModal({ type: 'delete-session', session: s })}>
+                      <Icon name="Trash2" size={15} />
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="agenda-empty">
+                  <Icon name="Coffee" size={30} />
+                  <p>Um espaço livre para aprender.</p>
+                  <span>Agende sua próxima sessão de estudos.</span>
+                </div>
+              )}
+              <button className="button outline full" onClick={() => setModal('session')}>
+                <Icon name="Plus" size={16} /> Adicionar sessão
+              </button>
+              {state.activities[selectedDate]?.length > 0 && <p className="success-text small">{state.activities[selectedDate].length} atividade(s) registrada(s) neste dia.</p>}
+            </section>
+            <section className="card week-goal">
+              <Icon name="Target" className="purple-text" />
+              <h3>Seu compromisso semanal</h3>
+              <p>
+                {activeWeek} de {state.weeklyGoal} dias de estudo nesta semana.
+              </p>
+              <Progress value={(activeWeek / state.weeklyGoal) * 100} />
+              <button className="text-button" onClick={() => setModal('goals')}>
+                Ajustar minhas metas <Icon name="ArrowRight" size={14} />
+              </button>
+            </section>
+            <p className="small muted calendar-tip">Sessões concluídas registram estudo no dia da conclusão. Os agendamentos ficam neste navegador; não enviam notificações externas.</p>
+          </aside>
+        </div>
+      </>
+    );
+  }
+  function Achievements() {
+    return (
+      <>
+        <PageHeading eyebrow="CADA PASSO MERECE SER CELEBRADO" title="Suas conquistas" subtitle="Pequenas vitórias que mostram o quanto você já evoluiu." />
+        <div className="achievement-hero">
+          <div className="big-medal">
+            <Icon name="Trophy" size={55} />
+          </div>
+          <div>
+            <span className="eyebrow">SUA COLEÇÃO</span>
+            <h2>
+              {earned.length} de {badges.length} emblemas conquistados
+            </h2>
+            <p>Aprenda, pratique e mantenha sua chama acesa.</p>
+            <Progress value={(earned.length / badges.length) * 100} />
+          </div>
+        </div>
+        <div className="badges-grid">
+          {badges.map((b) => (
+            <article className={`card badge-card ${b.check(state) ? 'earned' : 'locked'}`} key={b.id}>
+              <span className="badge-state">
+                <Icon name={b.check(state) ? 'CheckCircle2' : 'LockKeyhole'} size={16} />
+                {b.check(state) ? 'Conquistado' : 'A conquistar'}
+              </span>
+              <div className={`badge-medallion ${b.color}`}>
+                <Icon name={b.icon} size={37} />
+              </div>
+              <h3>{b.title}</h3>
+              <p>{b.description}</p>
+            </article>
+          ))}
+        </div>
+      </>
+    );
+  }
+  function Profile() {
+    return (
+      <>
+        <PageHeading eyebrow="A PESSOA POR TRÁS DO CÓDIGO" title="Meu perfil" subtitle="Sua jornada é única. Faça este espaço ter a sua cara." />
+        <section className="card profile-header">
+          <div className="profile-avatar">{state.avatar}</div>
+          <div>
+            <span className="pill purple">
+              Nível {info.level} · {info.title}
+            </span>
+            <h2>{state.name}</h2>
+            <p>{state.bio}</p>
+            <span className="small muted">No campus desde {dateLabel(state.joined)}</span>
+          </div>
+          <button
+            className="button outline"
+            onClick={() => {
+              setProfileDraft({
+                name: state.name,
+                bio: state.bio,
+                avatar: state.avatar,
+              });
+              setModal('profile');
+            }}
+          >
+            <Icon name="Pencil" size={15} /> Editar perfil
+          </button>
+        </section>
+        <div className="stats-grid">
+          <Stat icon="Zap" color="purple" label="Experiência" value={info.xp} suffix="XP" note={info.title} />
+          <Stat icon="Flame" color="orange" label="Sequência atual" value={fire} suffix="dias" note="Uma atividade por dia conta" />
+          <Stat icon="FolderCode" color="blue" label="Projetos concluídos" value={doneProjects(state).length} suffix="/ 8" note="Seu portfólio em construção" />
+          <Stat icon="Award" color="teal" label="Conquistas" value={earned.length} suffix="/ 8" note="Continue colecionando histórias" />
+        </div>
+        <section className="card profile-progress">
+          <div className="section-heading">
+            <h2>Seu desenvolvimento</h2>
+            <span className="pill purple">Nível {info.level}</span>
+          </div>
+          <p>
+            {info.current} / 500 XP para o nível {info.level + 1}
+          </p>
+          <Progress value={info.current / 5} />
+          <h3>Atividade nas últimas 12 semanas</h3>
+          <div className="heatmap">
+            {Array.from({ length: 84 }, (_, i) => shiftDate(today, i - 83)).map((d) => (
+              <span
+                key={d}
+                title={`${dateLabel(d)}: ${state.activities[d]?.length || 0} atividades`}
+                className={state.activities[d]?.length ? 'active' : ''}
+                style={
+                  state.activities[d]?.length
+                    ? {
+                        opacity: Math.min(1, 0.4 + state.activities[d].length * 0.15),
+                      }
+                    : {}
+                }
+              />
+            ))}
+          </div>
+          <p className="small muted">Cada quadradinho é um dia. Aulas, projetos e sessões concluídas alimentam seu histórico.</p>
+        </section>
+        <section className="card resources">
+          <h2>Sua biblioteca de apoio</h2>
+          {resources.map((r) => (
+            <a href={r.url} target="_blank" rel="noreferrer" key={r.title}>
+              <Icon name="BookOpen" />
+              <div>
+                <strong>{r.title}</strong>
+                <p>{r.description}</p>
+              </div>
+              <Icon name="ArrowUpRight" size={18} />
+            </a>
+          ))}
+        </section>
+      </>
+    );
+  }
+  function Settings() {
+    return (
+      <>
+        <PageHeading eyebrow="SEU CAMPUS DO SEU JEITO" title="Configurações" subtitle="Cuide das suas metas e mantenha seu progresso com você." />
+        <div className="settings-list">
+          <section className="card">
+            <div className="section-heading">
+              <h2>
+                <Icon name="Target" /> Ritmo de estudos
+              </h2>
+              <button className="button outline" onClick={() => setModal('goals')}>
+                Ajustar metas
+              </button>
+            </div>
+            <p>
+              {state.goal} atividade(s) por dia · {state.weeklyGoal} dia(s) por semana.
+            </p>
+            <p className="small muted">XP: 100 por aula validada e 250 por projeto com todos os requisitos marcados. A cada 500 XP você sobe um nível. Revisar uma aula não duplica XP.</p>
+          </section>
+          <section className="card">
+            <h2>
+              <Icon name="HardDriveDownload" /> Seu progresso, com você
+            </h2>
+            <p>Seu perfil, código, calendário e conquistas são salvos neste navegador. Exporte um backup para transferir para outro computador ou antes de limpar os dados do navegador.</p>
+            <div className="button-row">
+              <button
+                className="button primary"
+                onClick={() => {
+                  download(JSON.stringify(state, null, 2), `pycampus-backup-${today}.json`);
+                  notify('Backup exportado. Guarde o arquivo em um lugar seguro.');
+                }}
+              >
+                <Icon name="Download" size={16} /> Exportar backup
+              </button>
+              <button className="button outline" onClick={() => importRef.current.click()}>
+                <Icon name="Upload" size={16} /> Importar backup
+              </button>
+            </div>
+          </section>
+          <InstalarApp />
+          <LembreteDeEstudo horario={state.lembrete} onHorario={(valor) => update((s) => ({ ...s, lembrete: valor }))} />
+          <ProgressoNaNuvem state={state} aoBaixar={(dados) => setModal({ type: 'import', data: normalizeState(dados) })} />
+          <RelatorioDeEstudo state={state} aoGerar={() => update((s) => ({ ...s, ultimoRelatorio: today }))} />
+          <EnderecoDaIA />
+          <RecomecarDoZero
+            onExportar={() => download(JSON.stringify(state, null, 2), `pycampus-antes-de-recomecar-${today}.json`)}
+            onZerar={() => {
+              previousProgress.current = initialState();
+              setCelebrations([]);
+              setState(initialState());
+              notify('Campus zerado. Boa jornada de novo.');
+            }}
+          />
+          <section className="card">
+            <h2>
+              <Icon name="Info" /> Sobre o PyCampus
+            </h2>
+            <p>Seu ambiente pessoal para aprender Python em português, com 48 aulas e oito projetos. Você entra direto, sem login ou cadastro no PyCampus.</p>
+            <p className="small muted">Por padrão, seu progresso fica neste navegador. Se quiser estudar em mais de um aparelho, você pode ativar a nuvem com um Gist privado da sua conta do GitHub ou usar o backup acima.</p>
+            <p className="small muted">O laboratório usa Pyodide para executar Python no navegador. Arquivos criados nele são temporários. Projetos web completos são desenvolvidos no seu computador. Os exercícios verificam a saída e uma revisão conceitual; não fazem análise completa do algoritmo.</p>
+            <p className="small muted">Material independente de apoio aos estudos. Não oferece diploma oficial ou correção docente.</p>
+          </section>
+        </div>
+      </>
+    );
+  }
   // Estas telas são funções declaradas dentro da App, então cada render cria um tipo novo:
   // montadas como <Tela />, o React desmonta e remonta a página inteira a cada mudança de
   // estado, jogando fora o DOM, a posição da rolagem e o foco. Chamadas direto, o JSX é
   // inserido no lugar e não existe fronteira de componente para remontar. Nenhuma usa hook,
   // que é a condição para isso ser seguro — e o teste abaixo cobra que continue assim.
-  return <div className="app-shell"><FlyingLumi /><a className="skip-link" href="#main">Pular para o conteúdo</a>{mobileOpen && <button className="sidebar-overlay" aria-label="Fechar menu" onClick={() => setMobileOpen(false)} />}<aside className={`sidebar ${mobileOpen ? 'open' : ''}`}><a className="brand" href="#" onClick={e => { e.preventDefault(); navigate('dashboard'); }}><span className="brand-icon"><Icon name="CodeXml" size={27} /></span><span>Py<span>Campus</span><small>APRENDA. CRIE. EVOLUA.</small></span></a><div className="sidebar-label">MEU APRENDIZADO</div><nav aria-label="Navegação principal">{navItems.map(item => <button key={item.id} className={(page === item.id || page === 'lesson' && item.id === 'course' || page === 'project' && item.id === 'projects') ? 'active' : ''} onClick={() => navigate(item.id)}><Icon name={item.icon} size={20} />{item.title}{item.id === 'course' && <span className="nav-count">8</span>}{item.id === 'badges' && <span className="nav-spark">✦</span>}</button>)}</nav><div className="sidebar-divider" /><div className="sidebar-label">MEU ESPAÇO</div><nav aria-label="Perfil e preferências"><button className={page === 'profile' ? 'active' : ''} onClick={() => navigate('profile')}><Icon name="UserRound" /> Meu perfil</button><button className={page === 'settings' ? 'active' : ''} onClick={() => navigate('settings')}><Icon name="Settings2" /> Configurações</button><button className={page === 'sobre' ? 'active' : ''} onClick={() => navigate('sobre')}><Icon name="Info" /> Sobre e limites</button></nav><div className="sidebar-bottom"><div className="level-card"><div><span className="level-icon"><Icon name="Sprout" size={21} /></span><span>Seu próximo nível<strong>Nível {info.level} <span>→</span> Nível {info.level + 1}</strong></span></div><Progress value={info.current / 5} /><p>{info.current} <span>/ 500 XP</span><Icon name="Zap" size={12} /></p></div><button className="sidebar-profile" onClick={() => navigate('profile')}><span className="avatar">{state.avatar}</span><span><strong>{state.name}</strong><small>{info.title}</small></span><Icon name="ChevronsUpDown" size={16} /></button><div className="made-for">Feito para o seu próximo capítulo <span>✦</span></div></div></aside><div className="main-shell"><header className="topbar"><div className="breadcrumb"><button className="icon-button mobile-menu" aria-label="Abrir menu" onClick={() => setMobileOpen(true)}><Icon name="Menu" /></button><Icon name="House" size={17} /><Icon name="ChevronRight" size={14} /><span>{page === 'lesson' ? 'Minha formação' : page === 'project' ? 'Projetos' : navItems.find(n => n.id === page)?.title || (page === 'profile' ? 'Meu perfil' : page === 'sobre' ? 'Sobre e limites' : 'Configurações')}</span></div><div className="topbar-actions"><button className="search-trigger" onClick={() => { setQuery(''); setModal('search'); }}><Icon name="Search" size={17} /><span>O que vamos aprender?</span><kbd>Ctrl K</kbd></button><button className="streak-pill" onClick={() => navigate('calendar')} title="Sua sequência de estudos"><Icon name="Flame" size={19} fill="#ffdfc8" /> {fire} <span>dias</span></button><button className="avatar top-avatar" aria-label="Abrir meu perfil" onClick={() => navigate('profile')}>{state.avatar}</button></div></header><main id="main"><Suspense fallback={<PageSkeleton />}>{storageError && <div className="hint error-text" role="alert">{storageError}</div>}{page === 'dashboard' && Dashboard()}{page === 'course' && Course()}{page === 'lesson' && <LessonView key={selectedLesson + ":" + lessons.find(l => l.id === selectedLesson).revision} lesson={lessons.find(l => l.id === selectedLesson)} state={state} update={update} notify={notify} openLesson={openLesson} openProject={openProject} navigate={navigate} uiPrefs={uiPrefs} setUiPrefs={setUiPrefs} />}{page === 'projects' && Projects()}{page === 'project' && <ProjectStudio project={projects.find(p => p.id === selectedProject)} state={state} update={update} back={() => navigate('projects')} openLesson={openLesson} download={download} notify={notify} navigate={navigate} openProject={openProject} />}{page === 'practice' && <PracticeStudio state={state} update={update} openLesson={openLesson} openProject={openProject} navigate={navigate} target={practiceTarget} />}{page === 'playground' && <Playground state={state} update={update} download={download} />}{page === 'faculdade' && <Faculdade state={state} update={update} navigate={navigate} />}{page === 'targeted' && <TargetedPractice state={state} update={update} openLesson={openLesson} />}{page === 'prova' && <Prova state={state} update={update} openLesson={openLesson} />}{page === 'sobre' && <Sobre navigate={navigate} />}{page === 'history' && <HistoryView state={state} update={update} download={download} />}{page === 'calendar' && Calendar()}{page === 'badges' && Achievements()}{page === 'profile' && Profile()}{page === 'settings' && Settings()}<footer><span>PyCampus <span>·</span> Seu futuro, linha por linha.</span><span><span className="live-dot" /> Progresso salvo neste navegador</span></footer></Suspense></main><MobileBottomNav page={page} navigate={navigate} openMore={() => setMobileOpen(true)} /></div><input ref={importRef} type="file" accept=".json,application/json" hidden onChange={importBackup} />{toast && <div className="toast" role="status"><Icon name="CheckCircle2" size={20} />{toast}<button className="icon-button" aria-label="Dispensar aviso" onClick={() => setToast('')}><Icon name="X" size={16} /></button></div>}
-    {celebrations.length > 0 && <Celebration reward={celebrations[0]} storageError={storageError} onConfirm={() => setCelebrations(queue => queue.slice(1))} />}
-    {modal === 'search' && <Modal title="O que vamos aprender?" onClose={() => setModal(null)}><div className="search-input"><Icon name="Search" /><input autoFocus placeholder="Busque por aula, tema ou projeto…" value={query} onChange={e => setQuery(e.target.value)} /></div><div className="search-results">{lessons.filter(l => `${l.title} ${l.moduleTitle}`.toLocaleLowerCase('pt-BR').normalize('NFD').replace(/\p{Diacritic}/gu, '').includes(query.toLocaleLowerCase('pt-BR').normalize('NFD').replace(/\p{Diacritic}/gu, ''))).slice(0, 8).map(l => <button key={l.id} onClick={() => openLesson(l.id)}><Icon name="BookOpen" /><span><strong>{l.title}</strong><small>{l.moduleTitle}</small></span><Icon name="ArrowRight" size={16} /></button>)}{projects.filter(p => p.title.toLowerCase().includes(query.toLowerCase())).slice(0, 3).map(p => <button key={p.id} onClick={() => setModal({ type: 'project', project: p })}><Icon name="FolderCode" /><span><strong>{p.title}</strong><small>Projeto prático</small></span><Icon name="ArrowRight" size={16} /></button>)}{query && !lessons.some(l => `${l.title} ${l.moduleTitle}`.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').includes(query.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, ''))) && !projects.some(p => p.title.toLowerCase().includes(query.toLowerCase())) && <Empty icon="Search" title="Nenhum resultado" text="Tente um tema como lógica, dados ou funções." />}</div></Modal>}
-    {modal === 'goals' && <Modal title="Um ritmo que funciona para você" onClose={() => setModal(null)}><p className="muted">Constância vale mais que pressa. Ajuste as metas à sua rotina.</p><form onSubmit={e => { e.preventDefault(); const form = new FormData(e.target); update(s => ({ ...s, goal: Number(form.get('goal')), weeklyGoal: Number(form.get('weeklyGoal')) })); setModal(null); notify('Metas atualizadas. Vamos no seu ritmo!'); }}><label className="form-label">Atividades por dia<select name="goal" defaultValue={state.goal}>{[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>{n} {n === 1 ? 'atividade' : 'atividades'} · cerca de {n * 15} min</option>)}</select></label><label className="form-label">Dias de estudo por semana<select name="weeklyGoal" defaultValue={state.weeklyGoal}>{[1, 2, 3, 4, 5, 6, 7].map(n => <option key={n} value={n}>{n} {n === 1 ? 'dia' : 'dias'} por semana</option>)}</select></label><button className="button primary full" type="submit">Salvar minhas metas <Icon name="Check" size={17} /></button></form></Modal>}
-    {modal === 'session' && <Modal title="Reserve um encontro com seu futuro" onClose={() => setModal(null)}><form onSubmit={createSession}><label className="form-label">O que você vai estudar?<input required maxLength={100} autoFocus placeholder="Ex.: Praticar if, elif e else" value={sessionDraft.title} onChange={e => setSessionDraft({ ...sessionDraft, title: e.target.value })} /></label><label className="form-label">Data<input type="date" required value={selectedDate} onChange={e => setSelectedDate(e.target.value)} /></label><div className="form-columns"><label className="form-label">Horário<input type="time" required value={sessionDraft.time} onChange={e => setSessionDraft({ ...sessionDraft, time: e.target.value })} /></label><label className="form-label">Duração<select value={sessionDraft.minutes} onChange={e => setSessionDraft({ ...sessionDraft, minutes: e.target.value })}>{[15, 30, 45, 60, 90, 120].map(n => <option key={n} value={n}>{n} minutos</option>)}</select></label></div><button className="button primary full" type="submit"><Icon name="CalendarPlus" size={17} /> Agendar estudo</button></form></Modal>}
-    {modal === 'profile' && <Modal title="Deixe o campus com a sua cara" onClose={() => setModal(null)}><form onSubmit={e => { e.preventDefault(); if (!profileDraft.name.trim()) return; update(s => ({ ...s, ...profileDraft, name: profileDraft.name.trim() })); setModal(null); notify('Perfil atualizado!'); }}><span className="form-label">Seu avatar</span><div className="avatar-options">{['🚀', '🐍', '🧑‍💻', '🦊', '🌱', '🌟'].map(a => <button type="button" aria-label={`Avatar ${a}`} aria-pressed={profileDraft.avatar === a} key={a} className={profileDraft.avatar === a ? 'selected' : ''} onClick={() => setProfileDraft({ ...profileDraft, avatar: a })}>{a}</button>)}</div><label className="form-label">Como podemos chamar você?<input required maxLength={40} value={profileDraft.name} onChange={e => setProfileDraft({ ...profileDraft, name: e.target.value })} /></label><label className="form-label">Uma frase para sua jornada<textarea maxLength={200} value={profileDraft.bio} onChange={e => setProfileDraft({ ...profileDraft, bio: e.target.value })} /></label><button className="button primary full" type="submit">Salvar perfil</button></form></Modal>}
-    {modal?.type === 'project' && <Modal wide title={modal.project.title} onClose={() => setModal(null)}><div className="project-modal-intro"><span className={`pill ${modal.project.color}`}>{modal.project.level}</span><span><Icon name="Clock3" size={14} /> {modal.project.hours} estimadas</span><span><Icon name="Zap" size={14} /> +250 XP</span></div><p className="project-brief">{modal.project.brief}</p><ProjectPreparation project={modal.project} lessons={lessons} openLesson={openLesson} />{stepsFor(modal.project.id).length > 0 && <button className="button primary" onClick={() => openProject(modal.project.id)}><Icon name="Hammer" size={16} /> Construir no estúdio, passo a passo <Icon name="ArrowRight" size={16} /></button>}<h3>Seu roteiro de entrega</h3><p className="muted small">Marque cada requisito depois de implementar e verificar no seu projeto.</p><div className="requirements">{modal.project.requirements.map((r, i) => <label key={r}><input type="checkbox" checked={(state.projectChecks[modal.project.id] || []).includes(i)} onChange={() => projectToggle(modal.project, i)} /><span>{r}</span></label>)}</div><Progress value={(state.projectChecks[modal.project.id]?.length || 0) / modal.project.requirements.length * 100} />{doneProjects(state).some(p => p.id === modal.project.id) && <p className="success-text">Todos os requisitos marcados. Projeto concluído por autoavaliação · 250 XP!</p>}<form onSubmit={e => { e.preventDefault(); const url = new FormData(e.target).get('url').trim(); if (url && !/^https?:\/\//.test(url)) { notify('Use um link começando com https:// ou http://.'); return; } update(s => ({ ...s, projectLinks: { ...s.projectLinks, [modal.project.id]: url } })); notify('Link do projeto salvo.'); }}><label className="form-label">Link do repositório ou demonstração <span className="muted">(opcional)</span><input type="url" name="url" placeholder="https://github.com/seu-usuario/seu-projeto" defaultValue={state.projectLinks[modal.project.id] || ''} /></label><div className="button-row"><button type="submit" className="button primary"><Icon name="Link" size={15} /> Salvar link</button>{state.projectLinks[modal.project.id] && <a className="button outline" href={state.projectLinks[modal.project.id]} target="_blank" rel="noreferrer">Abrir projeto <Icon name="ArrowUpRight" size={15} /></a>}<button type="button" className="text-button" onClick={() => { setModal(null); setExpanded(modules[modal.project.module].id); navigate('course'); }}>Revisar aulas da etapa</button></div></form></Modal>}
-    {modal?.type === 'import' && (() => {
-      // Juntar é o caminho normal de quem estuda em dois aparelhos; substituir apaga um lado
-      // e por isso fica atrás de um aviso, nunca como botão principal.
-      const juntado = mergeProgress(state, modal.data);
-      const ganhos = ganhosDaJuncao(state, juntado);
-      return <Modal title="O que fazer com este backup?" onClose={() => setModal(null)}>
-        <p>O backup de <strong>{modal.data.name}</strong> tem {modal.data.completed.length} aulas concluídas e {modal.data.sessions.length} sessões.</p>
-        {ganhos.mudou
-          ? <p className="success-text">Juntando, você ganha {[ganhos.aulas && `${ganhos.aulas} aula(s)`, ganhos.miniprojetos && `${ganhos.miniprojetos} miniprojeto(s)`, ganhos.pontes && `${ganhos.pontes} ponte(s)`, ganhos.projetos && `${ganhos.projetos} projeto(s)`, ganhos.dias && `${ganhos.dias} dia(s) de estudo`].filter(Boolean).join(', ')} e +{ganhos.xp} XP. Nada do que já está aqui se perde.</p>
-          : <p className="muted">Este backup não tem nada que você já não tenha neste aparelho. Juntar não muda nada.</p>}
-        <div className="button-row">
-          <button className="button primary" onClick={() => { previousProgress.current = state; setState(juntado); setModal(null); notify(ganhos.mudou ? 'Progressos juntados. Nada foi perdido.' : 'Nada novo para juntar.'); }}>Juntar com o meu progresso</button>
-          <button className="text-button" onClick={() => download(JSON.stringify(state, null, 2), `pycampus-antes-de-juntar-${today}.json`)}>Exportar o atual antes</button>
+  return (
+    <div className="app-shell">
+      <FlyingLumi />
+      <a className="skip-link" href="#main">
+        Pular para o conteúdo
+      </a>
+      {mobileOpen && <button className="sidebar-overlay" aria-label="Fechar menu" onClick={() => setMobileOpen(false)} />}
+      <aside className={`sidebar ${mobileOpen ? 'open' : ''}`}>
+        <a
+          className="brand"
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate('dashboard');
+          }}
+        >
+          <span className="brand-icon">
+            <Icon name="CodeXml" size={27} />
+          </span>
+          <span>
+            Py<span>Campus</span>
+            <small>APRENDA. CRIE. EVOLUA.</small>
+          </span>
+        </a>
+        <div className="sidebar-label">MEU APRENDIZADO</div>
+        <nav aria-label="Navegação principal">
+          {navItems.map((item) => (
+            <button key={item.id} className={page === item.id || (page === 'lesson' && item.id === 'course') || (page === 'project' && item.id === 'projects') ? 'active' : ''} onClick={() => navigate(item.id)}>
+              <Icon name={item.icon} size={20} />
+              {item.title}
+              {item.id === 'course' && <span className="nav-count">8</span>}
+              {item.id === 'badges' && <span className="nav-spark">✦</span>}
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-divider" />
+        <div className="sidebar-label">MEU ESPAÇO</div>
+        <nav aria-label="Perfil e preferências">
+          <button className={page === 'profile' ? 'active' : ''} onClick={() => navigate('profile')}>
+            <Icon name="UserRound" /> Meu perfil
+          </button>
+          <button className={page === 'settings' ? 'active' : ''} onClick={() => navigate('settings')}>
+            <Icon name="Settings2" /> Configurações
+          </button>
+          <button className={page === 'sobre' ? 'active' : ''} onClick={() => navigate('sobre')}>
+            <Icon name="Info" /> Sobre e limites
+          </button>
+        </nav>
+        <div className="sidebar-bottom">
+          <div className="level-card">
+            <div>
+              <span className="level-icon">
+                <Icon name="Sprout" size={21} />
+              </span>
+              <span>
+                Seu próximo nível
+                <strong>
+                  Nível {info.level} <span>→</span> Nível {info.level + 1}
+                </strong>
+              </span>
+            </div>
+            <Progress value={info.current / 5} />
+            <p>
+              {info.current} <span>/ 500 XP</span>
+              <Icon name="Zap" size={12} />
+            </p>
+          </div>
+          <button className="sidebar-profile" onClick={() => navigate('profile')}>
+            <span className="avatar">{state.avatar}</span>
+            <span>
+              <strong>{state.name}</strong>
+              <small>{info.title}</small>
+            </span>
+            <Icon name="ChevronsUpDown" size={16} />
+          </button>
+          <div className="made-for">
+            Feito para o seu próximo capítulo <span>✦</span>
+          </div>
         </div>
-        <details className="import-substituir">
-          <summary>Prefiro substituir tudo pelo backup</summary>
-          <p className="muted">Isso apaga o progresso deste aparelho e deixa só o do arquivo. Use quando o aparelho está zerado ou quando quer descartar mesmo o que há aqui.</p>
-          <button className="button outline" onClick={() => { previousProgress.current = modal.data; setCelebrations([]); setState(modal.data); setModal(null); notify('Backup restaurado. O progresso anterior deste aparelho foi substituído.'); }}>Substituir meu progresso</button>
-        </details>
-      </Modal>;
-    })()}
-    {modal?.type === 'delete-session' && <Modal title="Excluir sessão?" onClose={() => setModal(null)}><p>A sessão “{modal.session.title}” será removida da agenda. Se ela já foi concluída, o registro de estudo será preservado.</p><div className="button-row"><button className="button outline" onClick={() => setModal(null)}>Cancelar</button><button className="button danger" onClick={() => { update(s => ({ ...s, sessions: s.sessions.filter(s => s.id !== modal.session.id) })); setModal(null); notify('Sessão excluída.'); }}>Excluir sessão</button></div></Modal>}
-  </div>;
+      </aside>
+      <div className="main-shell">
+        <header className="topbar">
+          <div className="breadcrumb">
+            <button className="icon-button mobile-menu" aria-label="Abrir menu" onClick={() => setMobileOpen(true)}>
+              <Icon name="Menu" />
+            </button>
+            <Icon name="House" size={17} />
+            <Icon name="ChevronRight" size={14} />
+            <span>{page === 'lesson' ? 'Minha formação' : page === 'project' ? 'Projetos' : navItems.find((n) => n.id === page)?.title || (page === 'profile' ? 'Meu perfil' : page === 'sobre' ? 'Sobre e limites' : 'Configurações')}</span>
+          </div>
+          <div className="topbar-actions">
+            <button
+              className="search-trigger"
+              onClick={() => {
+                setQuery('');
+                setModal('search');
+              }}
+            >
+              <Icon name="Search" size={17} />
+              <span>O que vamos aprender?</span>
+              <kbd>Ctrl K</kbd>
+            </button>
+            <button className="streak-pill" onClick={() => navigate('calendar')} title="Sua sequência de estudos">
+              <Icon name="Flame" size={19} fill="#ffdfc8" /> {fire} <span>dias</span>
+            </button>
+            <button className="avatar top-avatar" aria-label="Abrir meu perfil" onClick={() => navigate('profile')}>
+              {state.avatar}
+            </button>
+          </div>
+        </header>
+        <main id="main">
+          <Suspense fallback={<PageSkeleton />}>
+            {storageError && (
+              <div className="hint error-text" role="alert">
+                {storageError}
+              </div>
+            )}
+            {page === 'dashboard' && Dashboard()}
+            {page === 'course' && Course()}
+            {page === 'lesson' && <LessonView key={selectedLesson + ':' + lessons.find((l) => l.id === selectedLesson).revision} lesson={lessons.find((l) => l.id === selectedLesson)} state={state} update={update} notify={notify} openLesson={openLesson} openProject={openProject} navigate={navigate} uiPrefs={uiPrefs} setUiPrefs={setUiPrefs} />}
+            {page === 'projects' && Projects()}
+            {page === 'project' && <ProjectStudio project={projects.find((p) => p.id === selectedProject)} state={state} update={update} back={() => navigate('projects')} openLesson={openLesson} download={download} notify={notify} navigate={navigate} openProject={openProject} />}
+            {page === 'practice' && <PracticeStudio state={state} update={update} openLesson={openLesson} openProject={openProject} navigate={navigate} target={practiceTarget} />}
+            {page === 'playground' && <Playground state={state} update={update} download={download} />}
+            {page === 'faculdade' && <Faculdade state={state} update={update} navigate={navigate} initialItemId={facultyTarget} />}
+            {page === 'targeted' && <TargetedPractice state={state} update={update} openLesson={openLesson} />}
+            {page === 'prova' && <Prova state={state} update={update} openLesson={openLesson} navigate={navigate} />}
+            {page === 'sobre' && <Sobre navigate={navigate} />}
+            {page === 'history' && <HistoryView state={state} update={update} download={download} />}
+            {page === 'calendar' && Calendar()}
+            {page === 'badges' && Achievements()}
+            {page === 'profile' && Profile()}
+            {page === 'settings' && Settings()}
+            <footer>
+              <span>
+                PyCampus <span>·</span> Seu futuro, linha por linha.
+              </span>
+              <span>
+                <span className="live-dot" /> Progresso salvo neste navegador
+              </span>
+            </footer>
+          </Suspense>
+        </main>
+        <MobileBottomNav page={page} navigate={navigate} openMore={() => setMobileOpen(true)} />
+      </div>
+      <input ref={importRef} type="file" accept=".json,application/json" hidden onChange={importBackup} />
+      {toast && (
+        <div className="toast" role="status">
+          <Icon name="CheckCircle2" size={20} />
+          {toast}
+          <button className="icon-button" aria-label="Dispensar aviso" onClick={() => setToast('')}>
+            <Icon name="X" size={16} />
+          </button>
+        </div>
+      )}
+      {celebrations.length > 0 && <Celebration reward={celebrations[0]} storageError={storageError} onConfirm={() => setCelebrations((queue) => queue.slice(1))} />}
+      {modal === 'search' && (
+        <Modal title="O que vamos aprender?" onClose={() => setModal(null)}>
+          <div className="search-input">
+            <Icon name="Search" />
+            <input autoFocus placeholder="Busque por aula, tema ou projeto…" value={query} onChange={(e) => setQuery(e.target.value)} />
+          </div>
+          <div className="search-results">
+            {lessons
+              .filter((l) =>
+                `${l.title} ${l.moduleTitle}`
+                  .toLocaleLowerCase('pt-BR')
+                  .normalize('NFD')
+                  .replace(/\p{Diacritic}/gu, '')
+                  .includes(
+                    query
+                      .toLocaleLowerCase('pt-BR')
+                      .normalize('NFD')
+                      .replace(/\p{Diacritic}/gu, ''),
+                  ),
+              )
+              .slice(0, 8)
+              .map((l) => (
+                <button key={l.id} onClick={() => openLesson(l.id)}>
+                  <Icon name="BookOpen" />
+                  <span>
+                    <strong>{l.title}</strong>
+                    <small>{l.moduleTitle}</small>
+                  </span>
+                  <Icon name="ArrowRight" size={16} />
+                </button>
+              ))}
+            {projects
+              .filter((p) => p.title.toLowerCase().includes(query.toLowerCase()))
+              .slice(0, 3)
+              .map((p) => (
+                <button key={p.id} onClick={() => setModal({ type: 'project', project: p })}>
+                  <Icon name="FolderCode" />
+                  <span>
+                    <strong>{p.title}</strong>
+                    <small>Projeto prático</small>
+                  </span>
+                  <Icon name="ArrowRight" size={16} />
+                </button>
+              ))}
+            {buscarNaFaculdade(query)
+              .slice(0, 8)
+              .map((item) => (
+                <button
+                  key={`faculdade-${item.id}`}
+                  onClick={() => {
+                    setModal(null);
+                    navigate('faculdade', { facultyItem: item.id });
+                  }}
+                >
+                  <Icon name={item.tipo.startsWith('Projeto') ? 'FolderCode' : 'GraduationCap'} />
+                  <span>
+                    <strong>{item.titulo}</strong>
+                    <small>{item.tipo}</small>
+                  </span>
+                  <Icon name="ArrowRight" size={16} />
+                </button>
+              ))}
+            {query &&
+              !lessons.some((l) =>
+                `${l.title} ${l.moduleTitle}`
+                  .toLowerCase()
+                  .normalize('NFD')
+                  .replace(/\p{Diacritic}/gu, '')
+                  .includes(
+                    query
+                      .toLowerCase()
+                      .normalize('NFD')
+                      .replace(/\p{Diacritic}/gu, ''),
+                  ),
+              ) &&
+              !projects.some((p) => p.title.toLowerCase().includes(query.toLowerCase())) &&
+              buscarNaFaculdade(query).length === 0 && <Empty icon="Search" title="Nenhum resultado" text="Tente um tema como lógica, dados ou funções." />}
+          </div>
+        </Modal>
+      )}
+      {modal === 'goals' && (
+        <Modal title="Um ritmo que funciona para você" onClose={() => setModal(null)}>
+          <p className="muted">Constância vale mais que pressa. Ajuste as metas à sua rotina.</p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const form = new FormData(e.target);
+              update((s) => ({
+                ...s,
+                goal: Number(form.get('goal')),
+                weeklyGoal: Number(form.get('weeklyGoal')),
+              }));
+              setModal(null);
+              notify('Metas atualizadas. Vamos no seu ritmo!');
+            }}
+          >
+            <label className="form-label">
+              Atividades por dia
+              <select name="goal" defaultValue={state.goal}>
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <option key={n} value={n}>
+                    {n} {n === 1 ? 'atividade' : 'atividades'} · cerca de {n * 15} min
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="form-label">
+              Dias de estudo por semana
+              <select name="weeklyGoal" defaultValue={state.weeklyGoal}>
+                {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                  <option key={n} value={n}>
+                    {n} {n === 1 ? 'dia' : 'dias'} por semana
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button className="button primary full" type="submit">
+              Salvar minhas metas <Icon name="Check" size={17} />
+            </button>
+          </form>
+        </Modal>
+      )}
+      {modal === 'session' && (
+        <Modal title="Reserve um encontro com seu futuro" onClose={() => setModal(null)}>
+          <form onSubmit={createSession}>
+            <label className="form-label">
+              O que você vai estudar?
+              <input required maxLength={100} autoFocus placeholder="Ex.: Praticar if, elif e else" value={sessionDraft.title} onChange={(e) => setSessionDraft({ ...sessionDraft, title: e.target.value })} />
+            </label>
+            <label className="form-label">
+              Data
+              <input type="date" required value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
+            </label>
+            <div className="form-columns">
+              <label className="form-label">
+                Horário
+                <input type="time" required value={sessionDraft.time} onChange={(e) => setSessionDraft({ ...sessionDraft, time: e.target.value })} />
+              </label>
+              <label className="form-label">
+                Duração
+                <select
+                  value={sessionDraft.minutes}
+                  onChange={(e) =>
+                    setSessionDraft({
+                      ...sessionDraft,
+                      minutes: e.target.value,
+                    })
+                  }
+                >
+                  {[15, 30, 45, 60, 90, 120].map((n) => (
+                    <option key={n} value={n}>
+                      {n} minutos
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <button className="button primary full" type="submit">
+              <Icon name="CalendarPlus" size={17} /> Agendar estudo
+            </button>
+          </form>
+        </Modal>
+      )}
+      {modal === 'profile' && (
+        <Modal title="Deixe o campus com a sua cara" onClose={() => setModal(null)}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!profileDraft.name.trim()) return;
+              update((s) => ({
+                ...s,
+                ...profileDraft,
+                name: profileDraft.name.trim(),
+              }));
+              setModal(null);
+              notify('Perfil atualizado!');
+            }}
+          >
+            <span className="form-label">Seu avatar</span>
+            <div className="avatar-options">
+              {['🚀', '🐍', '🧑‍💻', '🦊', '🌱', '🌟'].map((a) => (
+                <button type="button" aria-label={`Avatar ${a}`} aria-pressed={profileDraft.avatar === a} key={a} className={profileDraft.avatar === a ? 'selected' : ''} onClick={() => setProfileDraft({ ...profileDraft, avatar: a })}>
+                  {a}
+                </button>
+              ))}
+            </div>
+            <label className="form-label">
+              Como podemos chamar você?
+              <input required maxLength={40} value={profileDraft.name} onChange={(e) => setProfileDraft({ ...profileDraft, name: e.target.value })} />
+            </label>
+            <label className="form-label">
+              Uma frase para sua jornada
+              <textarea maxLength={200} value={profileDraft.bio} onChange={(e) => setProfileDraft({ ...profileDraft, bio: e.target.value })} />
+            </label>
+            <button className="button primary full" type="submit">
+              Salvar perfil
+            </button>
+          </form>
+        </Modal>
+      )}
+      {modal?.type === 'project' && (
+        <Modal wide title={modal.project.title} onClose={() => setModal(null)}>
+          <div className="project-modal-intro">
+            <span className={`pill ${modal.project.color}`}>{modal.project.level}</span>
+            <span>
+              <Icon name="Clock3" size={14} /> {modal.project.hours} estimadas
+            </span>
+            <span>
+              <Icon name="Zap" size={14} /> +250 XP
+            </span>
+          </div>
+          <p className="project-brief">{modal.project.brief}</p>
+          <ProjectPreparation project={modal.project} lessons={lessons} openLesson={openLesson} />
+          {stepsFor(modal.project.id).length > 0 && (
+            <button className="button primary" onClick={() => openProject(modal.project.id)}>
+              <Icon name="Hammer" size={16} /> Construir no estúdio, passo a passo <Icon name="ArrowRight" size={16} />
+            </button>
+          )}
+          <h3>Seu roteiro de entrega</h3>
+          <p className="muted small">Marque cada requisito depois de implementar e verificar no seu projeto.</p>
+          <div className="requirements">
+            {modal.project.requirements.map((r, i) => (
+              <label key={r}>
+                <input type="checkbox" checked={(state.projectChecks[modal.project.id] || []).includes(i)} onChange={() => projectToggle(modal.project, i)} />
+                <span>{r}</span>
+              </label>
+            ))}
+          </div>
+          <Progress value={((state.projectChecks[modal.project.id]?.length || 0) / modal.project.requirements.length) * 100} />
+          {doneProjects(state).some((p) => p.id === modal.project.id) && <p className="success-text">Todos os requisitos marcados. Projeto concluído por autoavaliação · 250 XP!</p>}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const url = new FormData(e.target).get('url').trim();
+              if (url && !/^https?:\/\//.test(url)) {
+                notify('Use um link começando com https:// ou http://.');
+                return;
+              }
+              update((s) => ({
+                ...s,
+                projectLinks: { ...s.projectLinks, [modal.project.id]: url },
+              }));
+              notify('Link do projeto salvo.');
+            }}
+          >
+            <label className="form-label">
+              Link do repositório ou demonstração <span className="muted">(opcional)</span>
+              <input type="url" name="url" placeholder="https://github.com/seu-usuario/seu-projeto" defaultValue={state.projectLinks[modal.project.id] || ''} />
+            </label>
+            <div className="button-row">
+              <button type="submit" className="button primary">
+                <Icon name="Link" size={15} /> Salvar link
+              </button>
+              {state.projectLinks[modal.project.id] && (
+                <a className="button outline" href={state.projectLinks[modal.project.id]} target="_blank" rel="noreferrer">
+                  Abrir projeto <Icon name="ArrowUpRight" size={15} />
+                </a>
+              )}
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => {
+                  setModal(null);
+                  setExpanded(modules[modal.project.module].id);
+                  navigate('course');
+                }}
+              >
+                Revisar aulas da etapa
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+      {modal?.type === 'import' &&
+        (() => {
+          // Juntar é o caminho normal de quem estuda em dois aparelhos; substituir apaga um lado
+          // e por isso fica atrás de um aviso, nunca como botão principal.
+          const juntado = mergeProgress(state, modal.data);
+          const ganhos = ganhosDaJuncao(state, juntado);
+          return (
+            <Modal title="O que fazer com este backup?" onClose={() => setModal(null)}>
+              <p>
+                O backup de <strong>{modal.data.name}</strong> tem {modal.data.completed.length} aulas concluídas e {modal.data.sessions.length} sessões.
+              </p>
+              {ganhos.mudou ? (
+                <p className="success-text">
+                  Juntando, você ganha {[ganhos.aulas && `${ganhos.aulas} aula(s)`, ganhos.miniprojetos && `${ganhos.miniprojetos} miniprojeto(s)`, ganhos.pontes && `${ganhos.pontes} ponte(s)`, ganhos.projetos && `${ganhos.projetos} projeto(s)`, ganhos.dias && `${ganhos.dias} dia(s) de estudo`].filter(Boolean).join(', ')} e +{ganhos.xp} XP. Nada do que já está aqui se perde.
+                </p>
+              ) : (
+                <p className="muted">Este backup não tem nada que você já não tenha neste aparelho. Juntar não muda nada.</p>
+              )}
+              <div className="button-row">
+                <button
+                  className="button primary"
+                  onClick={() => {
+                    previousProgress.current = state;
+                    setState(juntado);
+                    setModal(null);
+                    notify(ganhos.mudou ? 'Progressos juntados. Nada foi perdido.' : 'Nada novo para juntar.');
+                  }}
+                >
+                  Juntar com o meu progresso
+                </button>
+                <button className="text-button" onClick={() => download(JSON.stringify(state, null, 2), `pycampus-antes-de-juntar-${today}.json`)}>
+                  Exportar o atual antes
+                </button>
+              </div>
+              <details className="import-substituir">
+                <summary>Prefiro substituir tudo pelo backup</summary>
+                <p className="muted">Isso apaga o progresso deste aparelho e deixa só o do arquivo. Use quando o aparelho está zerado ou quando quer descartar mesmo o que há aqui.</p>
+                <button
+                  className="button outline"
+                  onClick={() => {
+                    previousProgress.current = modal.data;
+                    setCelebrations([]);
+                    setState(modal.data);
+                    setModal(null);
+                    notify('Backup restaurado. O progresso anterior deste aparelho foi substituído.');
+                  }}
+                >
+                  Substituir meu progresso
+                </button>
+              </details>
+            </Modal>
+          );
+        })()}
+      {modal?.type === 'delete-session' && (
+        <Modal title="Excluir sessão?" onClose={() => setModal(null)}>
+          <p>A sessão “{modal.session.title}” será removida da agenda. Se ela já foi concluída, o registro de estudo será preservado.</p>
+          <div className="button-row">
+            <button className="button outline" onClick={() => setModal(null)}>
+              Cancelar
+            </button>
+            <button
+              className="button danger"
+              onClick={() => {
+                update((s) => ({
+                  ...s,
+                  sessions: s.sessions.filter((s) => s.id !== modal.session.id),
+                }));
+                setModal(null);
+                notify('Sessão excluída.');
+              }}
+            >
+              Excluir sessão
+            </button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
 }
-function PageHeading({ eyebrow, title, subtitle, action }) { return <div className="page-heading"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{subtitle}</p></div>{action}</div>; }
-function Empty({ icon, title, text }) { return <div className="empty"><Icon name={icon} size={35} /><h3>{title}</h3><p>{text}</p></div>; }
+function PageHeading({ eyebrow, title, subtitle, action }) {
+  return (
+    <div className="page-heading">
+      <div>
+        <div className="eyebrow">{eyebrow}</div>
+        <h1>{title}</h1>
+        <p>{subtitle}</p>
+      </div>
+      {action}
+    </div>
+  );
+}
+function Empty({ icon, title, text }) {
+  return (
+    <div className="empty">
+      <Icon name={icon} size={35} />
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </div>
+  );
+}
 function Playground({ state, update, download }) {
-  const python = usePython({ source: 'playground', onRecord: attempt => update(s => appendAttempt(s, attempt)) }), [stdin, setStdin] = useState('');
-  return <><PageHeading eyebrow="EXPERIMENTE. ERRE. DESCUBRA." title="Laboratório Python" subtitle="Um espaço livre para transformar curiosidade em código." action={<button className="button outline" onClick={() => download(state.playground, 'meu_programa.py', 'text/x-python')}><Icon name="Download" size={16} /> Baixar .py</button>} /><div className="playground-layout"><div><CodeEditor code={state.playground} onChange={value => update(s => ({ ...s, playground: value }))} busy={python.busy} onRun={() => python.run(state.playground, stdin)} onStop={python.stop} output={python.output} success={python.success} inputRequest={python.inputRequest} onReply={python.reply} stdin={stdin} setStdin={setStdin} />{python.success === false && <ErrorHelp output={python.output} code={state.playground} />}<StyleTips code={state.playground} show={python.success === true} /><Visualizador code={state.playground} stdin={stdin} titulo="Veja o seu programa executando" /></div><aside><section className="card"><div className="icon-tile purple"><Icon name="FlaskConical" size={25} /></div><h3>É aqui que a ideia ganha vida.</h3><p>Escreva seu código e clique em Executar. Python roda de verdade no navegador.</p><ul className="lab-tips"><li>Use <code>print()</code> para ver resultados.</li><li>Use <code>input("Sua pergunta: ")</code> e responda abaixo do editor.</li><li>A tecla Tab insere quatro espaços.</li><li>Interrompa laços longos quando precisar.</li><li>Baixe seu código para continuar no computador.</li></ul></section><div className="info-note"><Icon name="Info" size={18} /><p>O primeiro carregamento precisa de internet. Arquivos do ambiente são temporários; servidores web devem rodar no computador. Seu código no editor é salvo neste navegador.</p></div></aside></div></>;
+  const python = usePython({
+      source: 'playground',
+      onRecord: (attempt) => update((s) => appendAttempt(s, attempt)),
+    }),
+    [stdin, setStdin] = useState('');
+  return (
+    <>
+      <PageHeading
+        eyebrow="EXPERIMENTE. ERRE. DESCUBRA."
+        title="Laboratório Python"
+        subtitle="Um espaço livre para transformar curiosidade em código."
+        action={
+          <button className="button outline" onClick={() => download(state.playground, 'meu_programa.py', 'text/x-python')}>
+            <Icon name="Download" size={16} /> Baixar .py
+          </button>
+        }
+      />
+      <div className="playground-layout">
+        <div>
+          <CodeEditor code={state.playground} onChange={(value) => update((s) => ({ ...s, playground: value }))} busy={python.busy} onRun={() => python.run(state.playground, stdin)} onStop={python.stop} output={python.output} success={python.success} inputRequest={python.inputRequest} onReply={python.reply} stdin={stdin} setStdin={setStdin} />
+          {python.success === false && <ErrorHelp output={python.output} code={state.playground} />}
+          <StyleTips code={state.playground} show={python.success === true} />
+          <Visualizador code={state.playground} stdin={stdin} titulo="Veja o seu programa executando" />
+        </div>
+        <aside>
+          <section className="card">
+            <div className="icon-tile purple">
+              <Icon name="FlaskConical" size={25} />
+            </div>
+            <h3>É aqui que a ideia ganha vida.</h3>
+            <p>Escreva seu código e clique em Executar. Python roda de verdade no navegador.</p>
+            <ul className="lab-tips">
+              <li>
+                Use <code>print()</code> para ver resultados.
+              </li>
+              <li>
+                Use <code>input("Sua pergunta: ")</code> e responda abaixo do editor.
+              </li>
+              <li>A tecla Tab insere quatro espaços.</li>
+              <li>Interrompa laços longos quando precisar.</li>
+              <li>Baixe seu código para continuar no computador.</li>
+            </ul>
+          </section>
+          <div className="info-note">
+            <Icon name="Info" size={18} />
+            <p>O primeiro carregamento precisa de internet. Arquivos do ambiente são temporários; servidores web devem rodar no computador. Seu código no editor é salvo neste navegador.</p>
+          </div>
+        </aside>
+      </div>
+    </>
+  );
 }

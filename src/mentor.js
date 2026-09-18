@@ -71,6 +71,10 @@ export function taughtUpTo(lessonId) {
 // Ajuda garantida, escrita e revisada, que funciona sem nenhuma IA ligada.
 export function localHelp(context, level) {
   const error = readError(context.output);
+  if (!String(context.output || '').trim()) return ['Antes de executar, qual valor você espera ver na saída?'];
+  if (!error && typeof context.expected === 'string' && context.output.trim() === context.expected.trim()) {
+    return ['Sua saída coincide com a esperada. Confira também os requisitos de lógica indicados pela atividade.', 'Você consegue explicar como cada linha ajudou a produzir esse resultado?'];
+  }
   if (!error) {
     if (level >= 3) return ['O programa rodou sem erro, então a diferença está no resultado. Compare sua saída com a esperada linha por linha, prestando atenção em espaços, acentos e maiúsculas.'];
     if (level === 2) return ['O programa rodou sem erro de Python: o que saiu é resultado do que o código realmente faz, não de uma falha.', 'A diferença está na lógica. Encontre a primeira linha em que sua saída e a esperada divergem e volte à instrução que a produziu.'];

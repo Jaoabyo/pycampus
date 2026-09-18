@@ -8,6 +8,9 @@ import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { aulasDaFaculdade, unidades } from '../src/faculdade.js';
 import { solucoesDaFaculdade } from '../tests/faculdade-reference.js';
+import { ensinoDaFaculdade } from '../src/faculdade-ensino.js';
+import { projetosDaFaculdade } from '../src/faculdade-projetos.js';
+import { solucoesProjetosFaculdade } from '../tests/faculdade-projetos-reference.js';
 
 const NL = String.fromCharCode(10);
 const BASE = process.env.PYCAMPUS_TEST_URL || 'http://127.0.0.1:5176/';
@@ -21,23 +24,42 @@ await page.waitForTimeout(4000);
 
 // Um worker por programa: pandas e matplotlib deixam estado global, e um exemplo não pode
 // depender do que o anterior carregou.
-const rodar = async (codigo, stdin = '') => page.evaluate(async ([src, entrada]) => {
-  const worker = new Worker('/python-worker.js');
-  return await new Promise(resolve => {
-    const prazo = setTimeout(() => { worker.terminate(); resolve({ ok: false, output: '(passou de 240s)' }); }, 240000);
-    worker.onmessage = evento => {
-      if (evento.data.type !== 'result') return;
-      clearTimeout(prazo); worker.terminate();
-      resolve({ ok: evento.data.ok, output: String(evento.data.output || '') });
-    };
-    worker.postMessage({ type: 'run', code: src, stdin: entrada });
-  });
-}, [codigo, stdin]);
+const rodar = async (codigo, stdin = '') =>
+  page.evaluate(
+    async ([src, entrada]) => {
+      const worker = new Worker('/python-worker.js');
+      return await new Promise((resolve) => {
+        const prazo = setTimeout(() => {
+          worker.terminate();
+          resolve({ ok: false, output: '(passou de 240s)' });
+        }, 240000);
+        worker.onmessage = (evento) => {
+          if (evento.data.type !== 'result') return;
+          clearTimeout(prazo);
+          worker.terminate();
+          resolve({
+            ok: evento.data.ok,
+            output: String(evento.data.output || ''),
+          });
+        };
+        worker.postMessage({ type: 'run', code: src, stdin: entrada });
+      });
+    },
+    [codigo, stdin],
+  );
 
 // Avisos de infraestrutura não são a saída do estudante.
-const limpar = texto => texto.split(NL)
-  .filter(linha => !/^(Loading |Loaded |packaging already|Matplotlib is building)/.test(linha.trim()))
-  .join(NL).trim();
+const limpar = (texto) =>
+  texto
+    .split(NL)
+    .filter(
+      (linha) =>
+        !/^(Loading |Loaded |packaging already|Matplotlib is building)/.test(
+          linha.trim(),
+        ),
+    )
+    .join(NL)
+    .trim();
 
 const problemas = [];
 let programas = 0;
@@ -46,7 +68,10 @@ for (const aula of aulasDaFaculdade) {
   programas++;
   const exemplo = await rodar(aula.exemplo);
   const saidaExemplo = limpar(exemplo.output);
-  if (!exemplo.ok) problemas.push(`${aula.id}: o exemplo não executou — ${saidaExemplo.split(NL).pop()}`);
+  if (!exemplo.ok)
+    problemas.push(
+      `${aula.id}: o exemplo não executou — ${saidaExemplo.split(NL).pop()}`,
+    );
   if (MEDIR) console.log(`### ${aula.id} · exemplo${NL}${saidaExemplo}${NL}`);
 
   // O starter é o ponto de partida do estudante: ele pode estar incompleto, mas nunca pode
@@ -54,23 +79,63 @@ for (const aula of aulasDaFaculdade) {
   programas++;
   const inicio = await rodar(aula.starter);
   if (!inicio.ok && !/SyntaxError/.test(inicio.output)) {
-    problemas.push(`${aula.id}: o starter já começa com erro — ${limpar(inicio.output).split(NL).pop()}`);
+    problemas.push(
+      `${aula.id}: o starter já começa com erro — ${limpar(inicio.output).split(NL).pop()}`,
+    );
   }
 
   const solucao = solucoesDaFaculdade[aula.id];
-  if (!solucao) { problemas.push(`${aula.id}: sem solução de referência em tests/faculdade-reference.js`); continue; }
+  if (!solucao) {
+    problemas.push(
+      `${aula.id}: sem solução de referência em tests/faculdade-reference.js`,
+    );
+    continue;
+  }
   programas++;
   const resultado = await rodar(solucao);
   const medido = limpar(resultado.output);
-  if (MEDIR) { console.log(`### ${aula.id} · solução${NL}${medido}${NL}`); continue; }
-  if (!resultado.ok) problemas.push(`${aula.id}: a solução guardada não executou — ${medido.split(NL).pop()}`);
-  else if (!aula.esperado) problemas.push(`${aula.id}: o desafio não tem saída esperada`);
-  else if (medido !== aula.esperado.trim()) problemas.push(`${aula.id}: a solução produz ${JSON.stringify(medido)} e o desafio espera ${JSON.stringify(aula.esperado.trim())}`);
+  if (MEDIR) {
+    console.log(`### ${aula.id} · solução${NL}${medido}${NL}`);
+    continue;
+  }
+  if (!resultado.ok)
+    problemas.push(
+      `${aula.id}: a solução guardada não executou — ${medido.split(NL).pop()}`,
+    );
+  else if (!aula.esperado)
+    problemas.push(`${aula.id}: o desafio não tem saída esperada`);
+  else if (medido !== aula.esperado.trim())
+    problemas.push(
+      `${aula.id}: a solução produz ${JSON.stringify(medido)} e o desafio espera ${JSON.stringify(aula.esperado.trim())}`,
+    );
 }
 
 // A lista e a primeira aula precisam continuar utilizáveis, além de o conteúdo executar isolado.
+for (const [id, ensino] of Object.entries(ensinoDaFaculdade)) {
+  programas += 2;
+  const exemplo = await rodar(ensino.codigo);
+  if (!exemplo.ok)
+    problemas.push(`${id}: exemplo guiado falhou — ${limpar(exemplo.output)}`);
+  const alterado = await rodar(
+    ensino.codigo.replace(ensino.treino.antes, ensino.treino.depois),
+  );
+  if (!alterado.ok || limpar(alterado.output) !== ensino.treino.saida)
+    problemas.push(
+      `${id}: treino guiado não produz a saída ensinada — ${limpar(alterado.output)}`,
+    );
+}
+for (const projeto of projetosDaFaculdade) {
+  programas++;
+  const resultado = await rodar(solucoesProjetosFaculdade[projeto.id]);
+  if (!resultado.ok || limpar(resultado.output) !== projeto.esperado)
+    problemas.push(
+      `${projeto.id}: projeto não produz a saída esperada — ${limpar(resultado.output)}`,
+    );
+}
 await page.goto(BASE, { waitUntil: 'networkidle' });
-await page.getByRole('button', { name: 'Minha faculdade', exact: true }).click();
+await page
+  .getByRole('button', { name: 'Minha faculdade', exact: true })
+  .click();
 await page.getByText(/O conteúdo da sua/).waitFor();
 assert.equal(await page.locator('.unidade-card').count(), unidades.length);
 await page.getByText('PLANO ATÉ 27 DE SETEMBRO').waitFor();
@@ -80,23 +145,50 @@ assert.equal(await page.locator('.prova-acao').count(), 1);
 await page.getByText('SEU PLANO DE HOJE').waitFor();
 assert.equal(await page.locator('.plano-hoje-item').count(), 2);
 assert.equal(await page.locator('.como-estudar').count(), 1);
-assert.equal(await page.locator('.faculdade-aula').count(), aulasDaFaculdade.length);
+assert.equal(
+  await page.locator('.faculdade-aula').count(),
+  aulasDaFaculdade.length,
+);
 await page.locator('.faculdade-aula').first().click();
-await page.getByRole('button', { name: 'Executar exemplo', exact: true }).click();
-await page.locator('.code-workspace').first().getByText('✓ Executado').waitFor({ timeout: 120000 });
+await page
+  .getByText('Ampliar: conceitos e exemplo completo do material')
+  .click();
+await page
+  .getByRole('button', { name: 'Executar exemplo', exact: true })
+  .click();
+await page
+  .locator('.code-workspace')
+  .first()
+  .getByText('✓ Executado')
+  .waitFor({ timeout: 120000 });
 
 const mobile = await ctx.newPage();
 await mobile.setViewportSize({ width: 390, height: 844 });
 await mobile.goto(BASE, { waitUntil: 'networkidle' });
 await mobile.getByRole('button', { name: 'Mais', exact: true }).click();
-await mobile.getByRole('button', { name: 'Minha faculdade', exact: true }).click();
+await mobile
+  .getByRole('button', { name: 'Minha faculdade', exact: true })
+  .click();
 await mobile.getByText(/O conteúdo da sua/).waitFor();
-assert.equal(await mobile.locator('.faculdade-aula').count(), aulasDaFaculdade.length);
-assert.ok(await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Minha faculdade criou rolagem horizontal no celular');
+assert.equal(
+  await mobile.locator('.faculdade-aula').count(),
+  aulasDaFaculdade.length,
+);
+assert.ok(
+  await mobile.evaluate(
+    () => document.documentElement.scrollWidth <= innerWidth + 1,
+  ),
+  'Minha faculdade criou rolagem horizontal no celular',
+);
 
 await browser.close();
-if (MEDIR) { console.log(`${programas} programas executados.`); process.exit(0); }
-console.log(problemas.length
-  ? `${programas} programas executados · ${problemas.length} problemas:${NL}${problemas.join(NL)}`
-  : `${programas} programas da trilha da faculdade executaram no Python real e bateram com o prometido.`);
+if (MEDIR) {
+  console.log(`${programas} programas executados.`);
+  process.exit(0);
+}
+console.log(
+  problemas.length
+    ? `${programas} programas executados · ${problemas.length} problemas:${NL}${problemas.join(NL)}`
+    : `${programas} programas da trilha da faculdade executaram no Python real e bateram com o prometido.`,
+);
 process.exitCode = problemas.length ? 1 : 0;

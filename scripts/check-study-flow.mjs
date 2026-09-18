@@ -15,6 +15,10 @@ try {
   await page.evaluate(s => localStorage.setItem('pycampus.v1', JSON.stringify(s)), {
     ...initialState(), completed: ['ola', 'variaveis', 'tipos', 'operadores', 'strings'],
   });
+  // Este roteiro mede a navegação de quem já estuda há dias. O guia de primeira visita é um
+  // modal: com ele aberto nenhum item da barra lateral recebe clique, e quem já voltou outras
+  // vezes não o vê. O guia em si é coberto por check-beginner-journey.mjs.
+  await page.evaluate(() => localStorage.setItem('pycampus.guia-inicial.v1', 'ok'));
   await page.reload();
   const routes = ['Visão geral', 'Minha formação', 'Oficina de prática', 'Projetos', 'Laboratório Python', 'Treino dirigido', 'Modo prova', 'Diário de aprendizagem', 'Meu calendário', 'Conquistas', 'Meu perfil', 'Configurações', 'Sobre e limites'];
   for (const width of [1440, 390]) {

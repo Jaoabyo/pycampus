@@ -7,6 +7,7 @@ import { functionBridgeIds, normalizeBridges } from './function-bridges.js';
 import { normalizeProvas } from './exam.js';
 import { normalizeLumiNotes } from './lumi-notes.js';
 import { aulasDaFaculdade } from './faculdade.js';
+import { projetosDaFaculdade } from './faculdade-projetos.js';
 export const STORAGE_KEY = 'pycampus.v1';
 export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 export const shiftDate = (key, days) => { const date = new Date(`${key}T12:00:00`); date.setDate(date.getDate() + days); return localDate(date); };
@@ -14,7 +15,7 @@ export const initialState = () => ({ version: 1, name: 'Estudante', bio: 'Um pas
 const validDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T12:00:00`).valueOf()) && localDate(new Date(`${value}T12:00:00`)) === value;
 const validTime = value => typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 const bounded = (value, fallback, min, max) => Number.isInteger(value) && value >= min && value <= max ? value : fallback;
-const idsDaFaculdadeNaAtividade = new Set(aulasDaFaculdade.map(aula => `faculdade:${aula.id}`));
+const idsDaFaculdadeNaAtividade = new Set([...aulasDaFaculdade, ...projetosDaFaculdade].map(aula => `faculdade:${aula.id}`));
 export function normalizeState(input) {
   if (!input || input.version !== 1 || !Array.isArray(input.completed)) throw new Error('Este arquivo não é um backup válido do PyCampus.');
   const base = initialState();
@@ -97,7 +98,7 @@ export function normalizeState(input) {
   if (typeof input.playground === 'string') base.playground = input.playground.slice(0, 50000);
   base.history = normalizeHistory(input.history).map(item => item.status === 'running' ? { ...item, status: 'interrupted', output: 'O registro não recebeu um resultado antes de a página ser fechada, recarregada ou o backup ser restaurado.' } : item);
   // A trilha da faculdade volta do backup como o resto: só ids que existem, texto limitado.
-  const idsDaFaculdade = new Set(aulasDaFaculdade.map(aula => aula.id));
+  const idsDaFaculdade = new Set([...aulasDaFaculdade, ...projetosDaFaculdade].map(aula => aula.id));
   base.faculdade = { feitas: [], codigos: {} };
   if (Array.isArray(input.faculdade?.feitas)) base.faculdade.feitas = [...new Set(input.faculdade.feitas.filter(id => idsDaFaculdade.has(id)))];
   for (const id of idsDaFaculdade) {
