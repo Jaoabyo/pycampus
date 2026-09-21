@@ -19,8 +19,10 @@ import CodeEditor from './CodeEditor.jsx';
 import { ErrorHelp, OutputCompare } from './RunFeedback.jsx';
 import Mentor from './Mentor.jsx';
 import FaculdadeGuia from './FaculdadeGuia.jsx';
+import ExercicioDaFaculdade from './FaculdadeExercicio.jsx';
 import { ensinoDaFaculdade } from './faculdade-ensino.js';
 import { projetosDaFaculdade } from './faculdade-projetos.js';
+import { exercicioDaUnidade } from './faculdade-exercicios.js';
 import './lesson.css';
 import './practice.css';
 import './project-studio.css';
@@ -41,11 +43,26 @@ export default function Faculdade({
   initialItemId = null,
 }) {
   const [aberta, setAberta] = useState(() => itemDaFaculdade(initialItemId));
+  const [exercicio, setExercicio] = useState(null);
   useEffect(() => {
     const item = itemDaFaculdade(initialItemId);
     if (item) setAberta(item);
   }, [initialItemId]);
   const feitas = state.faculdade?.feitas || [];
+  if (exercicio)
+    return (
+      <ExercicioDaFaculdade
+        key={exercicio.id}
+        exercicio={exercicio}
+        state={state}
+        update={update}
+        voltar={() => {
+          irAoTopo();
+          setExercicio(null);
+        }}
+        feito={feitas.includes(exercicio.id)}
+      />
+    );
   if (aberta)
     return (
       <AulaDaFaculdade
@@ -317,6 +334,33 @@ export default function Faculdade({
                   </button>
                 </div>
               ))}
+            {exercicioDaUnidade(unidade.id) && (
+              <div className="unidade-exercicio">
+                <div className="eyebrow">
+                  {exercicioDaUnidade(unidade.id).recebido
+                    ? 'EXERCÍCIO DE UNIDADES · DO AVA'
+                    : 'TREINO NO FORMATO DO AVA'}
+                </div>
+                <h3>{exercicioDaUnidade(unidade.id).titulo}</h3>
+                <p>
+                  {exercicioDaUnidade(unidade.id).questoes.length} questões de múltipla
+                  escolha. Cada resposta vem com o motivo de a alternativa certa estar
+                  certa — que é o que a prova presencial vai cobrar sem alternativas.
+                </p>
+                <button
+                  className="button primary"
+                  onClick={() => {
+                    irAoTopo();
+                    setExercicio(exercicioDaUnidade(unidade.id));
+                  }}
+                >
+                  {feitas.includes(exercicioDaUnidade(unidade.id).id)
+                    ? 'Refazer exercício'
+                    : 'Fazer exercício'}{' '}
+                  <Icon name="ArrowRight" size={16} />
+                </button>
+              </div>
+            )}
             <details className="faculdade-tarefas">
               <summary>Tarefas que o professor propõe nesta unidade</summary>
               {tarefasDaUnidade(unidade.id).map((tarefa) => (
