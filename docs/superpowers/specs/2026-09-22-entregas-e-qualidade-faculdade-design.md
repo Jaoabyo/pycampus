@@ -1,7 +1,7 @@
 # Entregas práticas e qualidade de ensino da faculdade
 
 Data: 22 de setembro de 2026  
-Prazo das entregas: 27 de outubro de 2026
+Prazo das entregas: 27 de setembro de 2026
 
 ## Intenção e critério de sucesso
 
@@ -16,6 +16,8 @@ O trabalho estará correto quando:
 - o progresso, o código e os textos do estudante sobreviverem ao recarregamento e ao backup;
 - nenhuma tela afirmar que enviou algo para o AVA: o envio final continua sendo uma ação manual do estudante;
 - testes automáticos provarem que exemplos, soluções, notebooks e migrações funcionam.
+
+Como restam cinco dias entre a data deste documento e o prazo, a ordem de entrega é orientada a risco: primeiro entram os estúdios utilizáveis, a persistência e as exportações; em seguida a integração nas demais abas; por último os refinamentos visuais que não bloqueiam o estudo. A plataforma deve indicar uma agenda intensiva até 27/09, sem prometer que estudar ou entregar aconteceu automaticamente.
 
 ## Evidência dos materiais
 
@@ -44,10 +46,12 @@ Toda complexidade específica de cada roteiro fica na implementação desse mód
 
 Arquivos previstos:
 
-- `src/faculdade-entregas.js`: fonte única das quatro entregas e geradores puros;
+- `src/faculdade-entregas.js`: fonte única das quatro entregas, requisitos e estado normalizado;
+- `src/faculdade-exportacao.js`: geradores puros de notebook Colab e relatório imprimível;
 - `src/FaculdadeEntrega.jsx`: estúdio de construção e preparação do envio;
-- `src/faculdade-entregas.css`: estilos responsivos e de impressão;
-- `tests/faculdade-entregas.test.js`: contratos, validação, notebook, relatório e backup;
+- `src/faculdade-entrega.css`: estilos responsivos e de impressão;
+- `tests/faculdade-entregas.test.js`: contratos, validação e backup;
+- `tests/faculdade-exportacao.test.js`: notebook, relatório e segurança da exportação;
 - `tests/faculdade-entregas-reference.js`: soluções executáveis usadas apenas pelos testes;
 - ajustes pequenos em `Faculdade.jsx`, `FaculdadeIntegrada.jsx`, `faculdade-integrada.js`, `progress.js`, `merge-progress.js` e nos verificadores de navegador.
 
