@@ -549,5 +549,16 @@ export const planoDeEstudosDaFaculdade = (state = {}, hoje = new Date()) => {
     })
     : [{ data: isoLocal(hoje), tipo: 'revisao', aulas: [] }];
   const hojeIso = isoLocal(hoje);
-  return { diasRestantes, estudadas, dias, hoje: dias.find(dia => dia.data === hojeIso) || dias[0] };
+  // Duas aulas por dia é um limite proposital: mais do que isso não se aprende, se atravessa.
+  // Mas quando o limite não cobre o que falta, as aulas sobrando não aparecem em dia nenhum —
+  // e um plano que termina em revisão daria a impressão de que tudo coube. Quem está atrasado
+  // precisa saber disso, não descobrir na prova. Por isso o que não coube volta nomeado, junto
+  // com o ritmo que caberia.
+  const agendadas = new Set(dias.flatMap(dia => dia.aulas.map(aula => aula.id)));
+  const foraDoPlano = pendentes.filter(aula => !agendadas.has(aula.id));
+  const ritmoNecessario = pendentes.length > 0 ? Math.ceil(pendentes.length / diasDeEstudo) : 0;
+  return {
+    diasRestantes, estudadas, dias, porDia, foraDoPlano, ritmoNecessario,
+    hoje: dias.find(dia => dia.data === hojeIso) || dias[0],
+  };
 };

@@ -92,9 +92,11 @@ export default function Faculdade({
   const proxima = proximaAcao.aula;
   const estudadas = proximaAcao.feitas;
   const dias = diasAteProva();
+  // O último dia é de revisão, então o ritmo se divide pelos dias de aula, não por todos os
+  // dias restantes — contar o dia de revisão faria o plano parecer mais folgado do que é.
   const ritmo =
     dias > 0
-      ? Math.max(1, Math.ceil(pendentes.length / dias))
+      ? Math.max(1, plano.ritmoNecessario || Math.ceil(pendentes.length / Math.max(1, dias - 1)))
       : pendentes.length;
   return (
     <>
@@ -220,6 +222,23 @@ export default function Faculdade({
               ))}
             </div>
           </>
+        )}
+        {plano.foraDoPlano?.length > 0 && (
+          <div className="info-note" role="status">
+            <Icon name="TriangleAlert" size={18} />
+            <p>
+              Duas aulas por dia é o limite do plano, e nesse ritmo{' '}
+              <strong>
+                {plano.foraDoPlano.length}{' '}
+                {plano.foraDoPlano.length === 1 ? 'aula fica' : 'aulas ficam'} de
+                fora
+              </strong>{' '}
+              até a prova: {plano.foraDoPlano.map((aula) => aula.titulo).join(', ')}.
+              Para caber tudo seriam {plano.ritmoNecessario} por dia. Prefira usar
+              o dia de revisão ou estudar uma a mais hoje, e não deixe essas para
+              a véspera.
+            </p>
+          </div>
         )}
         <p className="small muted">
           O último dia fica reservado para revisar. O plano se ajusta sozinho

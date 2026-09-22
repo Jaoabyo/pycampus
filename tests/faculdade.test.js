@@ -112,6 +112,31 @@ test('o plano diário reserva o último dia para revisão e limita o ritmo a dua
   assert.equal(plano.dias.at(-1).tipo, 'revisao');
   assert.ok(plano.dias.slice(0, -1).every(dia => dia.aulas.length <= 2));
   assert.deepEqual(plano.hoje.aulas.map(aula => aula.id), ['u1a1', 'r1']);
+  // Nove dias de aula a duas por dia cobrem as dezesseis; nada deveria sobrar.
+  assert.deepEqual(plano.foraDoPlano, []);
+});
+
+// O limite de duas aulas por dia é proposital, mas perto da prova ele pode não cobrir o que
+// falta. Quando isso acontece, as aulas que não couberam precisam ser ditas pelo nome: um
+// plano que termina em revisão, calado, faria o estudante acreditar que tudo coube.
+test('o plano avisa quais aulas não cabem no ritmo até a prova', () => {
+  const feitas = aulasDaFaculdade.slice(0, 6).map(aula => aula.id);
+  const plano = planoDeEstudosDaFaculdade({ faculdade: { feitas } }, new Date(2026, 8, 22));
+
+  assert.equal(plano.diasRestantes, 5);
+  assert.ok(plano.dias.slice(0, -1).every(dia => dia.aulas.length <= 2), 'o limite continua valendo');
+
+  const agendadas = plano.dias.flatMap(dia => dia.aulas.map(aula => aula.id));
+  const pendentes = aulasDaFaculdade.filter(aula => !feitas.includes(aula.id)).map(aula => aula.id);
+  assert.equal(agendadas.length + plano.foraDoPlano.length, pendentes.length,
+    'toda aula pendente está agendada ou declarada fora do plano');
+  assert.deepEqual(
+    [...agendadas, ...plano.foraDoPlano.map(aula => aula.id)].sort(),
+    [...pendentes].sort(),
+    'nenhuma aula pendente some do plano',
+  );
+  assert.ok(plano.foraDoPlano.length > 0, 'dez aulas não cabem em quatro dias a duas por dia');
+  assert.equal(plano.ritmoNecessario, 3, 'o ritmo que caberia é dito ao estudante');
 });
 
 test('o plano não considera aulas desconhecidas e informa revisão quando o prazo acabou', () => {
