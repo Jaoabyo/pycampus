@@ -129,8 +129,8 @@ export const exerciciosDaFaculdade = [
         ['import pandas as pd', '', '# Criando um dicionário com pares chave-valor', "data = {'A': 100, 'B': 200, 'C': 300, 'D': 400, 'E': 500}", '', '# Criando uma Series a partir do dicionário', 'series2 = pd.Series(data)', '', 'print(series2)', '', '# resultado', '# A    100', '# B    200', '# C    300', '# D    400', '# E    500', '# dtype: int64'].join('\n')),
 
       q('u3q5', 'Como você utilizaria o método loc para acessar as informações referentes à terceira linha do DataFrame df_selic?',
-        ['df_selic.loc[2]', 'df_selic.loc[3]', 'df_selic.loc[0]', 'df_selic.loc[[0, 2, 3]]', 'df_selic.loc[70]'], 0,
-        'O índice começa em 0: a primeira linha é loc[0], a segunda é loc[1] e a terceira é loc[2]. Marcar loc[3] é o engano de contar as linhas a partir de 1 — ele traria a quarta. E loc[[0, 2, 3]], com lista dentro dos colchetes, devolve várias linhas de uma vez, não uma. Um detalhe que vale para a prova: loc busca pelo RÓTULO do índice, não pela posição. Aqui os dois coincidem porque o df_selic tem o índice numérico padrão, começando em 0. Quando o índice é outro — nomes, datas — quem busca por posição é o iloc.')
+        ['df_selic.loc[2]', 'df_selic.loc[3]', 'df_selic.loc[0]', 'df_selic.loc[[0, 2, 3]]', 'df_selic.loc[70]'], 4,
+        'A pergunta se refere à terceira linha exibida no exemplo da apostila, df_selic.loc[[0, 20, 70]]: os rótulos mostrados são 0, 20 e 70, portanto a terceira é acessada com loc[70]. loc busca pelo RÓTULO do índice, não pela posição. Se a pergunta pedisse a terceira posição de um DataFrame, o caminho seria iloc[2].')
     ]
   },
 

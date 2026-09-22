@@ -91,8 +91,8 @@ test('o exercício da Unidade 3 mantém as questões e o gabarito recebidos', ()
   assert.equal(marcada(u3.questoes[1]), 'plot()');
   assert.match(marcada(u3.questoes[2]), /Data Manipulation Language/);
   assert.match(marcada(u3.questoes[3]), /Chaves do dicionário/);
-  assert.equal(marcada(u3.questoes[4]), 'df_selic.loc[2]');
-  // A terceira linha é loc[2] porque o índice começa em zero; o código precisa estar à vista.
+  assert.equal(marcada(u3.questoes[4]), 'df_selic.loc[70]');
+  // A pergunta aponta para a terceira linha do exemplo: loc[[0, 20, 70]]. loc usa o rótulo.
   assert.ok(u3.questoes[1].codigo.includes("kind='bar'"));
   assert.ok(u3.questoes[3].codigo.includes("'A': 100"));
 });
