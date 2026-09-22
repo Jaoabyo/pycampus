@@ -50,6 +50,37 @@ const rodar = async (codigo, stdin = '') =>
     [codigo, stdin],
   );
 
+// Roda o mesmo programa duas vezes no MESMO worker. É assim que o estudante executa na
+// plataforma — usePython reaproveita um worker por aula —, então o sistema de arquivos
+// virtual sobrevive entre as execuções. Um programa que grava em disco, como a análise da
+// Unidade 3, só prova que é reexecutável aqui: em workers separados o arquivo nasce vazio
+// nas duas vezes e a duplicação passaria despercebida.
+const rodarDuasVezes = async (codigo) =>
+  page.evaluate(
+    async (src) => {
+      const worker = new Worker('/python-worker.js');
+      const executar = () =>
+        new Promise((resolve) => {
+          const aoReceber = (evento) => {
+            if (evento.data.type !== 'result') return;
+            worker.removeEventListener('message', aoReceber);
+            resolve({ ok: evento.data.ok, output: String(evento.data.output || '') });
+          };
+          worker.addEventListener('message', aoReceber);
+          worker.postMessage({ type: 'run', code: src, stdin: '' });
+        });
+      const prazo = new Promise((resolve) =>
+        setTimeout(() => resolve(null), 240000));
+      const saidas = await Promise.race([
+        (async () => [await executar(), await executar()])(),
+        prazo,
+      ]);
+      worker.terminate();
+      return saidas || [{ ok: false, output: '(passou de 240s)' }, { ok: false, output: '' }];
+    },
+    codigo,
+  );
+
 // Avisos de infraestrutura não são a saída do estudante.
 const limpar = (texto) =>
   texto
@@ -149,10 +180,16 @@ for (const [id, evidencias] of Object.entries(evidenciasDasEntregas)) {
     if (!saida.includes(evidencia)) problemas.push(`${id}: saída não contém ${JSON.stringify(evidencia)}`);
   }
   if (id === 'entrega-u3') {
-    programas++;
-    const repeticao = await rodar(solucoesEntregasFaculdade[id]);
-    if (!repeticao.ok || limpar(repeticao.output) !== saida) {
-      problemas.push(`${id}: a segunda execução mudou o resultado ou duplicou registros`);
+    // A Unidade 3 grava em dados_vendas.db. Reexecutar no mesmo worker é o que acontece
+    // quando o estudante clica em Executar de novo, e é o que o Colab faz em "Executar tudo".
+    programas += 2;
+    const [primeira, segunda] = await rodarDuasVezes(solucoesEntregasFaculdade[id]);
+    if (!primeira.ok || !segunda.ok) {
+      problemas.push(`${id}: reexecutar no mesmo ambiente falhou — ${limpar(segunda.output)}`);
+    } else if (limpar(segunda.output) !== limpar(primeira.output)) {
+      problemas.push(
+        `${id}: a segunda execução no mesmo ambiente mudou o resultado ou duplicou registros — ${limpar(segunda.output)}`,
+      );
     }
   }
 }

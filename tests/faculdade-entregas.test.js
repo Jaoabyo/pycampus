@@ -156,6 +156,33 @@ test('U1 e U2 dividem conceitos novos em passos pequenos antes de cobrar', () =>
   }
 });
 
+// O roteiro da Unidade 2 nomeia os atributos do livro: "título, autor, gênero e quantidade
+// disponível". Modelar só três entrega uma classe diferente da que foi pedida.
+test('U2 modela o Livro com os quatro atributos do roteiro', () => {
+  const entrega = entregaDaFaculdade('entrega-u2');
+  const codigo = solucoesEntregasFaculdade['entrega-u2'];
+  const visivel = [entrega.resumo, entrega.codigoInicial,
+    ...entrega.passos.map(({ explicacao, exemplo }) => `${explicacao}\n${exemplo}`)].join('\n');
+
+  for (const atributo of ['titulo', 'autor', 'genero', 'quantidade_disponivel']) {
+    assert.match(codigo, new RegExp(`self\\.${atributo}\\s*=`), atributo);
+    assert.match(entrega.codigoInicial, new RegExp(`self\\.${atributo}\\s*=`), `${atributo} no código inicial`);
+  }
+  assert.match(visivel, /quantidade_disponivel/);
+
+  // A listagem precisa mostrar o quarto atributo, senão ele existiria sem nunca aparecer.
+  assert.match(codigo, /livro\.quantidade_disponivel/);
+});
+
+// Fechar a figura é o que impede o segundo gráfico de ser desenhado por cima do primeiro
+// quando o estudante executa de novo — no PyCampus o worker e o estado do Matplotlib duram
+// a sessão inteira, e um gráfico com o dobro das barras iria para o print da entrega.
+test('as entregas com gráfico fecham a figura antes de terminar', () => {
+  for (const id of ['entrega-u2', 'entrega-u3']) {
+    assert.match(solucoesEntregasFaculdade[id], /plt\.close\s*\(\s*\)/, id);
+  }
+});
+
 test('U3 recria a base antes de inserir e cobre a análise oficial', () => {
   const codigo = solucoesEntregasFaculdade['entrega-u3'];
   assert.match(codigo, /DROP TABLE IF EXISTS vendas/i);

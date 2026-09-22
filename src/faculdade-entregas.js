@@ -222,19 +222,19 @@ const passosU2 = [
   passo(
     'u2-entender-classe', 'entender', 'Modele um livro',
     'Uma classe descreve o formato dos objetos. __init__ recebe os dados na criação; self representa o objeto atual.',
-    'class Livro:\n    def __init__(self, titulo, autor, genero):\n        self.titulo = titulo\n        self.autor = autor\n        self.genero = genero',
+    'class Livro:\n    def __init__(self, titulo, autor, genero, quantidade_disponivel):\n        self.titulo = titulo\n        self.autor = autor\n        self.genero = genero\n        self.quantidade_disponivel = quantidade_disponivel',
     'Crie um Livro e mostre seu título.',
   ),
   passo(
     'u2-entender-colecao', 'entender', 'Guarde objetos em uma lista',
     'A lista funciona como o catálogo da biblioteca. append cadastra um novo objeto sem apagar os anteriores.',
-    'livros = []\nlivros.append(Livro("Dom Casmurro", "Machado de Assis", "Romance"))',
+    'livros = []\nlivros.append(Livro("Dom Casmurro", "Machado de Assis", "Romance", 3))',
     'Cadastre dois livros de gêneros diferentes.',
   ),
   passo(
     'u2-entender-funcao', 'entender', 'Dê um nome ao cadastro',
     'Uma função evita repetir o modo de criar e guardar livros. Ela recebe os dados, cria um Livro e usa append no catálogo recebido.',
-    'def cadastrar_livro(livros, titulo, autor, genero):\n    livros.append(Livro(titulo, autor, genero))',
+    'def cadastrar_livro(livros, titulo, autor, genero, quantidade_disponivel):\n    livros.append(Livro(titulo, autor, genero, quantidade_disponivel))',
     'Altere os dados da chamada e confirme qual novo objeto entrou na lista.',
   ),
   passo(
@@ -252,13 +252,13 @@ const passosU2 = [
   passo(
     'u2-construir-cadastro', 'construir', 'Crie a função de cadastro',
     'A função recebe o catálogo e os dados, constrói o objeto e o adiciona. Ela concentra uma responsabilidade clara.',
-    'def cadastrar_livro(livros, titulo, autor, genero):\n    livros.append(Livro(titulo, autor, genero))',
+    'def cadastrar_livro(livros, titulo, autor, genero, quantidade_disponivel):\n    livros.append(Livro(titulo, autor, genero, quantidade_disponivel))',
     'Cadastre pelo menos quatro livros por meio da função.',
   ),
   passo(
     'u2-construir-listagem', 'construir', 'Liste o catálogo',
     'Percorra cada objeto com for e leia seus atributos. Não imprima títulos escritos manualmente fora da lista.',
-    'for livro in livros:\n    print(livro.titulo, "-", livro.autor, "-", livro.genero)',
+    'for livro in livros:\n    print(livro.titulo, "-", livro.autor, "-", livro.genero, "-", livro.quantidade_disponivel)',
     'A listagem exibe os dados de todos os objetos cadastrados.',
   ),
   passo(
@@ -269,8 +269,8 @@ const passosU2 = [
   ),
   passo(
     'u2-construir-generos', 'construir', 'Conte livros por gênero',
-    'Um dicionário associa cada gênero à sua contagem. get(genero, 0) fornece zero na primeira ocorrência.',
-    'contagem[livro.genero] = contagem.get(livro.genero, 0) + 1',
+    'Um dicionário associa cada gênero à sua contagem. get(genero, 0) fornece zero na primeira ocorrência. Termine o gráfico com plt.close(): sem isso, executar de novo desenha as barras novas por cima das antigas.',
+    'contagem[livro.genero] = contagem.get(livro.genero, 0) + 1\nplt.bar(contagem.keys(), contagem.values())\nplt.close()',
     'Gere um gráfico de barras usando os gêneros e suas contagens.',
   ),
   passo(
@@ -332,8 +332,8 @@ const passosU3 = [
   ),
   passo(
     'u3-construir-graficos', 'construir', 'Transforme resultados em gráficos',
-    'Matplotlib está disponível no PyCampus. O roteiro também pede Seaborn, que só existe no Colab: escreva o gráfico de modo que ele funcione com Seaborn quando houver e com Matplotlib quando não houver.',
-    'por_categoria.plot(kind="bar", title="Receita por categoria")\nplt.tight_layout()\nplt.show()',
+    'Matplotlib está disponível no PyCampus. O roteiro também pede Seaborn, que só existe no Colab: escreva o gráfico de modo que ele funcione com Seaborn quando houver e com Matplotlib quando não houver. Termine com plt.close(): sem isso, executar de novo desenha as barras novas por cima das antigas e o gráfico passa a mentir.',
+    'por_categoria.plot(kind="bar", title="Receita por categoria")\nplt.tight_layout()\nplt.show()\nplt.close()',
     'Crie um gráfico por categoria e outro por produto.',
   ),
   passo(
@@ -474,15 +474,16 @@ export const entregasDaFaculdade = [
     id: 'entrega-u2',
     unidade: 'u2',
     titulo: 'Sistema de biblioteca',
-    resumo: 'Modele Livro, faça cadastro, listagem e busca e gere um gráfico com a quantidade por gênero.',
+    resumo: 'Modele Livro com título, autor, gênero e quantidade disponível, faça cadastro, listagem e busca e gere um gráfico com a quantidade por gênero.',
     minutos: 140,
     ambienteEntrega: 'pycampus',
     preRequisitos: ['u2a1', 'u2a2', 'u2a3', 'u2a4'],
-    codigoInicial: 'class Livro:\n    def __init__(self, titulo, autor, genero):\n        self.titulo = titulo\n        self.autor = autor\n        self.genero = genero\n\nlivros = []\n',
+    codigoInicial: 'class Livro:\n    def __init__(self, titulo, autor, genero, quantidade_disponivel):\n        self.titulo = titulo\n        self.autor = autor\n        self.genero = genero\n        self.quantidade_disponivel = quantidade_disponivel\n\nlivros = []\n',
     testesOrientados: ['cadastro de quatro livros', 'busca com maiúsculas diferentes', 'busca inexistente', 'dois livros no mesmo gênero'],
     entregaveis: ['notebook Colab com classe, funções, testes e gráfico', 'relatório PDF com resultado e explicação'],
     criterios: [
-      criterioCodigo('classe-livro', 'definir a classe Livro e seus atributos', /class\s+Livro\b[\s\S]*self\.titulo[\s\S]*self\.autor[\s\S]*self\.genero/),
+      // O roteiro nomeia os quatro atributos: título, autor, gênero e quantidade disponível.
+      criterioCodigo('classe-livro', 'definir a classe Livro com os quatro atributos do roteiro', /class\s+Livro\b[\s\S]*self\.titulo[\s\S]*self\.autor[\s\S]*self\.genero[\s\S]*self\.quantidade_disponivel/),
       criterioCodigo('cadastro-livros', 'cadastrar objetos Livro em uma lista', /append\s*\(\s*Livro\s*\(/),
       criterioCodigo('busca-titulo', 'implementar busca por título', /def\s+buscar[\s\S]*\.titulo[\s\S]*\.lower\s*\(/),
       criterioCodigo('contagem-genero', 'agregar a quantidade por gênero', /\.get\s*\([\s\S]*genero|Counter\s*\(/),
