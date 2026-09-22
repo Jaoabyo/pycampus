@@ -471,3 +471,24 @@ export const ensinoDaFaculdade = {
     'polyfit ajusta a reta usando os pares conhecidos. polyval usa os coeficientes para estimar um valor novo; isso não comprova acurácia em dados futuros.',
   ),
 };
+
+const ligacao = (explicadoEm, exemplo, alteracao, cobradoEm) => ({
+  explicadoEm, exemplo, alteracao, cobradoEm,
+});
+
+// Este mapa é a ponte auditável entre as aulas curtas e os trabalhos maiores.
+// Cada conceito chega ao estúdio somente depois de ser explicado, visto e alterado.
+export const matrizDeEnsinoDasEntregas = {
+  lista: ligacao('r2', 'notas = [2, 4, 6]', 'trocar 6 por 8 e prever o total', 'entrega-u1:u1-entender-lista'),
+  acumulador: ligacao('r2', 'total = total + nota', 'mudar o valor inicial e explicar o efeito', 'entrega-u1:u1-construir-acumulador'),
+  media: ligacao('r3', 'return sum(notas) / len(notas)', 'calcular com outra lista', 'entrega-u1:u1-entender-media'),
+  'limite-sete': ligacao('r1', 'if idade < 12', 'alterar idade para atravessar o limite', 'entrega-u1:u1-construir-situacao'),
+  relatorio: ligacao('u1a1', 'print(f"Media: {media}")', 'alterar as notas e conferir a saída', 'entrega-u1:u1-construir-situacao'),
+  classe: ligacao('u2a3', 'class Pessoa:', 'criar uma segunda Pessoa', 'entrega-u2:u2-entender-classe'),
+  self: ligacao('u2a3', 'self.nome = nome', 'alterar o nome entregue ao objeto', 'entrega-u2:u2-entender-classe'),
+  'lista-de-objetos': ligacao('u2a3', 'pessoa1 = Pessoa("Joao", 30)', 'guardar dois objetos em uma lista', 'entrega-u2:u2-entender-colecao'),
+  cadastro: ligacao('r3', 'def calcular_media(notas):', 'chamar a função com outra entrada', 'entrega-u2:u2-construir-cadastro'),
+  busca: ligacao('u2a1', 'for p, d in enumerate(dias):', 'procurar um item que não existe', 'entrega-u2:u2-construir-busca'),
+  'contagem-genero': ligacao('u2a2', 'len(set(notas))', 'repetir um valor e comparar a contagem', 'entrega-u2:u2-construir-generos'),
+  'grafico-barras': ligacao('u3a4', 'plt.bar(["Jan", "Fev"], [120, 90])', 'alterar uma altura e ler o gráfico', 'entrega-u2:u2-construir-generos'),
+};

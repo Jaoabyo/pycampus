@@ -81,6 +81,12 @@ const passosU1 = [
     'Seu código final contém uma lista com pelo menos quatro notas.',
   ),
   passo(
+    'u1-construir-acumulador', 'construir', 'Percorra e acumule sem pular etapas',
+    'for pega uma nota por vez. O acumulador começa em zero e recebe cada valor; len conta quantas notas participaram. Antes de dividir, trate a lista vazia para evitar divisão por zero.',
+    'if not notas:\n    return None\ntotal = 0\nfor nota in notas:\n    total += nota\nmedia = total / len(notas)',
+    'Altere uma nota, preveja o novo total e confira a média; depois teste uma lista vazia.',
+  ),
+  passo(
     'u1-construir-funcao', 'construir', 'Separe o cálculo em uma função',
     'Uma função dá nome à regra e devolve um resultado com return. Assim o cálculo pode ser testado com listas diferentes.',
     'def calcular_media(notas):\n    return sum(notas) / len(notas)',
@@ -304,7 +310,8 @@ export const entregasDaFaculdade = [
     entregaveis: ['notebook Google Colab com código comentado', 'relatório PDF com execução, testes e explicação'],
     criterios: [
       criterioCodigo('lista-de-notas', 'usar uma lista de notas', /\bnotas\s*=\s*\[[\s\S]*?\]/),
-      criterioCodigo('funcao-media', 'calcular a média em uma função com retorno', /def\s+calcular_media\s*\([\s\S]*?return[\s\S]*?(?:sum\s*\(|\bfor\b)/),
+      criterioCodigo('funcao-media', 'calcular a média em uma função com retorno', /def\s+calcular_media\s*\([\s\S]*(?:sum\s*\(|\bfor\b)[\s\S]*return/),
+      criterioCodigo('lista-vazia', 'tratar a lista vazia antes da divisão', /if\s+(?:not\s+notas|len\s*\(\s*notas\s*\)\s*==\s*0)/),
       criterioCodigo('limite-sete', 'decidir aprovação com média maior ou igual a 7', />=\s*7/),
       criterioCodigo('relatorio', 'mostrar um relatório com média e situação', /print\s*\([\s\S]*(?:media|média)[\s\S]*(?:situacao|situação)/i),
       criterioTexto('explicacao-logica', 'explicar entrada, cálculo e decisão', 'logica', 60),

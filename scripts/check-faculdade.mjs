@@ -11,6 +11,7 @@ import { solucoesDaFaculdade } from '../tests/faculdade-reference.js';
 import { ensinoDaFaculdade } from '../src/faculdade-ensino.js';
 import { projetosDaFaculdade } from '../src/faculdade-projetos.js';
 import { solucoesProjetosFaculdade } from '../tests/faculdade-projetos-reference.js';
+import { solucoesEntregasFaculdade } from '../tests/faculdade-entregas-reference.js';
 
 const NL = String.fromCharCode(10);
 const BASE = process.env.PYCAMPUS_TEST_URL || 'http://127.0.0.1:5176/';
@@ -131,6 +132,19 @@ for (const projeto of projetosDaFaculdade) {
     problemas.push(
       `${projeto.id}: projeto não produz a saída esperada — ${limpar(resultado.output)}`,
     );
+}
+const evidenciasDasEntregas = {
+  'entrega-u1': ['Média da turma:', 'Aprovado', 'Reprovado'],
+  'entrega-u2': ['Livro encontrado:', 'Busca inexistente: não encontrado', 'Livros por gênero:', 'Barras: 3'],
+};
+for (const [id, evidencias] of Object.entries(evidenciasDasEntregas)) {
+  programas++;
+  const resultado = await rodar(solucoesEntregasFaculdade[id]);
+  const saida = limpar(resultado.output);
+  if (!resultado.ok) problemas.push(`${id}: solução oficial não executou — ${saida}`);
+  for (const evidencia of evidencias) {
+    if (!saida.includes(evidencia)) problemas.push(`${id}: saída não contém ${JSON.stringify(evidencia)}`);
+  }
 }
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page

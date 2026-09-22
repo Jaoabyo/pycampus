@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { localHelp } from '../src/mentor.js';
-import { ensinoDaFaculdade } from '../src/faculdade-ensino.js';
+import { ensinoDaFaculdade, matrizDeEnsinoDasEntregas } from '../src/faculdade-ensino.js';
 import {
   aulasDaFaculdade,
   requisitosFaltandoDaFaculdade,
@@ -29,6 +29,19 @@ test('cada aula tem preparação explicada e uma alteração guiada antes do des
   }
   assert.doesNotMatch(ensinoDaFaculdade.u1a1.revisao.pergunta, /input/);
   assert.match(ensinoDaFaculdade.u1a1.codigo, /float\(nota_a\)/);
+});
+
+test('cada conceito obrigatório das entregas aponta para ensino, exemplo, alteração e cobrança', () => {
+  const idsAulas = new Set(aulasDaFaculdade.map(({ id }) => id));
+  for (const [conceito, ligacao] of Object.entries(matrizDeEnsinoDasEntregas)) {
+    assert.ok(idsAulas.has(ligacao.explicadoEm), `${conceito}: aula inexistente`);
+    assert.ok(ligacao.exemplo?.trim(), `${conceito}: sem exemplo`);
+    assert.ok(ligacao.alteracao?.trim(), `${conceito}: sem alteração`);
+    assert.match(ligacao.cobradoEm, /^entrega-u[1-4]:.+/, `${conceito}: cobrança sem endereço`);
+  }
+  for (const conceito of ['lista', 'acumulador', 'media', 'limite-sete', 'classe', 'self', 'busca', 'contagem-genero', 'grafico-barras']) {
+    assert.ok(matrizDeEnsinoDasEntregas[conceito], conceito);
+  }
 });
 
 test('projetos da faculdade preservam código e conclusão no backup sem mudar as aulas', () => {
