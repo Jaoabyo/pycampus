@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { aulasDaFaculdade, tarefasDaFaculdade, unidades, aulasDaUnidade, tarefasDaUnidade, diasAteProva, requisitosFaltandoDaFaculdade, proximaAcaoDaFaculdade, planoDeEstudosDaFaculdade } from '../src/faculdade.js';
 import { solucoesDaFaculdade } from './faculdade-reference.js';
+import { buscarNaFaculdade, panoramaDaFaculdade } from '../src/faculdade-integrada.js';
+import { initialState } from '../src/progress.js';
 
 test('a trilha cobre as quatro unidades dos oito PDFs', () => {
   assert.deepEqual(unidades.map(unidade => unidade.id), ['u1', 'u2', 'u3', 'u4']);
@@ -12,6 +14,17 @@ test('a trilha cobre as quatro unidades dos oito PDFs', () => {
     'r4', 'u4a2', 'u4a3', 'u4a4'
   ]);
   for (const unidade of unidades) assert.equal(aulasDaFaculdade.filter(aula => aula.unidade === unidade.id).length, 4, unidade.id);
+});
+
+test('busca encontra a entrega de Iris e preserva o id navegável', () => {
+  const resultados = buscarNaFaculdade('Iris');
+  assert.ok(resultados.some(({ id, tipo }) =>
+    id === 'entrega-u4' && tipo === 'Entrega prática'));
+});
+
+test('panorama expõe uma entrega por unidade', () => {
+  const panorama = panoramaDaFaculdade(initialState());
+  assert.equal(panorama.unidades.filter(({ entrega }) => entrega).length, 4);
 });
 
 test('toda aula informa a relação com a formação geral sem esconder o foco da faculdade', () => {

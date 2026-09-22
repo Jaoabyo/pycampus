@@ -23,7 +23,7 @@ import { SimpleConcept, LessonOrientation, ExampleWalkthrough, GuidedHints, Proj
 import { DailyMission, LearningMap } from './LearningExperience.jsx';
 import { loadUiPreferences, saveUiPreferences } from './ui-preferences.js';
 import { updateDailyMission } from './daily-mission.js';
-import { buscarNaFaculdade } from './faculdade-integrada.js';
+import { buscarNaFaculdade, destinoDaFaculdadeNoEndereco, enderecoDaFaculdade } from './faculdade-integrada.js';
 import './lesson.css';
 import './guidance.css';
 import './grade.css';
@@ -744,6 +744,7 @@ function ProximoPasso({ work, state, onAbrir, onVerFormacao }) {
 }
 
 export default function App() {
+  const destinoInicialDaFaculdade = () => destinoDaFaculdadeNoEndereco(window.location.search);
   const [storageError, setStorageError] = useState('');
   const [state, setState] = useState(() => {
     try {
@@ -754,11 +755,11 @@ export default function App() {
     }
   });
   const [uiPrefs, setUiPrefs] = useState(() => loadUiPreferences());
-  const [page, setPage] = useState('dashboard'),
+  const [page, setPage] = useState(() => new URLSearchParams(window.location.search).get('tab') === 'faculdade' ? 'faculdade' : 'dashboard'),
     [selectedLesson, setSelectedLesson] = useState('ola'),
     [selectedProject, setSelectedProject] = useState('calculadora'),
     [practiceTarget, setPracticeTarget] = useState(null),
-    [facultyTarget, setFacultyTarget] = useState(null),
+    [facultyTarget, setFacultyTarget] = useState(destinoInicialDaFaculdade),
     [mobileOpen, setMobileOpen] = useState(false),
     [modal, setModal] = useState(null),
     [toast, setToast] = useState(''),
@@ -817,7 +818,17 @@ export default function App() {
   };
   const navigate = (target, options = {}) => {
     if (target === 'practice' && !options.keepPracticeTarget) setPracticeTarget(null);
-    if (target === 'faculdade') setFacultyTarget(options.facultyItem || null);
+    if (target === 'faculdade') {
+      const item = options.facultyItem || null;
+      setFacultyTarget(item);
+      const destino = enderecoDaFaculdade(item);
+      window.history.replaceState(null, '', `${window.location.pathname}${destino}${window.location.hash}`);
+    } else if (new URLSearchParams(window.location.search).get('tab') === 'faculdade') {
+      const endereco = new URL(window.location.href);
+      endereco.searchParams.delete('tab');
+      endereco.searchParams.delete('faculty');
+      window.history.replaceState(null, '', `${endereco.pathname}${endereco.search}${endereco.hash}`);
+    }
     setPage(target);
     setMobileOpen(false);
     window.scrollTo({ top: 0, behavior: 'instant' });

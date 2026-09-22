@@ -23,6 +23,7 @@ import ExercicioDaFaculdade from './FaculdadeExercicio.jsx';
 import { ensinoDaFaculdade } from './faculdade-ensino.js';
 import { projetosDaFaculdade } from './faculdade-projetos.js';
 import { exercicioDaUnidade } from './faculdade-exercicios.js';
+import { entregasDaFaculdade } from './faculdade-entregas.js';
 import './lesson.css';
 import './practice.css';
 import './project-studio.css';
@@ -266,6 +267,11 @@ export default function Faculdade({
       {unidades.map((unidade) => {
         const aulas = aulasDaUnidade(unidade.id);
         const prontas = aulas.filter((a) => feitas.includes(a.id)).length;
+        const entrega = entregasDaFaculdade.find((item) => item.unidade === unidade.id);
+        const trabalho = state.faculdade?.entregas?.[entrega.id] || {};
+        const passosConcluidos = new Set(trabalho.passosConcluidos || []);
+        const proximoPasso = entrega.passos.find((passo) => !passosConcluidos.has(passo.id));
+        const preRequisitosPendentes = entrega.preRequisitos.filter((id) => !feitas.includes(id));
         return (
           <section className="card unidade-card" key={unidade.id}>
             <div className="step-head">
@@ -309,6 +315,31 @@ export default function Faculdade({
                   <Icon name="ArrowRight" size={17} />
                 </button>
               ))}
+            </div>
+            <div className="faculdade-entrega-unidade">
+              <div>
+                <div className="eyebrow">ENTREGA PRÁTICA · ATÉ 27 DE SETEMBRO</div>
+                <h3>{entrega.titulo}</h3>
+                <p>{entrega.resumo}</p>
+                <small>
+                  {preRequisitosPendentes.length
+                    ? `${preRequisitosPendentes.length} aulas-base ainda pendentes. Você pode abrir o roteiro e aprender na ordem.`
+                    : proximoPasso
+                      ? `Próximo passo: ${proximoPasso.titulo}`
+                      : 'Roteiro concluído. Confira os critérios e os arquivos antes de enviar.'}
+                </small>
+              </div>
+              <div className="faculdade-entrega-unidade-acao">
+                <strong>{passosConcluidos.size}/{entrega.passos.length}</strong>
+                <span>passos</span>
+                <button
+                  className="button primary"
+                  onClick={() => navigate('faculdade', { facultyItem: entrega.id })}
+                >
+                  {passosConcluidos.size ? 'Continuar entrega' : 'Começar com orientação'}
+                  <Icon name="ArrowRight" size={16} />
+                </button>
+              </div>
             </div>
             {projetosDaFaculdade
               .filter((projeto) => projeto.unidade === unidade.id)

@@ -84,6 +84,20 @@
 @media(max-width:980px){.faculdade-projetos-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.faculdade-integrada{margin:16px 0;padding:18px 15px}.faculdade-integrada-footer,.faculdade-integrada .section-heading{align-items:stretch;flex-direction:column}.faculdade-integrada-footer .button,.faculdade-integrada .section-heading .button{width:100%}.faculdade-unidades-resumo summary{grid-template-columns:1fr auto}.faculdade-unidades-resumo summary span{grid-column:1/3}.faculdade-projetos-grid{grid-template-columns:1fr}}
 
+.faculdade-proxima-tipo{width:max-content;padding:5px 8px;border-radius:999px;background:#eee8fb;color:#6545bd;font-size:10px;font-weight:800;letter-spacing:.1em}
+.faculdade-entrega-unidade{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:center;margin:20px 0;padding:20px;border:1px solid #d8c7f2;border-radius:14px;background:linear-gradient(135deg,#faf7ff,#fffdf7)}
+.faculdade-entrega-unidade h3{margin:6px 0}.faculdade-entrega-unidade p{margin:0 0 8px;line-height:1.6;color:#62586d}.faculdade-entrega-unidade small{color:#73599c;line-height:1.5}
+.faculdade-entrega-unidade-acao{display:grid;grid-template-columns:auto auto;align-items:baseline;justify-items:end;gap:0 3px;min-width:190px}.faculdade-entrega-unidade-acao strong{font:800 24px/1 var(--heading);color:#6545bd}.faculdade-entrega-unidade-acao>span{font-size:12px;color:#81758c}.faculdade-entrega-unidade-acao .button{grid-column:1/3;margin-top:12px}
+.faculdade-entregas-bloco{margin-top:26px;padding-top:24px;border-top:1px solid #eee8f6}.faculdade-entregas-bloco>h3{margin:7px 0 16px;font-size:18px}
+.faculdade-entregas-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.faculdade-entrega-resumo{position:relative;display:grid;grid-template-columns:auto 1fr;align-content:start;gap:7px 10px;min-width:0;padding:17px;text-align:left;cursor:pointer;border-color:#e1d5f2;background:linear-gradient(145deg,#fff 65%,#faf6ff);transition:border-color .18s,transform .18s,box-shadow .18s}
+.faculdade-entrega-resumo:hover,.faculdade-entrega-resumo:focus-visible{transform:translateY(-2px);border-color:#ae91df;box-shadow:0 12px 28px #593e8114}
+.faculdade-entrega-unidade-numero{display:inline-grid;place-items:center;grid-row:1/3;width:38px;height:38px;border-radius:11px;background:#7453d3;color:#fff;font-size:12px;font-weight:850}.faculdade-entrega-resumo>small{align-self:end;color:#7b65a2;font-size:9px;font-weight:800;letter-spacing:.1em}.faculdade-entrega-resumo>h3,.faculdade-entrega-resumo>p,.faculdade-entrega-resumo-rodape{grid-column:1/3}.faculdade-entrega-resumo>h3{margin:5px 28px 0 0;font-size:15px}.faculdade-entrega-resumo>p{margin:0;color:#6d6475;font-size:12px;line-height:1.55}.faculdade-entrega-resumo>svg{position:absolute;right:15px;top:17px;color:#8a70cd}
+.faculdade-entrega-resumo-rodape{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:3px;padding-top:10px;border-top:1px solid #eee8f6;font-size:11px}.faculdade-entrega-resumo-rodape span{color:#7f7389}.faculdade-entrega-resumo-rodape strong{overflow:hidden;color:#6044ad;text-align:right;text-overflow:ellipsis;white-space:nowrap}
+.faculdade-projetos-treino{margin:28px 0 12px}.faculdade-projetos-treino h3{margin:5px 0;font-size:18px}
+.faculdade-unidades-resumo .is-delivery button{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;justify-content:initial;background:#f8f4ff;color:#5c3fae;font-weight:700}.faculdade-unidades-resumo .is-delivery button span{font-size:11px;color:#7b6c88}
+@media(max-width:760px){.faculdade-entrega-unidade{grid-template-columns:1fr}.faculdade-entrega-unidade-acao{grid-template-columns:auto 1fr;justify-items:start;min-width:0}.faculdade-entrega-unidade-acao .button{width:100%;justify-content:center}.faculdade-entregas-grid{grid-template-columns:1fr}}
+
 /* Exercício de unidade: o formato do AVA, com o motivo aparecendo depois da escolha. */
 .unidade-exercicio {
   margin-top: 18px;

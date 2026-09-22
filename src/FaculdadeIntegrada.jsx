@@ -9,6 +9,29 @@ export default function FaculdadeIntegrada({
 }) {
   const dados = panoramaDaFaculdade(state);
   const percentual = dados.total ? (dados.estudadas / dados.total) * 100 : 0;
+  const proxima = dados.proximaAtividade;
+
+  const CartoesDeEntrega = () => (
+    <div className="faculdade-entregas-grid">
+      {dados.entregas.map((entrega) => (
+        <button
+          className="card faculdade-entrega-resumo"
+          key={entrega.id}
+          onClick={() => navigate('faculdade', { facultyItem: entrega.id })}
+        >
+          <span className="faculdade-entrega-unidade-numero">U{entrega.unidade.slice(1)}</span>
+          <small>{entrega.ambienteEntrega === 'colab' ? 'GOOGLE COLAB' : 'PYCAMPUS + COLAB'}</small>
+          <h3>{entrega.titulo}</h3>
+          <p>{entrega.resumo}</p>
+          <div className="faculdade-entrega-resumo-rodape">
+            <span>{entrega.passosConcluidos}/{entrega.totalPassos} passos</span>
+            <strong>{entrega.pronta ? 'Pronta para conferir' : entrega.proximoPasso?.titulo || 'Revisar'}</strong>
+          </div>
+          <Icon name="ArrowRight" size={17} />
+        </button>
+      ))}
+    </div>
+  );
 
   if (variant === 'dashboard')
     return (
@@ -24,24 +47,23 @@ export default function FaculdadeIntegrada({
             <h2>Próximo conteúdo da disciplina</h2>
           </div>
         </div>
-        <h3>{dados.proxima.titulo}</h3>
-        <p>
-          Aprenda um conceito por vez, pratique com uma mudança pequena e só
-          depois resolva o desafio.
-        </p>
+        <div className="faculdade-proxima-tipo">
+          {proxima.tipo === 'aula' ? 'AULA-BASE' : 'PASSO DA ENTREGA'}
+        </div>
+        <h3>{proxima.titulo}</h3>
+        <p>{proxima.explicacao}</p>
         <Progress
           value={percentual}
           label={`Aulas da faculdade estudadas: ${dados.estudadas} de ${dados.total}`}
         />
         <div className="faculdade-integrada-footer">
           <span>
-            {dados.estudadas}/{dados.total} aulas · {dados.projetosConcluidos}/4
-            projetos
+            {dados.estudadas}/{dados.total} aulas · {dados.entregasConcluidas}/4 entregas prontas
           </span>
           <button
             className="button primary"
             onClick={() =>
-              navigate('faculdade', { facultyItem: dados.proxima.id })
+              navigate('faculdade', { facultyItem: proxima.id })
             }
           >
             Continuar na faculdade <Icon name="ArrowRight" size={16} />
@@ -55,12 +77,18 @@ export default function FaculdadeIntegrada({
       <section className="faculdade-integrada faculdade-integrada-projetos">
         <div className="section-heading">
           <div>
-            <div className="eyebrow">PROJETOS DA DISCIPLINA</div>
-            <h2>Use o conteúdo da faculdade em sistemas pequenos</h2>
+            <div className="eyebrow">TRABALHOS OFICIAIS · PRAZO 27 DE SETEMBRO</div>
+            <h2>Construa e prepare suas quatro entregas</h2>
+            <p>Cada estúdio ensina, testa e organiza o notebook e o relatório sem pular conceitos.</p>
           </div>
           <button className="text-button" onClick={() => navigate('faculdade')}>
             Abrir trilha acadêmica <Icon name="ArrowRight" size={15} />
           </button>
+        </div>
+        <CartoesDeEntrega />
+        <div className="faculdade-projetos-treino">
+          <div className="eyebrow">MINIPROJETOS DE TREINO</div>
+          <h3>Pratique a unidade antes da entrega oficial</h3>
         </div>
         <div className="faculdade-projetos-grid">
           {dados.unidades.map((unidade) => (
@@ -144,9 +172,23 @@ export default function FaculdadeIntegrada({
                   <Icon name="ArrowRight" size={14} />
                 </button>
               </li>
+              <li className="is-delivery">
+                <button
+                  onClick={() => navigate('faculdade', { facultyItem: unidade.entrega.id })}
+                >
+                  <Icon name="CheckCheck" size={14} /> Entrega: {unidade.entrega.titulo}
+                  <span>{unidade.entrega.passosConcluidos}/{unidade.entrega.totalPassos}</span>
+                  <Icon name="ArrowRight" size={14} />
+                </button>
+              </li>
             </ul>
           </details>
         ))}
+      </div>
+      <div className="faculdade-entregas-bloco">
+        <div className="eyebrow">TRABALHOS ATÉ 27 DE SETEMBRO</div>
+        <h3>Da aula à entrega, sem precisar adivinhar o próximo passo</h3>
+        <CartoesDeEntrega />
       </div>
     </section>
   );

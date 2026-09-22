@@ -7,6 +7,7 @@ import { mergeProgress } from '../src/merge-progress.js';
 import { canReviewPractice, practicePosition } from '../src/practice-flow.js';
 import { requisitosFaltando } from '../src/requisitos.js';
 import { stepsFor } from '../src/project-steps.js';
+import { proximaAtividadeAcademica } from '../src/faculdade-integrada.js';
 
 test('a conferência final precisa das duas execuções; abrir uma aba não prova conclusão', () => {
   assert.equal(canReviewPractice({ position: 'review' }), false);
@@ -73,4 +74,19 @@ test('a meta diária conta tudo que foi registrado no dia', () => {
   const fonte = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8');
   assert.match(fonte, /const atividadesHoje = \(state\.activities\[today\] \|\| \[\]\)\.length;/, 'a meta voltou a filtrar só aulas');
   assert.doesNotMatch(fonte, /todayLessons/, 'sobrou a contagem antiga');
+});
+
+test('a próxima ação acadêmica ensina pré-requisitos antes de abrir a entrega', () => {
+  const inicio = proximaAtividadeAcademica(initialState());
+  assert.deepEqual(
+    { tipo: inicio.tipo, id: inicio.id },
+    { tipo: 'aula', id: 'u1a1' },
+  );
+
+  const preparado = initialState();
+  preparado.faculdade.feitas = ['u1a1', 'r1', 'r2', 'r3'];
+  const construir = proximaAtividadeAcademica(preparado);
+  assert.equal(construir.tipo, 'entrega');
+  assert.equal(construir.id, 'entrega-u1');
+  assert.equal(construir.passoId, 'u1-entender-lista');
 });

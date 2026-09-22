@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { aplicarEnderecoDoLink, definirOllamaUrl, ollamaUrl, OLLAMA_PADRAO } from '../src/mentor.js';
+import { destinoDaFaculdadeNoEndereco, enderecoDaFaculdade } from '../src/faculdade-integrada.js';
 
 // Abrir o campus com ?ia=... aponta o Lumi para aquele endereço. É comodidade real — o endereço
 // do túnel muda toda vez e é impossível de digitar no celular — mas é também para onde o código
@@ -43,4 +44,19 @@ test('fica registrado que veio de link, para a tela poder avisar', async () => {
   const { enderecoVeioDeLink } = await import('../src/mentor.js');
   aplicarEnderecoDoLink('?ia=https://tunel.example.com');
   assert.equal(enderecoVeioDeLink(), 'https://tunel.example.com');
+});
+
+test('link da faculdade abre a entrega exata e ignora ids inventados', () => {
+  assert.equal(
+    destinoDaFaculdadeNoEndereco('?tab=faculdade&faculty=entrega-u4'),
+    'entrega-u4',
+  );
+  assert.equal(
+    enderecoDaFaculdade('entrega-u4'),
+    '?tab=faculdade&faculty=entrega-u4',
+  );
+  assert.equal(
+    destinoDaFaculdadeNoEndereco('?tab=faculdade&faculty=entrega-fantasma'),
+    null,
+  );
 });
