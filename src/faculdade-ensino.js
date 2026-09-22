@@ -496,7 +496,7 @@ export const matrizDeEnsinoDasEntregas = {
   'grafico-barras': ligacao('u3a4', 'plt.bar(meses, vendas)', 'plt.bar(["Mar", "Abr", "Mai"], [60, 80, 90])', 'entrega-u2:u2-construir-generos'),
   sqlite: ligacao('u3a1', 'sqlite3.connect(":memory:")', '("Ana", "Natal")', 'entrega-u3:u3-construir-sqlite'),
   pandas: ligacao('u3a2', 'pd.Series([10, 20, 30])', 'pd.Series([20, 30, 40])', 'entrega-u3:u3-construir-dataframe'),
-  agregacao: ligacao('entrega-u3:u3-entender-agregacao', 'df.groupby("categoria")["receita"].sum()', 'Troque categoria por produto e explique como muda a pergunta respondida.', 'entrega-u3:u3-construir-analise'),
+  agregacao: ligacao('entrega-u3:u3-entender-agregacao', 'df_vendas.groupby("categoria")["valor_venda"].sum()', 'Troque categoria por produto e explique como muda a pergunta respondida.', 'entrega-u3:u3-construir-analise'),
   graficos: ligacao('u3a4', 'plt.bar(meses, vendas)', 'plt.bar(["Mar", "Abr", "Mai"], [60, 80, 90])', 'entrega-u3:u3-construir-graficos'),
   'treino-teste': ligacao('entrega-u4:u4-entender-treino-teste', 'train_test_split(X, y', 'Explique por que avaliar nos mesmos dados de treino seria enganoso.', 'entrega-u4:u4-testar-avaliacao'),
   normalizacao: ligacao('entrega-u4:u4-entender-escala', 'scaler.fit_transform(X_treino)', 'Explique por que não usamos fit_transform novamente em X_teste.', 'entrega-u4:u4-construir-escala'),

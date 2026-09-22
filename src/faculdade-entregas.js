@@ -296,50 +296,50 @@ const passosU2 = [
 const passosU3 = [
   passo(
     'u3-entender-banco', 'entender', 'Entenda tabela, linha e coluna',
-    'SQLite guarda dados em tabelas. Cada venda é uma linha; id, produto, categoria, quantidade e preço são colunas.',
-    'CREATE TABLE vendas (id INTEGER PRIMARY KEY, produto TEXT, categoria TEXT, quantidade INTEGER, preco REAL)',
+    'SQLite guarda dados em tabelas. O roteiro da faculdade define a tabela vendas1: cada venda é uma linha e id_venda, data_venda, produto, categoria e valor_venda são colunas. AUTOINCREMENT faz o banco gerar o id_venda sozinho, por isso o INSERT não informa essa coluna.',
+    'CREATE TABLE vendas1 (\n    id_venda INTEGER PRIMARY KEY AUTOINCREMENT,\n    data_venda DATE,\n    produto TEXT,\n    categoria TEXT,\n    valor_venda REAL\n)',
     'Identifique qual coluna não pode se repetir e por quê.',
   ),
   passo(
     'u3-entender-fluxo', 'entender', 'Separe gravar de consultar',
-    'connect abre o banco, execute envia SQL e commit confirma mudanças. SELECT consulta sem alterar os registros.',
-    'conexao = sqlite3.connect(":memory:")\ncursor = conexao.cursor()',
+    'connect abre o banco, execute envia SQL e commit confirma mudanças. SELECT consulta sem alterar os registros. O roteiro usa o arquivo dados_vendas.db, então o banco continua existindo depois que a célula termina.',
+    'conexao = sqlite3.connect("dados_vendas.db")\ncursor = conexao.cursor()',
     'Explique quando commit é necessário.',
   ),
   passo(
     'u3-entender-agregacao', 'entender', 'Agrupe antes de resumir',
-    'groupby separa as linhas por categoria; selecionar receita escolhe a medida; sum calcula um total para cada grupo. O resultado continua derivado dos dados.',
-    'por_categoria = df.groupby("categoria")["receita"].sum()\nprint(por_categoria)',
+    'groupby separa as linhas por categoria; selecionar valor_venda escolhe a medida; sum calcula um total para cada grupo. O resultado continua derivado dos dados.',
+    'por_categoria = df_vendas.groupby("categoria")["valor_venda"].sum()\nprint(por_categoria)',
     'Troque categoria por produto e explique como muda a pergunta respondida.',
   ),
   passo(
-    'u3-construir-sqlite', 'construir', 'Crie uma base reproduzível',
-    'O script deve produzir o mesmo resultado ao rodar novamente. Use banco em memória ou recrie a tabela antes de inserir os exemplos.',
-    'cursor.execute("DROP TABLE IF EXISTS vendas")',
-    'Crie a tabela e insira vendas com parâmetros SQL.',
+    'u3-construir-sqlite', 'construir', 'Crie a base do roteiro, de forma reproduzível',
+    'Copie a tabela vendas1 e as quatorze vendas do roteiro. O roteiro escreve CREATE TABLE direto, mas rodar a célula duas vezes daria erro de tabela existente e duplicaria as vendas: por isso apague a tabela antes de criar. O resultado continua sendo o do professor.',
+    'cursor.execute("DROP TABLE IF EXISTS vendas1")',
+    'Crie a tabela vendas1 e insira as quatorze vendas do roteiro.',
   ),
   passo(
     'u3-construir-dataframe', 'construir', 'Leve a consulta ao pandas',
-    'read_sql_query transforma o resultado em DataFrame. Colunas calculadas tornam a análise explícita.',
-    'df = pd.read_sql_query("SELECT * FROM vendas", conexao)\ndf["receita"] = df["quantidade"] * df["preco"]',
+    'O roteiro pula esta ponte: no Passo 2 ele já fala do DataFrame df_vendas sem mostrar como ele nasce. Quem cria é read_sql_query, que executa o SELECT e devolve o resultado como DataFrame.',
+    'df_vendas = pd.read_sql_query("SELECT * FROM vendas1", conexao)\nprint(df_vendas.head())',
     'Mostre as primeiras linhas e os tipos das colunas.',
   ),
   passo(
     'u3-construir-analise', 'construir', 'Responda perguntas com dados',
-    'Calcule receita total, ticket médio, produto de maior receita e receita agrupada por categoria.',
-    'por_categoria = df.groupby("categoria")["receita"].sum()',
+    'Calcule a receita total, o ticket médio, o produto de maior valor e a receita agrupada por categoria.',
+    'por_categoria = df_vendas.groupby("categoria")["valor_venda"].sum()',
     'Apresente números derivados do DataFrame, sem escrevê-los manualmente.',
   ),
   passo(
     'u3-construir-graficos', 'construir', 'Transforme resultados em gráficos',
-    'Matplotlib está disponível no PyCampus. Seaborn pode melhorar o estilo no Colab, mas o gráfico precisa continuar compreensível sem ele.',
+    'Matplotlib está disponível no PyCampus. O roteiro também pede Seaborn, que só existe no Colab: escreva o gráfico de modo que ele funcione com Seaborn quando houver e com Matplotlib quando não houver.',
     'por_categoria.plot(kind="bar", title="Receita por categoria")\nplt.tight_layout()\nplt.show()',
     'Crie um gráfico por categoria e outro por produto.',
   ),
   passo(
     'u3-testar-dados', 'testar', 'Teste consistência e reexecução',
-    'Confira número de linhas, ausência de valores negativos e total esperado. Rode novamente e confirme que as vendas não duplicaram.',
-    'assert len(df) == quantidade_esperada\nassert (df["quantidade"] >= 0).all()',
+    'Confira o número de linhas, a ausência de valores negativos e o total esperado. Rode novamente e confirme que as vendas não duplicaram.',
+    'assert len(df_vendas) == 14\nassert (df_vendas["valor_venda"] >= 0).all()',
     'Registre os testes e o resultado da segunda execução.',
   ),
   passo(
@@ -502,24 +502,30 @@ export const entregasDaFaculdade = [
     id: 'entrega-u3',
     unidade: 'u3',
     titulo: 'Análise de vendas com SQLite e pandas',
-    resumo: 'Crie uma base SQLite, analise vendas com pandas e comunique resultados em gráficos Matplotlib e insights.',
+    resumo: 'Crie a base SQLite vendas1 do roteiro, analise as vendas com pandas em df_vendas e comunique resultados em gráficos Matplotlib e insights.',
     minutos: 160,
     ambienteEntrega: 'pycampus',
     preRequisitos: ['u3a1', 'u3a2', 'u3a3', 'u3a4'],
-    codigoInicial: 'import sqlite3\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nconexao = sqlite3.connect(":memory:")\ncursor = conexao.cursor()\n',
-    testesOrientados: ['quantidade esperada de linhas', 'receitas não negativas', 'total calculado', 'segunda execução sem duplicar vendas'],
+    codigoInicial: 'import sqlite3\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\n# Passo 1.1: Conectar ao banco de dados (ou criar, se nao existir)\nconexao = sqlite3.connect("dados_vendas.db")\n\n# Passo 1.2: Criar um cursor\ncursor = conexao.cursor()\n',
+    testesOrientados: ['quatorze linhas em vendas1', 'valores de venda não negativos', 'total calculado', 'segunda execução sem duplicar vendas'],
     entregaveis: ['notebook Colab reproduzível com banco, análise e gráficos', 'relatório PDF com três análises e sugestões'],
     criterios: [
-      criterioEstrutural('banco-sqlite', 'criar e consultar uma tabela SQLite', (analise) => (
+      criterioEstrutural('banco-sqlite', 'criar e consultar a tabela vendas1 do roteiro', (analise) => (
         /sqlite3\.connect\s*\(/.test(analise.executavel)
-        && stringEmChamada(analise, /\.execute\s*\(\s*$/, /CREATE\s+TABLE/i)
-        && stringEmChamada(analise, /pd\.read_sql(?:_query)?\s*\(\s*$/, /SELECT/i)
+        && stringEmChamada(analise, /\.execute\s*\(\s*$/, /CREATE\s+TABLE\s+vendas1/i)
+        && stringEmChamada(analise, /pd\.read_sql(?:_query)?\s*\(\s*$/, /SELECT[\s\S]*vendas1/i)
       )),
       criterioEstrutural('parametros-sql', 'inserir valores com parâmetros SQL', (analise) => (
         stringEmChamada(analise, /\.execute(?:many)?\s*\(\s*$/, /\?/)
       )),
-      criterioCodigo('dataframe-pandas', 'carregar a consulta em um DataFrame pandas', /pd\.read_sql(?:_query)?\s*\(/),
-      criterioCodigo('analises', 'calcular receita e ao menos uma agregação', /receita[\s\S]*(?:groupby|sum|mean)\s*\(/i),
+      criterioCodigo('dataframe-pandas', 'carregar a consulta no DataFrame df_vendas', /df_vendas\s*=\s*pd\.read_sql(?:_query)?\s*\(/),
+      // valor_venda só aparece como chave de coluna, ou seja, dentro de uma string — e o
+      // verificador ignora strings de propósito. Por isso a coluna é conferida entre os
+      // literais e a agregação continua sendo exigida no código que realmente executa.
+      criterioEstrutural('analises', 'resumir valor_venda com ao menos uma agregação', (analise) => (
+        analise.strings.some(({ conteudo }) => /valor_venda/i.test(conteudo))
+        && /\b(?:groupby|sum|mean)\s*\(/.test(analise.executavel)
+      )),
       criterioCodigo('graficos', 'gerar gráfico Matplotlib', /(?:plt\.|\.plot\s*\()/),
       criterioTexto('registro-testes', 'registrar testes e reexecução', 'testes', 50),
       criterioTexto('insights', 'escrever três insights da análise', 'insights', 100),

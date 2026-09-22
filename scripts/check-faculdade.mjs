@@ -137,7 +137,8 @@ for (const projeto of projetosDaFaculdade) {
 const evidenciasDasEntregas = {
   'entrega-u1': ['Média da turma:', 'Aprovado', 'Reprovado'],
   'entrega-u2': ['Livro encontrado:', 'Busca inexistente: não encontrado', 'Livros por gênero:', 'Barras: 3'],
-  'entrega-u3': ['Total de vendas: 5', 'Receita total:', 'Produto de maior receita: Monitor', 'Gráfico:', 'Barras: 3'],
+  // As quatorze vendas e as três categorias são as do roteiro oficial da Unidade 3.
+  'entrega-u3': ['Total de vendas: 14', 'Receita total:', 'Produto de maior valor: Produto A', 'Gráfico:', 'Barras: 3'],
 };
 for (const [id, evidencias] of Object.entries(evidenciasDasEntregas)) {
   programas++;

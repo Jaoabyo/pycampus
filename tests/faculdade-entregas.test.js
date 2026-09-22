@@ -166,6 +166,37 @@ test('U3 recria a base antes de inserir e cobre a análise oficial', () => {
   assert.match(codigo, /plt\.bar/);
 });
 
+// O roteiro da Unidade 3 é o único dos quatro que entrega código literal: nome da tabela,
+// nome das colunas, as quatorze vendas e o nome do DataFrame. Trocar qualquer um deles por
+// um equivalente "mais limpo" entrega ao professor algo diferente do que ele pediu.
+test('U3 mantém o esquema literal do roteiro da faculdade', () => {
+  const codigo = solucoesEntregasFaculdade['entrega-u3'];
+  const entrega = entregaDaFaculdade('entrega-u3');
+  const visivel = [
+    entrega.resumo, entrega.codigoInicial,
+    ...entrega.passos.map(({ explicacao, exemplo }) => `${explicacao}\n${exemplo}`),
+  ].join('\n');
+
+  assert.match(codigo, /sqlite3\.connect\("dados_vendas\.db"\)/);
+  assert.match(codigo, /CREATE TABLE vendas1/);
+  for (const coluna of ['id_venda', 'data_venda', 'produto', 'categoria', 'valor_venda']) {
+    assert.match(codigo, new RegExp(coluna), `a coluna ${coluna} é a do roteiro`);
+  }
+  assert.match(codigo, /AUTOINCREMENT/);
+  assert.match(codigo, /INSERT INTO vendas1/);
+  assert.match(codigo, /df_vendas\s*=\s*pd\.read_sql_query/);
+
+  // As quatorze vendas do roteiro, da primeira à última, com as três categorias.
+  assert.equal((codigo.match(/"2023-\d\d-\d\d"/g) || []).length, 14);
+  assert.match(codigo, /"2023-01-01", "Produto A", "Eletrônicos", 1500\.00/);
+  assert.match(codigo, /"2023-12-20", "Produto N", "Livros", 250\.00/);
+
+  // O estudante precisa ver os nomes oficiais, não só a solução de referência contê-los.
+  assert.match(visivel, /vendas1/);
+  assert.match(visivel, /df_vendas/);
+  assert.match(visivel, /valor_venda/);
+});
+
 test('U4 exige saída e data reais do Colab para satisfazer execução externa', () => {
   const entrega = entregaDaFaculdade('entrega-u4');
   const trabalho = {
