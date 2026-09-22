@@ -7,11 +7,12 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { aulasDaFaculdade, unidades } from '../src/faculdade.js';
+import { entregaDaFaculdade } from '../src/faculdade-entregas.js';
 import { solucoesDaFaculdade } from '../tests/faculdade-reference.js';
 import { ensinoDaFaculdade } from '../src/faculdade-ensino.js';
 import { projetosDaFaculdade } from '../src/faculdade-projetos.js';
 import { solucoesProjetosFaculdade } from '../tests/faculdade-projetos-reference.js';
-import { praticasLocaisEntregas, solucoesEntregasFaculdade } from '../tests/faculdade-entregas-reference.js';
+import { solucoesEntregasFaculdade } from '../tests/faculdade-entregas-reference.js';
 
 const NL = String.fromCharCode(10);
 const BASE = process.env.PYCAMPUS_TEST_URL || 'http://127.0.0.1:5176/';
@@ -155,7 +156,7 @@ for (const [id, evidencias] of Object.entries(evidenciasDasEntregas)) {
   }
 }
 programas++;
-const praticaU4 = praticasLocaisEntregas['entrega-u4'];
+const praticaU4 = entregaDaFaculdade('entrega-u4').praticaLocal;
 const resultadoU4 = await rodar(praticaU4.codigo);
 if (!resultadoU4.ok || limpar(resultadoU4.output) !== praticaU4.esperado) {
   problemas.push(`entrega-u4: prática local não produz a saída ensinada — ${limpar(resultadoU4.output)}`);

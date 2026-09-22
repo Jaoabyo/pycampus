@@ -28,6 +28,7 @@ import './lesson.css';
 import './guidance.css';
 import './grade.css';
 import './experience.css';
+import './faculdade-entrega.css';
 
 // Telas pesadas que ninguém abre no primeiro segundo: carregadas sob demanda, o conteúdo que
 // só elas usam sai do pacote inicial. Precisam vir depois dos imports, porque lazy() é
@@ -39,6 +40,7 @@ const Prova = lazy(() => import('./Prova.jsx'));
 const Visualizador = lazy(() => import('./Visualizador.jsx'));
 const HistoryView = lazy(() => import('./HistoryView.jsx'));
 const Faculdade = lazy(() => import('./Faculdade.jsx'));
+const FaculdadeEntrega = lazy(() => import('./FaculdadeEntrega.jsx'));
 const FaculdadeIntegrada = lazy(() => import('./FaculdadeIntegrada.jsx'));
 const Sobre = lazy(() => import('./Sobre.jsx'));
 
@@ -1813,7 +1815,9 @@ export default function App() {
             {page === 'project' && <ProjectStudio project={projects.find((p) => p.id === selectedProject)} state={state} update={update} back={() => navigate('projects')} openLesson={openLesson} download={download} notify={notify} navigate={navigate} openProject={openProject} />}
             {page === 'practice' && <PracticeStudio state={state} update={update} openLesson={openLesson} openProject={openProject} navigate={navigate} target={practiceTarget} />}
             {page === 'playground' && <Playground state={state} update={update} download={download} />}
-            {page === 'faculdade' && <Faculdade state={state} update={update} navigate={navigate} initialItemId={facultyTarget} />}
+            {page === 'faculdade' && (facultyTarget?.startsWith('entrega-')
+              ? <FaculdadeEntrega entregaId={facultyTarget} state={state} update={update} navigate={navigate} download={download} />
+              : <Faculdade state={state} update={update} navigate={navigate} initialItemId={facultyTarget} />)}
             {page === 'targeted' && <TargetedPractice state={state} update={update} openLesson={openLesson} />}
             {page === 'prova' && <Prova state={state} update={update} openLesson={openLesson} navigate={navigate} />}
             {page === 'sobre' && <Sobre navigate={navigate} />}

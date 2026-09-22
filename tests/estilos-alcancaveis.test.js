@@ -46,3 +46,11 @@ test('toda classe usada num componente tem a folha de estilo ao alcance dele', (
   }
   assert.deepEqual(orfas, [], `classes sem folha ao alcance:\n${orfas.join('\n')}`);
 });
+
+test('estúdio da faculdade mantém foco, toque mínimo, movimento reduzido e layout móvel', () => {
+  const css = ler('faculdade-entrega.css');
+  assert.match(css, /:focus-visible/);
+  assert.match(css, /min-height:\s*44px/);
+  assert.match(css, /@media\s*\(max-width:/);
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
+});

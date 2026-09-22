@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import {
   entregasDaFaculdade,
   entregaDaFaculdade,
+  entregaProntaParaExportar,
   requisitosFaltandoDaEntrega,
 } from '../src/faculdade-entregas.js';
-import { praticasLocaisEntregas, solucoesEntregasFaculdade } from './faculdade-entregas-reference.js';
+import { solucoesEntregasFaculdade } from './faculdade-entregas-reference.js';
 
 test('expõe as quatro entregas oficiais na ordem das unidades', () => {
   assert.deepEqual(
@@ -79,6 +80,18 @@ test('soluções de referência U1 e U2 atendem aos critérios de código', () =
   }
 });
 
+test('exportação abre depois das evidências, sem exigir que exportar já esteja concluído', () => {
+  const entrega = entregaDaFaculdade('entrega-u1');
+  const trabalho = {
+    codigo: solucoesEntregasFaculdade['entrega-u1'],
+    passosConcluidos: entrega.passos.filter(({ fase }) => fase !== 'exportar').map(({ id }) => id),
+    logica: 'A lista reúne as notas, o laço acumula os valores, len fornece a quantidade e a média decide a situação no limite sete.',
+    testes: 'Testei uma média menor que sete, outra exatamente sete, uma maior e também a lista vazia.',
+    conclusao: 'Os testes confirmam tanto a conta quanto os dois caminhos da decisão.',
+  };
+  assert.equal(entregaProntaParaExportar(entrega, trabalho), true);
+});
+
 test('U1 e U2 dividem conceitos novos em passos pequenos antes de cobrar', () => {
   const u1 = entregaDaFaculdade('entrega-u1').passos.map(({ titulo, explicacao }) => `${titulo} ${explicacao}`).join(' ');
   for (const termo of ['lista', 'for', 'acumulador', 'len', 'média', 'exatamente 7', 'lista vazia']) {
@@ -115,7 +128,7 @@ test('U4 exige saída e data reais do Colab para satisfazer execução externa',
 });
 
 test('prática local da U4 ensina o pipeline sem fingir que é TensorFlow', () => {
-  const pratica = praticasLocaisEntregas['entrega-u4'];
+  const pratica = entregaDaFaculdade('entrega-u4').praticaLocal;
   assert.match(pratica.aviso, /não é uma rede neural/i);
   assert.doesNotMatch(pratica.codigo, /tensorflow|sklearn/i);
   for (const termo of ['treino', 'teste', 'normalizar', 'prever', 'acuracia']) assert.match(pratica.codigo, new RegExp(termo, 'i'));

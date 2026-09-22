@@ -68,6 +68,37 @@ const dadosComuns = {
   origem: 'Roteiro oficial de aula prática · Linguagem de Programação',
 };
 
+const praticaLocalU4 = {
+  aviso: 'Esta prática ensina o pipeline de classificação, mas não é uma rede neural. A entrega TensorFlow roda no Google Colab.',
+  esperado: 'Treino: 6\nTeste: 3\nAcuracia local: 100.0%',
+  codigo: [
+    'dados = [',
+    '    ([1.0, 1.1], 0), ([1.2, 0.9], 0), ([0.8, 1.0], 0),',
+    '    ([4.0, 4.1], 1), ([4.2, 3.9], 1), ([3.8, 4.0], 1),',
+    '    ([1.1, 1.0], 0), ([4.1, 4.0], 1), ([3.9, 4.2], 1),',
+    ']',
+    'treino = dados[:6]',
+    'teste = dados[6:]',
+    '',
+    'def normalizar(amostra):',
+    '    return [valor / 5 for valor in amostra]',
+    '',
+    'centros = {0: normalizar([1.0, 1.0]), 1: normalizar([4.0, 4.0])}',
+    'def prever(amostra):',
+    '    normalizada = normalizar(amostra)',
+    '    distancias = {}',
+    '    for rotulo, centro in centros.items():',
+    '        distancias[rotulo] = sum((a - b) ** 2 for a, b in zip(normalizada, centro))',
+    '    return min(distancias, key=distancias.get)',
+    '',
+    'acertos = sum(prever(amostra) == rotulo for amostra, rotulo in teste)',
+    'acuracia = acertos / len(teste)',
+    'print("Treino:", len(treino))',
+    'print("Teste:", len(teste))',
+    'print(f"Acuracia local: {acuracia * 100:.1f}%")',
+  ].join('\n'),
+};
+
 const passosU1 = [
   passo(
     'u1-entender-lista', 'entender', 'Guarde várias notas juntas',
@@ -300,7 +331,10 @@ const comPassos = (entrega, passos) => ({
   ...dadosComuns,
   ...entrega,
   passos,
-  criterios: [...entrega.criterios, criterioPassos(passos.map(({ id }) => id))],
+  criterios: [
+    ...entrega.criterios,
+    criterioPassos(passos.filter(({ fase }) => fase !== 'exportar').map(({ id }) => id)),
+  ],
 });
 
 export const entregasDaFaculdade = [
@@ -378,6 +412,7 @@ export const entregasDaFaculdade = [
     minutos: 180,
     ambienteEntrega: 'colab',
     avisoAmbiente: 'A preparação pode ser estudada no PyCampus, mas TensorFlow e scikit-learn devem ser executados no Google Colab.',
+    praticaLocal: praticaLocalU4,
     preRequisitos: ['u4a1', 'u4a2', 'u4a3', 'u4a4'],
     codigoInicial: 'import tensorflow as tf\nfrom sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.preprocessing import StandardScaler\n',
     testesOrientados: ['formas dos conjuntos de treino e teste', 'scaler ajustado somente no treino', 'avaliação em dados reservados', 'predição de três amostras'],
