@@ -413,7 +413,7 @@ export const entregasDaFaculdade = [
     ambienteEntrega: 'colab',
     avisoAmbiente: 'A preparação pode ser estudada no PyCampus, mas TensorFlow e scikit-learn devem ser executados no Google Colab.',
     praticaLocal: praticaLocalU4,
-    preRequisitos: ['u4a1', 'u4a2', 'u4a3', 'u4a4'],
+    preRequisitos: ['r4', 'u4a2', 'u4a3', 'u4a4'],
     codigoInicial: 'import tensorflow as tf\nfrom sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.preprocessing import StandardScaler\n',
     testesOrientados: ['formas dos conjuntos de treino e teste', 'scaler ajustado somente no treino', 'avaliação em dados reservados', 'predição de três amostras'],
     entregaveis: ['notebook Google Colab executado com TensorFlow', 'relatório PDF com acurácia real, predições e limitações'],

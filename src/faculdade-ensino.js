@@ -1,5 +1,7 @@
 // Exemplos pequenos, independentes e explicados antes do desafio. O material
 // ampliado da disciplina continua disponível como aprofundamento, após esta base.
+import { aulasDaFaculdade, unidades } from './faculdade.js';
+
 const passo = (codigo, explicacao) => ({ codigo, explicacao });
 const guia = (
   objetivo,
@@ -502,3 +504,50 @@ export const matrizDeEnsinoDasEntregas = {
   avaliacao: ligacao('u4a3', 'self.assertEqual(triplo(2), 6)', 'provocar uma falha e interpretar', 'entrega-u4:u4-testar-avaliacao'),
   predicao: ligacao('u4a4', 'np.polyval(coeficientes, 4)', 'prever o mês cinco', 'entrega-u4:u4-testar-predicao'),
 };
+
+// Auditoria estrutural da experiência visível. Ela não considera uma frase na teoria como
+// ensino suficiente: antes do desafio, cada aula precisa explicar, mostrar código executável,
+// pedir uma alteração observável e revisar a habilidade praticada.
+export function auditarProgressaoDaFaculdade() {
+  const problemas = [];
+  const ids = new Set(aulasDaFaculdade.map(({ id }) => id));
+
+  for (const aula of aulasDaFaculdade) {
+    const ensino = ensinoDaFaculdade[aula.id];
+    if (!ensino) {
+      problemas.push(`${aula.id}: sem guia de aprendizagem`);
+      continue;
+    }
+    if (!ensino.objetivo?.trim() || ensino.passos.length < 3
+      || ensino.passos.some(({ explicacao }) => String(explicacao).trim().length < 80)) {
+      problemas.push(`${aula.id}: fase explicar incompleta`);
+    }
+    if (!ensino.codigo?.trim() || ensino.passos.some(({ codigo }) => !String(codigo).trim())) {
+      problemas.push(`${aula.id}: fase exemplificar incompleta`);
+    }
+    if (!ensino.treino?.antes?.trim()
+      || !ensino.codigo.includes(ensino.treino.antes)
+      || ensino.treino.antes === ensino.treino.depois
+      || !ensino.treino.depois?.trim()
+      || !ensino.treino.saida?.trim()) {
+      problemas.push(`${aula.id}: fase praticar incompleta`);
+    }
+    if (!ensino.revisao?.pergunta?.trim()
+      || ensino.revisao.opcoes?.length < 3
+      || !ensino.revisao.opcoes[ensino.revisao.resposta]?.trim()
+      || !ensino.revisao.explicacao?.trim()) {
+      problemas.push(`${aula.id}: fase revisar incompleta`);
+    }
+    if (!aula.desafio?.trim() || !aula.starter?.trim() || !aula.esperado?.trim()
+      || !aula.requisitosCodigo?.length) {
+      problemas.push(`${aula.id}: desafio sem evidência verificável`);
+    }
+  }
+
+  for (const unidade of unidades) {
+    const aulas = aulasDaFaculdade.filter((aula) => aula.unidade === unidade.id);
+    if (aulas.length !== 4) problemas.push(`${unidade.id}: esperava 4 aulas, encontrou ${aulas.length}`);
+  }
+  if (ids.size !== aulasDaFaculdade.length) problemas.push('ids de aula duplicados');
+  return problemas;
+}

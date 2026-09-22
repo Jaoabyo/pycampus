@@ -69,8 +69,8 @@ export const aulasDaFaculdade = [
     'As quatro notas chegaram como texto. Converta cada uma para número, calcule a média e mostre exatamente “Media: 7.0”.',
     ['nota_1 = "6"', 'nota_2 = "7"', 'nota_3 = "7"', 'nota_4 = "8"', '# Converta, calcule a media e mostre o resultado', ''].join('\n'),
     'Media: 7.0',
-    'Qual tipo input() devolve antes de qualquer conversão?',
-    ['str, mesmo quando a pessoa digita números', 'int, sempre que há apenas algarismos', 'float, porque notas podem ter casas decimais'], 0,
+    'Por que usamos float(nota_1) antes de calcular a média?',
+    ['Para transformar o texto da nota em número e permitir a conta', 'Para mostrar a nota automaticamente', 'Para manter a nota como texto'], 0,
     { naFormacao: ['Olá, Python', 'Variáveis e memória', 'Tipos e conversões', 'Entrada de dados'], origem: 'Unidade 1 · Aula 1',
       requisitosCodigo: [
         regra('conversao', 'converter as notas com int() ou float()', /\b(?:int|float)\s*\(/),

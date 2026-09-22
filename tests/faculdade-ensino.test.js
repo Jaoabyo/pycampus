@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { localHelp } from '../src/mentor.js';
-import { ensinoDaFaculdade, matrizDeEnsinoDasEntregas } from '../src/faculdade-ensino.js';
+import { auditarProgressaoDaFaculdade, ensinoDaFaculdade, matrizDeEnsinoDasEntregas } from '../src/faculdade-ensino.js';
 import {
   aulasDaFaculdade,
   requisitosFaltandoDaFaculdade,
@@ -29,6 +29,10 @@ test('cada aula tem preparação explicada e uma alteração guiada antes do des
   }
   assert.doesNotMatch(ensinoDaFaculdade.u1a1.revisao.pergunta, /input/);
   assert.match(ensinoDaFaculdade.u1a1.codigo, /float\(nota_a\)/);
+});
+
+test('nenhum desafio cobra antes de explicar, exemplificar, praticar e revisar', () => {
+  assert.deepEqual(auditarProgressaoDaFaculdade(), []);
 });
 
 test('cada conceito obrigatório das entregas aponta para ensino, exemplo, alteração e cobrança', () => {
