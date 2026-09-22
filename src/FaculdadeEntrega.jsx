@@ -568,6 +568,50 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
             <section className="entrega-exportar card">
               <div className="entrega-section-head"><div><div className="eyebrow">ARQUIVOS DA ENTREGA</div><h2>Revise antes de enviar ao AVA</h2></div></div>
               <p>O PyCampus prepara os arquivos, mas não envia por você. Abra cada um, execute o notebook no Colab e confira se o PDF ficou abaixo de 10 MB.</p>
+              {/* O roteiro pede "um print do código executado pelo menos uma vez". O PyCampus
+                  não fotografa a tela do estudante, então ele anexa a própria captura. */}
+              <div className="entrega-capturas">
+                <div className="entrega-section-head">
+                  <div>
+                    <div className="eyebrow">PRINT EXIGIDO PELO ROTEIRO</div>
+                    <h3>Anexe a captura do código executado</h3>
+                  </div>
+                </div>
+                <p className="small">
+                  No Windows, use <strong>Win + Shift + S</strong>, recorte a área com o código e a
+                  saída, e escolha o arquivo aqui. Ele entra na primeira página do PDF.
+                </p>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  multiple
+                  aria-label="Anexar print do código executado"
+                  onChange={anexarCapturas}
+                />
+                {trabalho.capturas.length > 0 && (
+                  <div className="entrega-capturas-lista">
+                    {trabalho.capturas.map((captura, indice) => (
+                      <figure key={captura.slice(-32)}>
+                        <img src={captura} alt={`Print anexado ${indice + 1}`} />
+                        <figcaption>
+                          <button type="button" onClick={() => removerCaptura(indice)}>
+                            <Icon name="Trash2" size={14} aria-hidden="true" /> Remover
+                          </button>
+                        </figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                )}
+                {trabalho.capturas.length === 0 && (
+                  <div className="entrega-aviso">
+                    <Icon name="TriangleAlert" size={18} aria-hidden="true" />
+                    <p>
+                      Sem o print, o PDF sai com o código em texto — o que o roteiro pede é uma
+                      captura de tela da execução.
+                    </p>
+                  </div>
+                )}
+              </div>
               {/* O nome e o RA vão impressos no arquivo que o professor recebe. Ficavam como
                   "Preencher antes do envio", o que sairia assim no PDF entregue. */}
               <div className="entrega-identificacao">
@@ -622,55 +666,12 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                   <p>Este endereço não parece ser do Google Colab. Confira antes de gerar o PDF.</p>
                 </div>
               )}
-              {/* O roteiro pede "um print do código executado pelo menos uma vez". O PyCampus
-                  não fotografa a tela do estudante, então ele anexa a própria captura. */}
-              <div className="entrega-capturas">
-                <div className="entrega-section-head">
-                  <div>
-                    <div className="eyebrow">PRINT EXIGIDO PELO ROTEIRO</div>
-                    <h3>Anexe a captura do código executado</h3>
-                  </div>
-                </div>
-                <p className="small">
-                  No Windows, use <strong>Win + Shift + S</strong>, recorte a área com o código e a
-                  saída, e escolha o arquivo aqui. Ele entra na primeira página do PDF.
-                </p>
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg"
-                  multiple
-                  aria-label="Anexar print do código executado"
-                  onChange={anexarCapturas}
-                />
-                {trabalho.capturas.length > 0 && (
-                  <div className="entrega-capturas-lista">
-                    {trabalho.capturas.map((captura, indice) => (
-                      <figure key={captura.slice(-32)}>
-                        <img src={captura} alt={`Print anexado ${indice + 1}`} />
-                        <figcaption>
-                          <button type="button" onClick={() => removerCaptura(indice)}>
-                            <Icon name="Trash2" size={14} aria-hidden="true" /> Remover
-                          </button>
-                        </figcaption>
-                      </figure>
-                    ))}
-                  </div>
-                )}
-                {trabalho.capturas.length === 0 && (
-                  <div className="entrega-aviso">
-                    <Icon name="TriangleAlert" size={18} aria-hidden="true" />
-                    <p>
-                      Sem o print, o PDF sai com o código em texto — o que o roteiro pede é uma
-                      captura de tela da execução.
-                    </p>
-                  </div>
-                )}
-              </div>
               {!identificado && (
                 <div className="entrega-aviso">
                   <Icon name="TriangleAlert" size={18} aria-hidden="true" />
                   <p>
-                    Preencha o nome e o RA para liberar o download. Sem eles o arquivo sairia com
+                    Preencha <strong>{nomeDoEstudante.length >= 3 ? 'a identificação (RA)' : 'o nome e a identificação (RA)'}</strong>{' '}
+                    nos campos logo acima para liberar o download. Sem eles o arquivo sairia com
                     “Preencher antes do envio” impresso no lugar da sua identificação — e é por
                     ela que o professor sabe de quem é o trabalho.
                   </p>
