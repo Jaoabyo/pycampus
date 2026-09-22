@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   entregasDaFaculdade,
   entregaDaFaculdade,
@@ -132,4 +133,16 @@ test('prática local da U4 ensina o pipeline sem fingir que é TensorFlow', () =
   assert.match(pratica.aviso, /não é uma rede neural/i);
   assert.doesNotMatch(pratica.codigo, /tensorflow|sklearn/i);
   for (const termo of ['treino', 'teste', 'normalizar', 'prever', 'acuracia']) assert.match(pratica.codigo, new RegExp(termo, 'i'));
+});
+
+test('a jornada de navegador cobre entrega, download, Colab e recuperação 6/16', () => {
+  const fonte = readFileSync(new URL('../scripts/check-faculdade-entregas.mjs', import.meta.url), 'utf8');
+  for (const evidencia of [
+    'entrega-u1',
+    'waitForEvent(\'download\')',
+    'waitForEvent(\'popup\')',
+    'entrega-u4',
+    '6 de 16 aulas',
+    'faculdade-entrega:',
+  ]) assert.match(fonte, new RegExp(evidencia.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 });

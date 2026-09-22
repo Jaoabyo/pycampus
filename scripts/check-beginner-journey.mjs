@@ -156,8 +156,8 @@ await page.getByText('TRILHA ACADÊMICA INTEGRADA').waitFor();
 await page.locator('.faculdade-unidades-resumo details').first().locator('summary').click();
 assert.equal(
   await page.locator('.faculdade-unidades-resumo details').first().locator('li').count(),
-  5,
-  'a formação deve mostrar as quatro aulas e o projeto da primeira unidade',
+  6,
+  'a formação deve mostrar as quatro aulas, o miniprojeto e a entrega da primeira unidade',
 );
 await page.screenshot({
   path: join(tmpdir(), 'pycampus-formacao-mobile.png'),
@@ -167,7 +167,7 @@ await page
   .getByRole('navigation', { name: 'Atalhos principais' })
   .getByRole('button', { name: 'Projetos', exact: true })
   .click();
-await page.getByText('PROJETOS DA DISCIPLINA').waitFor();
+await page.getByText('TRABALHOS OFICIAIS · PRAZO 27 DE SETEMBRO').waitFor();
 assert.equal(
   await page.locator('.faculdade-projeto-resumo').count(),
   4,
