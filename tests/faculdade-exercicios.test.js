@@ -21,7 +21,11 @@ test('toda questão tem cinco alternativas, uma correta e o motivo por escrito',
       assert.ok(questao.resposta >= 0 && questao.resposta < 5, `${questao.id} aponta fora da lista`);
       // Sem o motivo, isto seria só um gabarito — e gabarito não ensina.
       assert.ok(questao.porque.length > 80, `${questao.id} precisa explicar por que a certa é certa`);
-      assert.ok(questao.enunciado.trim().endsWith('?'), `${questao.id} precisa perguntar algo`);
+      // O AVA mistura pergunta e ordem — "Selecione a alternativa que corresponde a…". Os dois
+      // servem; o que não serve é um enunciado que não peça nada.
+      const enunciado = questao.enunciado.trim();
+      assert.ok(enunciado.endsWith('?') || /^(Selecione|Assinale|Indique|Marque|Escolha)\b/.test(enunciado),
+        `${questao.id} precisa perguntar ou mandar escolher`);
     }
   }
 });
@@ -40,7 +44,7 @@ test('a alternativa correta não fica sempre na mesma posição', () => {
 // Confundir as duas coisas seria apresentar material de estudo como prova oficial.
 test('a procedência de cada banco fica declarada', () => {
   const recebidos = exerciciosDaFaculdade.filter(e => e.recebido);
-  assert.deepEqual(recebidos.map(e => e.unidade), ['u1', 'u2']);
+  assert.deepEqual(recebidos.map(e => e.unidade), ['u1', 'u2', 'u3']);
   for (const exercicio of exerciciosDaFaculdade) {
     assert.ok(exercicio.origem?.length > 10, `${exercicio.id} precisa dizer de onde veio`);
     assert.equal(exercicio.recebido, exercicio.origem.includes('recebido no AVA'),
@@ -76,4 +80,19 @@ test('o exercício da Unidade 2 mantém as questões e o gabarito recebidos', ()
   // my_array[2] vale 3 porque o índice começa em 0. O código precisa estar à vista.
   assert.ok(u2.questoes[1].codigo.includes('my_array = np.array([1, 2, 3, 4, 5])'));
   assert.ok(u2.questoes[1].codigo.includes('my_array[2]'));
+});
+
+// As cinco questões da Unidade 3, também recebidas no AVA.
+test('o exercício da Unidade 3 mantém as questões e o gabarito recebidos', () => {
+  const u3 = exercicioDaUnidade('u3');
+  assert.deepEqual(u3.questoes.map(questao => questao.id), ['u3q1', 'u3q2', 'u3q3', 'u3q4', 'u3q5']);
+  const marcada = questao => questao.opcoes[questao.resposta];
+  assert.match(marcada(u3.questoes[0]), /"data"/);
+  assert.equal(marcada(u3.questoes[1]), 'plot()');
+  assert.match(marcada(u3.questoes[2]), /Data Manipulation Language/);
+  assert.match(marcada(u3.questoes[3]), /Chaves do dicionário/);
+  assert.equal(marcada(u3.questoes[4]), 'df_selic.loc[2]');
+  // A terceira linha é loc[2] porque o índice começa em zero; o código precisa estar à vista.
+  assert.ok(u3.questoes[1].codigo.includes("kind='bar'"));
+  assert.ok(u3.questoes[3].codigo.includes("'A': 100"));
 });

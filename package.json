@@ -22,13 +22,14 @@
     "test:visual": "node scripts/check-visual-experience.mjs",
     "test:abas": "node scripts/check-all-tabs.mjs",
     "test:projetos": "node scripts/check-guided-projects.mjs",
-    "verificar": "npm test && npm run test:curriculum && npm run test:estudo && npm run test:lumi-chat && npm run test:projetos && npm run test:visual && npm run test:abas && npm run test:faculdade && npm run test:jornada",
+    "verificar": "npm test && npm run auditar:ementa && npm run test:curriculum && npm run test:estudo && npm run test:lumi-chat && npm run test:projetos && npm run test:visual && npm run test:abas && npm run test:faculdade && npm run test:jornada",
     "lumi:fixo": "node scripts/lumi-fixo.mjs",
     "auditar:perguntas": "node scripts/auditar-perguntas.mjs",
     "test:faculdade": "node scripts/check-faculdade.mjs",
     "test:iniciante": "node scripts/check-beginner-journey.mjs",
     "test:revisao": "node scripts/check-review-queue.mjs",
-    "test:bundle": "node scripts/check-bundle-size.mjs"
+    "test:bundle": "node scripts/check-bundle-size.mjs",
+    "auditar:ementa": "node scripts/auditar-ementa.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

@@ -6,9 +6,9 @@
 // engana de verdade, o motivo de a errada parecer certa. Reconhecer a alternativa não é o
 // objetivo — o objetivo é a prova presencial, onde não há alternativa nenhuma.
 //
-// Procedência: as Unidades 1 e 2 reproduzem as questões que o estudante recebeu no AVA. As
-// Unidades 3 e 4 foram escritas a partir das apostilas, no mesmo formato, porque o exercício
-// delas ainda não foi aberto. O campo `recebido` separa os dois casos e a tela mostra essa
+// Procedência: as Unidades 1, 2 e 3 reproduzem as questões que o estudante recebeu no AVA. A
+// Unidade 4 foi escrita a partir da apostila, no mesmo formato, porque o exercício dela ainda
+// não foi aberto. O campo `recebido` separa os dois casos e a tela mostra essa
 // diferença: material de estudo não pode se passar por prova recebida.
 
 const q = (id, enunciado, opcoes, resposta, porque, codigo = null) =>
@@ -104,47 +104,33 @@ export const exerciciosDaFaculdade = [
 
   {
     id: 'ex-u3', unidade: 'u3', titulo: 'Exercício da Unidade 3',
-    origem: 'Escrito a partir da apostila da Unidade 3', recebido: false,
+    origem: 'Exercício de unidades · recebido no AVA', recebido: true,
     questoes: [
-      q('u3q1', 'O comando CREATE TABLE pertence a qual categoria de instruções SQL?',
-        ['DML, porque manipula os dados guardados nas tabelas',
-          'DDL, porque define e altera a estrutura do banco de dados',
-          'DCL, porque controla as permissões de acesso',
-          'DQL, porque devolve dados para o programa',
-          'Nenhuma: CREATE TABLE não é uma instrução SQL'], 1,
-        'DDL é Data Definition Language e define estrutura: CREATE, ALTER e DROP. DML manipula dados: SELECT, INSERT, UPDATE e DELETE. DCL cuida de permissão: GRANT e REVOKE. Criar uma tabela é definir estrutura, então é DDL.'),
+      q('u3q1', 'Qual é o principal parâmetro usado para criar uma série no pandas, que pode conter um único valor, uma lista de valores ou um dicionário?',
+        ['Parâmetro "dtype"', 'Parâmetro "name"', 'Parâmetro "index"', 'Parâmetro "data"', 'Parâmetro "shape"'], 3,
+        'data é o que a Series guarda, e é o único sem valor-padrão: sem ele não há série. index, dtype e name existem e são opcionais — index nomeia as posições, dtype força o tipo e name batiza a série. shape não é parâmetro de criação: é um atributo que informa o formato depois de pronta.'),
 
-      q('u3q2', 'Por que conn.commit() é necessário depois de um INSERT no sqlite3?',
-        ['Porque ele confirma a transação e grava as alterações no arquivo do banco',
-          'Porque ele fecha a conexão com o banco de dados',
-          'Porque ele cria o cursor usado para executar o comando',
-          'Porque ele converte o resultado em uma lista de tuplas',
-          'Porque ele apaga os dados anteriores da tabela'], 0,
-        'Sem commit, a inserção fica só na transação aberta e se perde quando o programa termina. Fechar a conexão é conn.close(), criar o cursor é conn.cursor(), e trazer o resultado como lista de tuplas é cursor.fetchall().'),
+      q('u3q2', 'No exemplo fornecido, qual método é usado para criar visualizações gráficas com base nos dados em um DataFrame do pandas?',
+        ['visualize()', 'plot()', 'create_chart()', 'show_graph()', 'display_chart()'], 1,
+        'plot() vem embutido no DataFrame e na Series, construído sobre o Matplotlib. O parâmetro kind escolhe o desenho: bar para barras, pie para pizza, line para linhas. Os outros quatro nomes não existem no pandas — são invenções plausíveis, que é justamente o que um bom distrator faz.',
+        ['import pandas as pd', '', 'dados = {', "    'Produto': ['A', 'B', 'C'],", "    'qtde_vendida': [33, 50, 45]", '}', 'df = pd.DataFrame(dados)', "df.plot(x='Produto', y='qtde_vendida', kind='bar')", "df.plot(x='Produto', y='qtde_vendida', kind='pie')", "df.plot(x='Produto', y='qtde_vendida', kind='line')"].join('\n')),
 
-      q('u3q3', 'O que df.drop_duplicates(keep="last", inplace=True) faz em um DataFrame?',
-        ['Remove as linhas repetidas mantendo a última ocorrência e salva a mudança no próprio DataFrame',
-          'Remove as colunas repetidas e devolve um DataFrame novo',
-          'Mantém apenas as linhas repetidas e descarta as demais',
-          'Ordena o DataFrame e remove os valores nulos',
-          'Cria uma cópia do DataFrame sem alterar o original'], 0,
-        'São dois parâmetros e cada um decide uma coisa. keep="last" escolhe qual das cópias sobrevive — a última. inplace=True sobrescreve o objeto na memória em vez de devolver um novo, e é por isso que a atribuição não é necessária. Com inplace=False, o original ficaria intacto.'),
+      q('u3q3', 'Selecione a alternativa que corresponde a uma das categorias principais das instruções em SQL.',
+        ['Lógica de Consulta (Query Logic)',
+          'Linguagem de Relatórios (Reporting Language)',
+          'Linguagem de Administração (Administration Language)',
+          'Linguagem de Controle (Control Language)',
+          'Linguagem de Manipulação de Dados (Data Manipulation Language)'], 4,
+        'As três categorias são DDL (Data Definition Language), DML (Data Manipulation Language) e DCL (Data Control Language). A DML é a que aparece aqui com o nome exato — é a das instruções SELECT, INSERT, UPDATE e DELETE. Atenção à quarta alternativa: "Linguagem de Controle (Control Language)" chega perto da DCL, mas a categoria se chama Data Control Language, e as outras três são nomes inventados.'),
 
-      q('u3q4', 'No barplot do Seaborn, o que o parâmetro estimator define?',
-        ['A cor das barras do gráfico',
-          'A quantidade de barras que cabem na figura',
-          'A ordem das categorias no eixo X',
-          'O tamanho da fonte dos rótulos',
-          'A conta que cada barra representa: a média por padrão, ou sum, ou len'], 4,
-        'É o parâmetro que mais muda a conclusão do gráfico. Com a média, dois grupos podem parecer equivalentes; com sum, um deles parece gastar muito mais; com len você descobre que ele apenas tem mais observações. Por isso a apostila insiste: a barra mais alta não fala sozinha, é preciso saber que conta ela representa.'),
+      q('u3q4', 'No exemplo apresentado, em que uma Series é criada a partir de um dicionário, o que se tornam os índices da Series?',
+        ['Valores numéricos', 'Códigos de cores', 'Nomes dos valores', 'Chaves do dicionário', 'Posições numéricas'], 3,
+        'As chaves viram os rótulos das linhas e os valores viram os dados: A, B, C, D e E de um lado; 100, 200, 300, 400 e 500 do outro. É a diferença para uma Series criada a partir de lista, em que o pandas gera sozinho um índice de posições numéricas — 0, 1, 2 e assim por diante.',
+        ['import pandas as pd', '', '# Criando um dicionário com pares chave-valor', "data = {'A': 100, 'B': 200, 'C': 300, 'D': 400, 'E': 500}", '', '# Criando uma Series a partir do dicionário', 'series2 = pd.Series(data)', '', 'print(series2)', '', '# resultado', '# A    100', '# B    200', '# C    300', '# D    400', '# E    500', '# dtype: int64'].join('\n')),
 
-      q('u3q5', 'O que o teste booleano df[df["preco"] > 50] devolve?',
-        ['Apenas as linhas em que a coluna preco é maior que 50',
-          'A quantidade de linhas com preco maior que 50',
-          'O DataFrame com os preços menores que 50 trocados por 50',
-          'O DataFrame ordenado pela coluna preco',
-          'Uma lista com todos os valores da coluna preco'], 0,
-        'A comparação de dentro produz uma Series de True e False, uma marca por linha. Usada entre colchetes, ela filtra: só as linhas marcadas como True permanecem, e o resultado continua sendo um DataFrame. Para contar as linhas você usaria len() ou .shape em cima desse resultado.')
+      q('u3q5', 'Como você utilizaria o método loc para acessar as informações referentes à terceira linha do DataFrame df_selic?',
+        ['df_selic.loc[2]', 'df_selic.loc[3]', 'df_selic.loc[0]', 'df_selic.loc[[0, 2, 3]]', 'df_selic.loc[70]'], 0,
+        'O índice começa em 0: a primeira linha é loc[0], a segunda é loc[1] e a terceira é loc[2]. Marcar loc[3] é o engano de contar as linhas a partir de 1 — ele traria a quarta. E loc[[0, 2, 3]], com lista dentro dos colchetes, devolve várias linhas de uma vez, não uma. Um detalhe que vale para a prova: loc busca pelo RÓTULO do índice, não pela posição. Aqui os dois coincidem porque o df_selic tem o índice numérico padrão, começando em 0. Quando o índice é outro — nomes, datas — quem busca por posição é o iloc.')
     ]
   },
 
