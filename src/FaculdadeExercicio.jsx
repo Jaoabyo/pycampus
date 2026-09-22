@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Icon } from './ui.jsx';
 import { localDate } from './progress.js';
+import { registrarResposta } from './faculdade-revisao.js';
 import './lesson.css';
 import './practice.css';
 import './faculdade.css';
@@ -8,8 +9,8 @@ import './faculdade.css';
 // O exercício de unidade, no formato do AVA — mas com o motivo aparecendo depois da escolha.
 //
 // Registrar exige acertar as cinco, e a resposta pode ser trocada depois de ler a explicação.
-// A intenção não é a nota: é chegar à prova presencial sabendo por que a alternativa certa é
-// certa, num lugar onde nenhuma alternativa vai estar escrita.
+// A intenção não é a nota: é chegar à prova presencial — também de múltipla escolha — sabendo
+// por que a alternativa certa é certa, e não só reconhecendo uma resposta já vista.
 
 export default function ExercicioDaFaculdade({ exercicio, state, update, voltar, feito }) {
   const [respostas, setRespostas] = useState({});
@@ -26,6 +27,11 @@ export default function ExercicioDaFaculdade({ exercicio, state, update, voltar,
 
   const escolher = (opcao) => {
     setAviso('');
+    // A primeira escolha em cada questão vai para a revisão espaçada. Antes as respostas
+    // erradas daqui sumiam — justamente as que mais valia rever antes da prova.
+    if (respostas[questao.id] === undefined) {
+      update((s) => registrarResposta(s, questao.id, opcao === questao.resposta, localDate()));
+    }
     setRespostas((atual) => ({ ...atual, [questao.id]: opcao }));
   };
 

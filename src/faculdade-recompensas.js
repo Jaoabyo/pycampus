@@ -1,6 +1,6 @@
 import { aulasDaFaculdade, unidades } from './faculdade.js';
 import { projetosDaFaculdade } from './faculdade-projetos.js';
-import { exerciciosDaFaculdade } from './faculdade-exercicios.js';
+import { exerciciosResumidos as exerciciosDaFaculdade } from './faculdade-exercicios-ids.js';
 import { entregasDaFaculdade, trabalhoConcluidoDaEntrega } from './faculdade-entregas.js';
 
 export const XP_FACULDADE = Object.freeze({ aula: 100, projeto: 250, exercicio: 300, passo: 25 });

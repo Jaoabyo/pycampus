@@ -22,7 +22,7 @@
     "test:visual": "node scripts/check-visual-experience.mjs",
     "test:abas": "node scripts/check-all-tabs.mjs",
     "test:projetos": "node scripts/check-guided-projects.mjs",
-    "verificar": "npm test && npm run auditar:ementa && npm run auditar:progressao-faculdade && npm run test:curriculum && npm run test:estudo && npm run test:lumi-chat && npm run test:projetos && npm run test:visual && npm run test:abas && npm run test:faculdade && npm run test:entregas-faculdade && npm run test:recompensas-faculdade && npm run test:jornada && npm run test:iniciante && npm run build && npm run test:bundle",
+    "verificar": "npm test && npm run auditar:ementa && npm run auditar:progressao-faculdade && npm run test:curriculum && npm run test:estudo && npm run test:lumi-chat && npm run test:projetos && npm run test:visual && npm run test:abas && npm run test:faculdade && npm run test:entregas-faculdade && npm run test:recompensas-faculdade && npm run test:preparo-faculdade && npm run test:jornada && npm run test:iniciante && npm run build && npm run test:bundle",
     "lumi:fixo": "node scripts/lumi-fixo.mjs",
     "auditar:perguntas": "node scripts/auditar-perguntas.mjs",
     "test:faculdade": "node scripts/check-faculdade.mjs",
@@ -32,7 +32,8 @@
     "test:revisao": "node scripts/check-review-queue.mjs",
     "test:bundle": "node scripts/check-bundle-size.mjs",
     "auditar:ementa": "node scripts/auditar-ementa.mjs",
-    "auditar:progressao-faculdade": "node scripts/auditar-progressao-faculdade.mjs"
+    "auditar:progressao-faculdade": "node scripts/auditar-progressao-faculdade.mjs",
+    "test:preparo-faculdade": "node scripts/check-faculdade-preparo.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",

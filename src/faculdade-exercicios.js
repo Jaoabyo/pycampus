@@ -3,8 +3,9 @@
 //
 // A diferença para o AVA é o campo `porque`. Lá a nota aparece e o assunto acaba; aqui a
 // explicação vem depois da resposta, com o motivo de a certa estar certa e, quando o distrator
-// engana de verdade, o motivo de a errada parecer certa. Reconhecer a alternativa não é o
-// objetivo — o objetivo é a prova presencial, onde não há alternativa nenhuma.
+// engana de verdade, o motivo de a errada parecer certa. A prova presencial também é de
+// múltipla escolha, então o formato é o certo — o que falta no AVA é saber por que a certa é
+// certa, e é isso que decide quando dois distratores parecem plausíveis.
 //
 // Procedência: as Unidades 1, 2 e 3 reproduzem as questões que o estudante recebeu no AVA. A
 // Unidade 4 foi escrita a partir da apostila, no mesmo formato, porque o exercício dela ainda

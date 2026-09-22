@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { solucoesDaFaculdade } from '../tests/faculdade-reference.js';
+import { ensinoDaFaculdade } from '../src/faculdade-ensino.js';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -123,7 +124,8 @@ await desafio
 await page
   .getByText('Saída correta. Agora responda à revisão para registrar a aula.')
   .waitFor({ timeout: 120000 });
-await page.getByRole('radio').first().check();
+// A certa não fica mais sempre em A: as alternativas giram. Escolhe-se pelo texto certo.
+await page.getByRole('radio', { name: ensinoDaFaculdade.u1a1.revisao.opcoes[ensinoDaFaculdade.u1a1.revisao.resposta] }).check();
 await page.getByRole('button', { name: 'Registrar esta aula' }).click();
 const academicCelebration = page.locator('.celebration-dialog[open]');
 await academicCelebration.waitFor();

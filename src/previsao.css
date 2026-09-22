@@ -1,0 +1,9 @@
+/* O palpite fica logo acima do botão de executar, onde a decisão acontece. */
+.previsao-saida{display:grid;gap:8px;margin:0 0 12px;padding:12px 14px;border:1px dashed #cdbbf1;border-radius:12px;background:#fbf9ff}
+.previsao-campo{display:grid;gap:6px}
+.previsao-campo>span{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#5b4795}
+.previsao-campo textarea{width:100%;min-height:52px;resize:vertical;padding:9px 11px;border:1px solid #e3d8f4;border-radius:9px;background:#fff;font-family:Consolas,'Courier New',monospace;font-size:13px}
+.previsao-saida>.text-button{justify-self:start;font-size:12.5px}
+.previsao-veredito{display:flex;align-items:flex-start;gap:7px;margin:0;font-size:13px;line-height:1.55;color:#665a76}
+.previsao-veredito.acertou{color:#2f8d72}
+.previsao-veredito.errou{color:#b0555f}

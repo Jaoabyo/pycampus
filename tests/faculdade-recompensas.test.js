@@ -142,3 +142,14 @@ test('revisar código após concluir mantém conquista, XP e unidade completa no
   assert.equal(progressoDaUnidade(state, 'u1').concluida, true);
   assert.equal(xpTotal(mergeProgress(initialState(), state)), earned);
 });
+
+// A lista leve existe para o banco completo não entrar no carregamento inicial. Se as duas
+// divergirem, um exercício novo não valeria XP nem sobreviveria ao backup.
+test('a lista leve dos exercícios diz o mesmo que o banco completo', async () => {
+  const { exerciciosDaFaculdade } = await import('../src/faculdade-exercicios.js');
+  const { exerciciosResumidos } = await import('../src/faculdade-exercicios-ids.js');
+  assert.deepEqual(
+    exerciciosResumidos.map(({ id, unidade, titulo }) => ({ id, unidade, titulo })),
+    exerciciosDaFaculdade.map(({ id, unidade, titulo }) => ({ id, unidade, titulo })),
+  );
+});

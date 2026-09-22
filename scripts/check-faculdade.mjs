@@ -234,9 +234,12 @@ await page.locator('.faculdade-mapa-aula').first().click();
 await page
   .getByText('Ampliar: conceitos e exemplo completo do material')
   .click();
-await page
-  .getByRole('button', { name: 'Executar exemplo', exact: true })
-  .click();
+// Executar exige um palpite antes: prever a saída é o exercício de leitura de código.
+const executarExemplo = page.getByRole('button', { name: 'Executar exemplo', exact: true });
+assert.equal(await executarExemplo.isDisabled(), true, 'o exemplo só roda depois do palpite');
+await page.getByLabel(/o que este código vai mostrar/).first().fill('um palpite qualquer');
+await executarExemplo.click();
+await page.locator('.previsao-veredito').first().waitFor({ timeout: 120000 });
 await page
   .locator('.code-workspace')
   .first()

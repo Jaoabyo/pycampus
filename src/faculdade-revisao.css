@@ -1,0 +1,28 @@
+/* Revisão e simulado reaproveitam o cartão do exercício de unidade (faculdade.css); aqui fica
+   só o que é próprio deles: a configuração, o cronômetro e o resultado por unidade. */
+.revisao-vazia,.revisao-resultado,.simulado-config,.simulado-resultado{padding:26px}
+.revisao-vazia>svg{color:#2f9277}
+.revisao-vazia h2,.revisao-resultado h2,.simulado-config h2,.simulado-resultado h2{margin:8px 0 10px}
+.revisao-vazia p,.revisao-resultado p,.simulado-config p,.simulado-resultado p{max-width:72ch;line-height:1.65}
+.simulado-opcoes{border:0;padding:0;margin:18px 0 0;display:grid;gap:8px}
+.simulado-opcoes legend{font-size:12px;font-weight:700;color:#5b4795;margin-bottom:6px}
+.simulado-relogio{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums;font-weight:700;color:#5b4795}
+.exercicio-bolha.respondida{background:#ede6fb;color:#5b3fb0;border-color:#cdbbf1}
+.simulado-unidades{display:grid;gap:10px;margin:18px 0}
+.simulado-unidades>div{display:grid;grid-template-columns:90px 1fr 44px;align-items:center;gap:12px;font-size:13px}
+.simulado-unidades strong{text-align:right;font-variant-numeric:tabular-nums}
+.simulado-erro{margin-top:14px}
+.simulado-erro .exercicio-porque p{margin:0}
+.preparo-prova{padding:22px}
+.preparo-prova h3{margin:6px 0 8px}
+.preparo-prova-acoes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.preparo-prova-acoes>button{display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;border:1px solid #e3d8f4;border-radius:12px;background:#fff;min-height:64px}
+.preparo-prova-acoes>button:hover{border-color:#c8b2ec;background:#faf7ff}
+.preparo-prova-acoes>button>span{display:flex;flex-direction:column;flex:1}
+.preparo-prova-acoes strong{font-size:14px;color:#3d2f4d}
+.preparo-prova-acoes small{font-size:12px;color:#7d7390}
+.preparo-prova-acoes>button>svg:first-child{color:#7043bd}
+@media(max-width:760px){.preparo-prova-acoes{grid-template-columns:1fr}.simulado-unidades>div{grid-template-columns:78px 1fr 40px}}
+/* No simulado o mapa de bolinhas fica logo acima do enunciado; sem este respiro o nome da
+   unidade encostava nelas e parecia parte do mapa. */
+.questao-origem{margin-top:18px}

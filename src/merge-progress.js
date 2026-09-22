@@ -3,6 +3,7 @@ import { HISTORY_LIMIT } from './history.js';
 import { practiceAchievement, practiceProjects } from './practice-content.js';
 import { mergeLumiNotes } from './lumi-notes.js';
 import { entregasDaFaculdade, juntarTrabalhosDaEntrega } from './faculdade-entregas.js';
+import { juntarRevisao, juntarSimulados } from './faculdade-revisao-estado.js';
 
 // Estudar no celular e no computador cria duas jornadas separadas, e importar um backup
 // substituía uma pela outra — apagando o que foi feito no outro aparelho. Aqui elas se juntam.
@@ -70,6 +71,8 @@ export function mergeProgress(atual, entrada) {
   base.joined = maisCedo(atual.joined, entrada.joined) || atual.joined;
   base.ultimoRelatorio = maisTarde(atual.ultimoRelatorio, entrada.ultimoRelatorio);
   base.provas = [...(entrada.provas || []), ...(atual.provas || [])].slice(-20);
+  base.revisaoFaculdade = juntarRevisao(atual.revisaoFaculdade, entrada.revisaoFaculdade);
+  base.simuladosFaculdade = juntarSimulados(atual.simuladosFaculdade, entrada.simuladosFaculdade);
 
   base.activities = {};
   for (const dia of chaves(atual.activities, entrada.activities)) {

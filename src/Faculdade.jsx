@@ -25,6 +25,10 @@ import { ErrorHelp, OutputCompare } from './RunFeedback.jsx';
 import Mentor from './Mentor.jsx';
 import FaculdadeGuia from './FaculdadeGuia.jsx';
 import ExercicioDaFaculdade from './FaculdadeExercicio.jsx';
+import FaculdadeRevisao from './FaculdadeRevisao.jsx';
+import PrevisaoDaSaida, { previsaoLiberada } from './PrevisaoDaSaida.jsx';
+import { resumoDaRevisao, registrarResposta } from './faculdade-revisao.js';
+import { girarAlternativas } from './faculdade-questoes.js';
 import { ensinoDaFaculdade } from './faculdade-ensino.js';
 import { projetosDaFaculdade } from './faculdade-projetos.js';
 import { exercicioDaUnidade } from './faculdade-exercicios.js';
@@ -36,6 +40,7 @@ import './project-studio.css';
 import './faculdade.css';
 import './experience.css';
 import './faculdade-mapa.css';
+import './faculdade-revisao.css';
 
 // A trilha da disciplina da faculdade, fora das oito etapas e sem trava: o semestre não espera
 // o estudante terminar 48 aulas. A faculdade soma XP e conta o dia de estudo;
@@ -53,6 +58,8 @@ export default function Faculdade({
 }) {
   const [aberta, setAberta] = useState(() => itemDaFaculdade(initialItemId));
   const [exercicio, setExercicio] = useState(null);
+  // 'revisao' | 'simulado' | null — a preparação para a prova abre por cima da página.
+  const [preparo, setPreparo] = useState(null);
   const recompensas = recompensasDaFaculdade(state);
   const progressoUnidades = unidades.map(u => progressoDaUnidade(state, u.id, recompensas));
   const concluidas = progressoUnidades.filter(u => u.concluida).map(u => u.id).join(',');
@@ -64,6 +71,30 @@ export default function Faculdade({
     if (item) setAberta(item);
   }, [initialItemId]);
   const feitas = state.faculdade?.feitas || [];
+  if (preparo)
+    return (
+      <FaculdadeRevisao
+        key={preparo}
+        modo={preparo}
+        state={state}
+        update={update}
+        voltar={() => {
+          irAoTopo();
+          setPreparo(null);
+        }}
+        trocarModo={(modo) => {
+          irAoTopo();
+          setPreparo(modo);
+        }}
+        abrirAula={(id) => {
+          const item = itemDaFaculdade(id);
+          if (!item) return;
+          irAoTopo();
+          setPreparo(null);
+          setAberta(item);
+        }}
+      />
+    );
   if (exercicio)
     return (
       <ExercicioDaFaculdade
@@ -102,6 +133,8 @@ export default function Faculdade({
     (aula) => !feitas.includes(aula.id),
   );
   const proximaAcao = proximaAcaoDaFaculdade(state);
+  const revisaoDeHoje = resumoDaRevisao(state, localDate());
+  const ultimoSimulado = (state.simuladosFaculdade || []).at(-1);
   const plano = planoDeEstudosDaFaculdade(state);
   const proxima = proximaAcao.aula;
   const estudadas = proximaAcao.feitas;
@@ -216,10 +249,20 @@ export default function Faculdade({
           </div>
         </div>
         {plano.hoje.tipo === 'revisao' ? (
-          <p>
-            Hoje é dia de revisão: refaça um desafio sem olhar a resposta e
-            explique o que o código faz.
-          </p>
+          <>
+            <p>
+              Hoje é dia de revisão. Comece pelo que você errou e depois treine no formato da
+              prova: múltipla escolha, com cronômetro.
+            </p>
+            <div className="button-row">
+              <button className="button primary" onClick={() => { irAoTopo(); setPreparo('revisao'); }}>
+                Revisar meus erros <Icon name="ArrowRight" size={16} />
+              </button>
+              <button className="button outline" onClick={() => { irAoTopo(); setPreparo('simulado'); }}>
+                Fazer um simulado
+              </button>
+            </div>
+          </>
         ) : (
           <>
             <p>Para chegar preparado à prova, estude estas aulas hoje:</p>
@@ -258,6 +301,41 @@ export default function Faculdade({
           O último dia fica reservado para revisar. O plano se ajusta sozinho
           quando você registra uma aula.
         </p>
+      </section>
+
+      <section className="card preparo-prova" aria-labelledby="titulo-preparo-prova">
+        <div className="eyebrow">PROVA DE {porExtenso(DATA_PROVA).toUpperCase()} · MÚLTIPLA ESCOLHA</div>
+        <h3 id="titulo-preparo-prova">Treine para a prova com o que você errou</h3>
+        <p className="small">
+          Cada resposta que você dá nos exercícios, nas revisões das aulas e nos simulados fica
+          guardada. O que você erra volta no dia certo de rever, até ficar firme.
+        </p>
+        <div className="preparo-prova-acoes">
+          <button onClick={() => { irAoTopo(); setPreparo('revisao'); }}>
+            <Icon name="RotateCcw" size={20} />
+            <span>
+              <strong>Revisão de hoje</strong>
+              <small>
+                {revisaoDeHoje.pendentes
+                  ? `${revisaoDeHoje.pendentes} ${revisaoDeHoje.pendentes === 1 ? 'questão para rever' : 'questões para rever'}`
+                  : revisaoDeHoje.vistas ? 'Nada vencido hoje · ' + revisaoDeHoje.firmes + ' firmes' : 'Começa quando você responder'}
+              </small>
+            </span>
+            <Icon name="ArrowRight" size={16} />
+          </button>
+          <button onClick={() => { irAoTopo(); setPreparo('simulado'); }}>
+            <Icon name="Clock3" size={20} />
+            <span>
+              <strong>Simulado da prova</strong>
+              <small>
+                {ultimoSimulado
+                  ? `Último: ${ultimoSimulado.acertos} de ${ultimoSimulado.total}`
+                  : '10 ou 20 questões, com cronômetro'}
+              </small>
+            </span>
+            <Icon name="ArrowRight" size={16} />
+          </button>
+        </div>
       </section>
 
       <details className="card como-estudar">
@@ -496,12 +574,17 @@ export default function Faculdade({
 
 function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
   const ensino = ensinoDaFaculdade[aula.guia || aula.id];
-  const revisao = aula.guia
-    ? { ...aula, explicacao: aula.explicacao }
-    : ensino.revisao;
+  // A certa vinha sempre em A nas revisões das aulas e dos miniprojetos. Girar as alternativas
+  // pelo id mantém a ordem estável entre visitas sem deixar a letra certa previsível.
+  const idDaQuestao = aula.guia ? `projeto:${aula.id}` : `aula:${aula.id}`;
+  const revisao = girarAlternativas({
+    id: idDaQuestao,
+    ...(aula.guia ? { ...aula, explicacao: aula.explicacao } : ensino.revisao),
+  });
   const guardado = state.faculdade?.codigos?.[aula.id];
   const [saidaOk, setSaidaOk] = useState(false);
   const [resposta, setResposta] = useState(null);
+  const [previsao, setPrevisao] = useState({ palpite: '', naoSei: false });
   const [aviso, setAviso] = useState('');
   const [diferenca, setDiferenca] = useState(null);
   const [tentativas, setTentativas] = useState(0);
@@ -678,6 +761,13 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
                 <p>{aula.notaAmbiente}</p>
               </div>
             )}
+            <PrevisaoDaSaida
+              estado={previsao}
+              onChange={setPrevisao}
+              saida={exemploPython.output}
+              executado={exemploPython.success !== null && !exemploPython.busy}
+              desativado={exemploPython.busy}
+            />
             <CodeEditor
               code={aula.exemplo}
               readOnly
@@ -688,7 +778,9 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
               success={exemploPython.success}
               filename={`${aula.id}-exemplo.py`}
               runLabel="Executar exemplo"
-              emptyOutput="Execute o exemplo para conferir o que o código do professor produz."
+              runDisabled={!previsaoLiberada(previsao)}
+              runDisabledHint="Escreva seu palpite para executar"
+              emptyOutput="Escreva seu palpite acima e execute para conferir o que o código do professor produz."
             />
           </section>
         </details>
@@ -790,7 +882,14 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
               type="radio"
               name={`rev-${aula.id}`}
               checked={resposta === i}
-              onChange={() => setResposta(i)}
+              onChange={() => {
+                // Só a primeira escolha entra na revisão espaçada: é ela que mostra o que você
+                // sabia. Trocar depois de ver o resultado não mede lembrança.
+                if (resposta === null) {
+                  update((s) => registrarResposta(s, idDaQuestao, i === revisao.resposta, localDate()));
+                }
+                setResposta(i);
+              }}
             />
             <span>{String.fromCharCode(65 + i)}</span>
             {opcao}

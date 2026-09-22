@@ -8,13 +8,14 @@ import { normalizeProvas } from './exam.js';
 import { normalizeLumiNotes } from './lumi-notes.js';
 import { aulasDaFaculdade } from './faculdade.js';
 import { projetosDaFaculdade } from './faculdade-projetos.js';
-import { exerciciosDaFaculdade } from './faculdade-exercicios.js';
+import { exerciciosResumidos as exerciciosDaFaculdade } from './faculdade-exercicios-ids.js';
 import { recompensasDaFaculdade, emblemasDaFaculdade } from './faculdade-recompensas.js';
 import { atividadeDaEntregaValida, entregasDaFaculdade, normalizarTrabalhoDaEntrega } from './faculdade-entregas.js';
+import { normalizarRevisao, normalizarSimulados } from './faculdade-revisao-estado.js';
 export const STORAGE_KEY = 'pycampus.v1';
 export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 export const shiftDate = (key, days) => { const date = new Date(`${key}T12:00:00`); date.setDate(date.getDate() + days); return localDate(date); };
-export const initialState = () => ({ version: 1, name: 'Estudante', bio: 'Um passo de cada vez, uma linha de código por dia.', avatar: '🚀', goal: 1, weeklyGoal: 5, lembrete: '', registroAcademico: '', completed: [], history: [], lumiNotes: [], projectChecks: {}, projectLinks: {}, projectGrades: {}, projectCodes: {}, projectStepsDone: {}, mastery: {}, functionBridges: {}, customLessons: {}, liberacoesDoLumi: {}, faculdade: { feitas: [], codigos: {}, entregas: {} }, provas: [], ultimoRelatorio: '', activities: {}, sessions: [], codes: {}, learning: {}, playground: '# Seu espaço para experimentar\nprint("Olá, PyCampus!")\n', joined: localDate() });
+export const initialState = () => ({ version: 1, name: 'Estudante', bio: 'Um passo de cada vez, uma linha de código por dia.', avatar: '🚀', goal: 1, weeklyGoal: 5, lembrete: '', registroAcademico: '', revisaoFaculdade: {}, simuladosFaculdade: [], completed: [], history: [], lumiNotes: [], projectChecks: {}, projectLinks: {}, projectGrades: {}, projectCodes: {}, projectStepsDone: {}, mastery: {}, functionBridges: {}, customLessons: {}, liberacoesDoLumi: {}, faculdade: { feitas: [], codigos: {}, entregas: {} }, provas: [], ultimoRelatorio: '', activities: {}, sessions: [], codes: {}, learning: {}, playground: '# Seu espaço para experimentar\nprint("Olá, PyCampus!")\n', joined: localDate() });
 const validDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T12:00:00`).valueOf()) && localDate(new Date(`${value}T12:00:00`)) === value;
 const validTime = value => typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 const bounded = (value, fallback, min, max) => Number.isInteger(value) && value >= min && value <= max ? value : fallback;
@@ -32,6 +33,10 @@ export function normalizeState(input) {
   base.bio = typeof input.bio === 'string' ? input.bio.slice(0, 200) : base.bio;
   // O RA vai impresso no PDF que a faculdade recebe, então é guardado uma vez e reaproveitado
   // nas quatro entregas. Sem ele, o arquivo saía com 'Preencher antes do envio' no lugar.
+  // A revisão e os simulados voltam do backup validados: ids pelo formato, datas reais e
+  // contagens dentro de limites. Nada disso vale XP, então não há prêmio a inflar.
+  base.revisaoFaculdade = normalizarRevisao(input.revisaoFaculdade);
+  base.simuladosFaculdade = normalizarSimulados(input.simuladosFaculdade);
   base.registroAcademico = typeof input.registroAcademico === 'string'
     ? input.registroAcademico.trim().slice(0, 40)
     : base.registroAcademico;
@@ -82,7 +87,7 @@ export function normalizeState(input) {
   for (const [date, entries] of Object.entries(input.activities || {})) {
     if (validDate(date) && date <= localDate() && Array.isArray(entries)) base.activities[date] = [...new Set(entries.filter(id => typeof id === 'string' && (ids.has(id) || id === 'prova' || id.startsWith('session:') || patterns.some(p => `lumi:${p.id}` === id) || projects.some(p => `project:${p.id}` === id) || practiceProjects.some(p => `practice:${p.id}` === id) || functionBridgeIds.some(bridgeId => `bridge:${bridgeId}` === id)
       || projects.some(p => stepsFor(p.id).some(s => `passo:${p.id}:${s.id}` === id))
-      || idsDaFaculdadeNaAtividade.has(id) || atividadeDaEntregaValida(id))))].slice(0, 200);
+      || idsDaFaculdadeNaAtividade.has(id) || atividadeDaEntregaValida(id) || id === 'faculdade-revisao' || id === 'faculdade-simulado')))].slice(0, 200);
   }
   // Versões anteriores salvavam a ponte concluída, mas não a atividade diária. Recuperamos
   // uma vez no primeiro carregamento; depois o id preservado impede qualquer contagem dupla.
