@@ -233,3 +233,24 @@ Comandos finais: `npm test`, `npm run auditar:ementa`, `npm run test:faculdade`,
 - reestruturação ampla de `App.jsx` durante o período de estudo.
 
 Quando novos PDFs chegarem, eles serão classificados como aula, exercício ou entrega e conectados ao mesmo módulo, sem criar uma trilha paralela.
+
+## Estado implementado em 22/09/2026
+
+Os contratos desta especificação foram implementados e validados:
+
+- catálogo e normalização: `src/faculdade-entregas.js`;
+- notebook e relatório seguro: `src/faculdade-exportacao.js`;
+- estúdio responsivo: `src/FaculdadeEntrega.jsx` e `src/faculdade-entrega.css`;
+- integração de panorama, busca, próxima ação e endereço compartilhável: `src/faculdade-integrada.js` e `src/FaculdadeIntegrada.jsx`;
+- auditoria explicar → exemplificar → praticar → revisar → aplicar: `scripts/auditar-progressao-faculdade.mjs`;
+- jornada real de construção, execução, download, relatório, Colab e recuperação 6/16: `scripts/check-faculdade-entregas.mjs`;
+- orientação operacional: `docs/faculdade/roteiro-entregas-2026-09-27.md`.
+
+Desvios aprovados em relação ao desenho inicial:
+
+- `Dashboard` e `Projects` são funções internas de `App.jsx`, portanto a integração foi feita no proprietário existente, sem criar arquivos e estados duplicados;
+- o estado usa `ambienteEntrega`, `codigoInicial`, `criterios` e `entregaveis`, nomes equivalentes aos campos conceituais previstos;
+- o relatório é HTML imprimível para PDF, sem dependência de geração de `.docx`;
+- o navegador de teste usa o canal Microsoft Edge instalado, pois o Chromium empacotado pelo Playwright não está presente neste computador formatado.
+
+Evidência final antes da publicação: 16 aulas e seus IDs históricos preservados, quatro unidades, quatro entregas, 79/79 assuntos da ementa cobertos, soluções executadas no Python real, fluxo desktop/celular sem rolagem horizontal e build Vite de produção aprovado. O envio ao AVA permanece explicitamente manual.
