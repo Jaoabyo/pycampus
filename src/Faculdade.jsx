@@ -7,6 +7,11 @@ import {
   aulasDaFaculdade,
   tarefasDaFaculdade,
   diasAteProva,
+  FIM_DO_ESTUDO,
+  DATA_PROVA,
+  PRAZO_TRABALHO,
+  porExtenso,
+  emNumeros,
   requisitosFaltandoDaFaculdade,
   proximaAcaoDaFaculdade,
   planoDeEstudosDaFaculdade,
@@ -129,13 +134,13 @@ export default function Faculdade({
       >
         <div className="prova-plano-topo">
           <div>
-            <div className="eyebrow">PLANO ATÉ 27 DE SETEMBRO</div>
+            <div className="eyebrow">PLANO ATÉ {porExtenso(FIM_DO_ESTUDO).toUpperCase()} · PROVA {porExtenso(DATA_PROVA).toUpperCase()}</div>
             <h3 id="titulo-plano-prova">Preparação para a prova presencial</h3>
             <p>
               {pendentes.length === 0
                 ? 'Conteúdo estudado. Agora revise os desafios sem olhar a resposta.'
                 : dias > 0
-                  ? `${dias} ${dias === 1 ? 'dia restante' : 'dias restantes'} · faça ${ritmo} ${ritmo === 1 ? 'aula' : 'aulas'} por dia e deixe o último dia para revisão.`
+                  ? `${dias} ${dias === 1 ? 'dia' : 'dias'} até a prova · faça ${ritmo} ${ritmo === 1 ? 'aula' : 'aulas'} por dia até ${porExtenso(FIM_DO_ESTUDO)} e use os dias seguintes para revisar.`
                   : 'A data da prova chegou. Priorize os exercícios marcados pelo professor.'}
             </p>
           </div>
@@ -291,6 +296,17 @@ export default function Faculdade({
         const passosConcluidos = new Set(trabalho.passosConcluidos || []);
         const proximoPasso = entrega.passos.find((passo) => !passosConcluidos.has(passo.id));
         const preRequisitosPendentes = entrega.preRequisitos.filter((id) => !feitas.includes(id));
+        // A unidade não é só aulas: tem o miniprojeto, o exercício do AVA e a entrega oficial.
+        // Contar apenas aulas fazia o estudante terminar tudo e continuar vendo "4 de 4", sem
+        // registro do que mais havia feito.
+        const projetosDaUnidade = projetosDaFaculdade.filter((p) => p.unidade === unidade.id);
+        const exercicio = exercicioDaUnidade(unidade.id);
+        const atividades = [
+          ...projetosDaUnidade.map((p) => ({ id: p.id, feito: feitas.includes(p.id) })),
+          ...(exercicio ? [{ id: exercicio.id, feito: feitas.includes(exercicio.id) }] : []),
+          { id: entrega.id, feito: passosConcluidos.size === entrega.passos.length },
+        ];
+        const atividadesFeitas = atividades.filter(({ feito }) => feito).length;
         return (
           <section className="card unidade-card" key={unidade.id}>
             <div className="step-head">
@@ -299,8 +315,8 @@ export default function Faculdade({
               </span>
               <div>
                 <div className="eyebrow">
-                  UNIDADE {unidade.numero} · {prontas} DE {aulas.length}{' '}
-                  ESTUDADAS
+                  UNIDADE {unidade.numero} · {prontas} DE {aulas.length} AULAS ·{' '}
+                  {atividadesFeitas} DE {atividades.length} ATIVIDADES
                 </div>
                 <h3>{unidade.titulo}</h3>
               </div>
@@ -335,16 +351,25 @@ export default function Faculdade({
                 </button>
               ))}
             </div>
-            <div className="faculdade-entrega-unidade">
+            <div className={`faculdade-entrega-unidade ${passosConcluidos.size === entrega.passos.length ? 'is-feito' : ''}`}>
               <div>
-                <div className="eyebrow">ENTREGA PRÁTICA · ATÉ 27 DE SETEMBRO</div>
+                <div className="faculdade-atividade-topo">
+                  <div className="eyebrow">ENTREGA PRÁTICA · ATÉ {emNumeros(PRAZO_TRABALHO)}</div>
+                  {passosConcluidos.size === entrega.passos.length && (
+                    <span className="faculdade-selo">
+                      <Icon name="CheckCircle2" size={15} /> Pronta para o AVA
+                    </span>
+                  )}
+                </div>
                 <h3>{entrega.titulo}</h3>
                 <p>{entrega.resumo}</p>
                 <small>
                   {preRequisitosPendentes.length
                     ? `${preRequisitosPendentes.length} aulas-base ainda pendentes. Você pode abrir o roteiro e aprender na ordem.`
                     : proximoPasso
-                      ? `Próximo passo: ${proximoPasso.titulo}`
+                      // Chamar de "próximo" um passo que ficou para trás confunde quem está em
+                      // 7 de 9: o que falta não está adiante, está pulado.
+                      ? `Falta concluir: ${proximoPasso.titulo}`
                       : 'Roteiro concluído. Confira os critérios e os arquivos antes de enviar.'}
                 </small>
               </div>
@@ -363,8 +388,15 @@ export default function Faculdade({
             {projetosDaFaculdade
               .filter((projeto) => projeto.unidade === unidade.id)
               .map((projeto) => (
-                <div className="faculdade-projeto" key={projeto.id}>
-                  <div className="eyebrow">REÚNA O QUE APRENDEU</div>
+                <div className={`faculdade-projeto ${feitas.includes(projeto.id) ? 'is-feito' : ''}`} key={projeto.id}>
+                  <div className="faculdade-atividade-topo">
+                    <div className="eyebrow">REÚNA O QUE APRENDEU</div>
+                    {feitas.includes(projeto.id) && (
+                      <span className="faculdade-selo">
+                        <Icon name="CheckCircle2" size={15} /> Concluído
+                      </span>
+                    )}
+                  </div>
                   <h3>{projeto.titulo}</h3>
                   <p>{projeto.teoria[0]}</p>
                   <p className="small">
@@ -385,11 +417,18 @@ export default function Faculdade({
                 </div>
               ))}
             {exercicioDaUnidade(unidade.id) && (
-              <div className="unidade-exercicio">
-                <div className="eyebrow">
-                  {exercicioDaUnidade(unidade.id).recebido
-                    ? 'EXERCÍCIO DE UNIDADES · DO AVA'
-                    : 'TREINO NO FORMATO DO AVA'}
+              <div className={`unidade-exercicio ${feitas.includes(exercicioDaUnidade(unidade.id).id) ? 'is-feito' : ''}`}>
+                <div className="faculdade-atividade-topo">
+                  <div className="eyebrow">
+                    {exercicioDaUnidade(unidade.id).recebido
+                      ? 'EXERCÍCIO DE UNIDADES · DO AVA'
+                      : 'TREINO NO FORMATO DO AVA'}
+                  </div>
+                  {feitas.includes(exercicioDaUnidade(unidade.id).id) && (
+                    <span className="faculdade-selo">
+                      <Icon name="CheckCircle2" size={15} /> Acertou as 5
+                    </span>
+                  )}
                 </div>
                 <h3>{exercicioDaUnidade(unidade.id).titulo}</h3>
                 <p>
@@ -641,7 +680,7 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
               busy={exemploPython.busy}
               onRun={() => exemploPython.run(aula.exemplo)}
               onStop={exemploPython.stop}
-              output={exemploPython.output}
+              output={exemploPython.output} imagens={exemploPython.imagens}
               success={exemploPython.success}
               filename={`${aula.id}-exemplo.py`}
               runLabel="Executar exemplo"
@@ -677,7 +716,7 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
           busy={python.busy}
           onRun={executar}
           onStop={python.stop}
-          output={python.output}
+          output={python.output} imagens={python.imagens}
           success={python.success}
           celebrate={celebrar}
           inputRequest={python.inputRequest}
@@ -716,7 +755,7 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
           challenge={aula.desafio}
           expected={aula.esperado}
           code={codigo}
-          output={python.output}
+          output={python.output} imagens={python.imagens}
           lessonId=""
           screenContext={{
             etapa: ensino.objetivo,

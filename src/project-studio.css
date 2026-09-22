@@ -54,3 +54,11 @@
 .studio-publish>.tab-row>button{flex:1;justify-content:center;min-height:42px;border-radius:7px;font-weight:650;color:#7d708e}
 .studio-publish>.tab-row>button[aria-pressed=true]{background:#7755d9;color:#fff;box-shadow:0 3px 10px #7755d927}
 @media(max-width:600px){.studio-publish>.tab-row>button{flex-basis:100%;justify-content:flex-start;padding-left:14px}}
+
+/* Gráficos devolvidos pelo Python. A figura nasce como PNG no worker, então aqui ela é uma
+   imagem comum: o que importa é que ela caiba na largura do celular sem cortar e que o fundo
+   branco do Matplotlib não flutue sobre o cartão sem moldura. */
+.graficos{display:flex;flex-direction:column;gap:14px;margin-top:12px}
+.graficos figure{margin:0;border:1px solid var(--border);border-radius:11px;background:#fff;padding:10px;overflow:hidden}
+.graficos img{display:block;width:100%;height:auto;max-width:100%;border-radius:6px}
+.graficos figcaption{margin-top:8px;font-size:12px;color:var(--muted);text-align:center}

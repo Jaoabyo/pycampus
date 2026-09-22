@@ -4,3 +4,44 @@
 .entrega-preparo li svg{color:#9a7a2d;margin-top:4px}.entrega-preparo li.feito svg{color:#319071}.entrega-preparo li button{display:grid;gap:1px;padding:0;border:0;background:transparent;text-align:left;color:inherit}.entrega-preparo li button:hover span{text-decoration:underline}.entrega-preparo li button:focus-visible{outline:3px solid #a98ce8;outline-offset:3px}.entrega-preparo li small{color:#81778d}.entrega-preparo li.feito small{color:#24735d}
 @media(max-width:520px){.entrega-hero{padding:22px 18px;border-radius:14px}.entrega-hero h1{font-size:27px}.entrega-hero p,.entrega-explicacao{font-size:14px}.entrega-meta{display:grid;gap:8px}.entrega-conteudo>.card{padding:18px 15px}.entrega-passo-topo h2,.entrega-section-head h2{font-size:19px}.entrega-navegacao{display:grid;grid-template-columns:1fr}.entrega-navegacao .button{width:100%}.entrega-navegacao .button.primary{grid-row:1}.entrega-exemplo pre{font-size:12px}.entrega-evidencia{padding:13px}.entrega-subpassos button{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.entrega-fases button,.entrega-arquivo{transition:none!important;transform:none!important}.entrega-fases{scroll-behavior:auto}}
+
+/* Conferência do resultado. Precisa ser lida como veredito, não como decoração: o estudante
+   chega aqui depois de ver "Executado" e tem de entender que executar e acertar são coisas
+   diferentes. Por isso o detalhe de cada item fica visível sem clique. */
+.entrega-contrato{display:flex;gap:11px;align-items:flex-start;background:#f3f0fc;border:1px solid #ded3f7;border-radius:11px;padding:13px 15px;margin-bottom:14px;color:#5b4795}
+.entrega-contrato strong{display:block;font-size:13px;margin-bottom:3px}
+.entrega-contrato p{margin:0;font-size:13px;line-height:1.6;color:#6a5a99}
+.entrega-conferencias{margin-top:16px;border:1px solid var(--border);border-radius:12px;padding:15px 17px;background:#fff}
+.entrega-conferencias.aprovada{border-color:#b6ddcd;background:#f3faf7}
+.entrega-conferencias.reprovada{border-color:#f0c6c9;background:#fdf5f5}
+.entrega-conferencias ul{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
+.entrega-conferencias li{display:flex;gap:10px;align-items:flex-start}
+.entrega-conferencias li.confere>svg{color:#2f9277}
+.entrega-conferencias li.falha>svg{color:#cf5b66}
+.entrega-conferencias li strong{display:block;font-size:13.5px;font-weight:650;color:#2c2c3c}
+.entrega-conferencias li span{display:block;font-size:12.5px;line-height:1.6;color:#77778c;margin-top:2px;font-family:Consolas,'Courier New',monospace}
+.entrega-pendentes{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.entrega-pendentes>button{text-align:left;font-size:12.5px;color:var(--purple);background:#f4f0fd;border-radius:7px;padding:7px 10px;line-height:1.45;min-height:34px}
+.entrega-pendentes>button:hover{background:#eae1fb}
+.entrega-arquivo.principal{border-color:#c4aef2;background:#f7f4fe}
+
+/* O exemplo pequeno virou laboratório: os passos de Entender pedem prever, executar e trocar
+   um valor, e antes não havia onde fazer isso. */
+.entrega-exemplo-vivo{margin:14px 0}
+.entrega-exemplo-titulo{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#5b4795;margin-bottom:8px;flex-wrap:wrap}
+.entrega-exemplo-titulo small{font-weight:500;color:var(--muted);font-size:11.5px}
+
+/* Identificação do estudante na fase de exportar. O nome e o RA saem impressos no arquivo que
+   o professor recebe, então precisam ser preenchidos antes do download, não depois. */
+.entrega-identificacao{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:6px 0 14px}
+.entrega-identificacao input{width:100%;min-height:42px;border:1px solid var(--border);border-radius:9px;padding:0 12px;background:#fff}
+
+/* Prints anexados pelo estudante. O roteiro pede uma captura de tela do código executado, e
+   ela precisa ser conferida aqui antes de virar a primeira página do PDF entregue. */
+.entrega-capturas{margin:4px 0 14px}
+.entrega-capturas input[type=file]{display:block;width:100%;margin:8px 0;font-size:13px}
+.entrega-capturas-lista{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:10px}
+.entrega-capturas-lista figure{margin:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#fff}
+.entrega-capturas-lista img{display:block;width:100%;height:auto}
+.entrega-capturas-lista figcaption{padding:7px 9px;text-align:right}
+.entrega-capturas-lista figcaption>button{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#c25b66;min-height:32px}

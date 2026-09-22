@@ -29,14 +29,40 @@ export const requisitosFaltandoDaFaculdade = (item, codigo) => {
   return (item?.requisitosCodigo || []).filter(requisito => !requisito.atende(limpo));
 };
 
-export const DATA_PROVA = '2026-09-27';
+// O calendário da disciplina separa três datas que antes estavam fundidas numa só. Confundi-las
+// custa dias de estudo: a plataforma marcava a prova em 27/09 quando ela é em 30/09, e tratava
+// o trabalho com o mesmo prazo da prova quando ele vai até outubro.
+export const FIM_DO_ESTUDO = '2026-09-27';   // fim do período de estudo no AVA: aulas concluídas
+export const DATA_PROVA = '2026-09-30';      // primeira chamada, dentro da janela de 26/09 a 03/10
+export const PRAZO_TRABALHO = '2026-10-17';  // o calendário diz 17/10 e a tela de envio, 27/10:
+                                             // vale a mais curta, que é a que não corre risco.
 
-export const diasAteProva = (hoje = new Date()) => {
-  const [ano, mes, dia] = DATA_PROVA.split('-').map(Number);
-  const prova = new Date(ano, mes - 1, dia);
-  const dataAtual = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-  return Math.ceil((prova - dataAtual) / 86400000);
+const comoData = (iso) => {
+  const [ano, mes, dia] = iso.split('-').map(Number);
+  return new Date(ano, mes - 1, dia);
 };
+const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+// Uma data por extenso, para as datas aparecerem na tela sem ninguém reescrever "27 de
+// setembro" à mão em seis lugares — que foi como a data errada se espalhou.
+export const porExtenso = (iso) => {
+  const data = comoData(iso);
+  return `${data.getDate()} de ${MESES[data.getMonth()]}`;
+};
+export const emNumeros = (iso) => {
+  const data = comoData(iso);
+  return `${String(data.getDate()).padStart(2, '0')}/${String(data.getMonth() + 1).padStart(2, '0')}/${data.getFullYear()}`;
+};
+
+const diasAte = (iso, hoje) => {
+  const alvo = comoData(iso);
+  const dataAtual = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  return Math.ceil((alvo - dataAtual) / 86400000);
+};
+
+export const diasAteProva = (hoje = new Date()) => diasAte(DATA_PROVA, hoje);
+export const diasAteOFimDoEstudo = (hoje = new Date()) => diasAte(FIM_DO_ESTUDO, hoje);
 
 export const unidades = [
   {
@@ -539,12 +565,17 @@ export const planoDeEstudosDaFaculdade = (state = {}, hoje = new Date()) => {
   const pendentes = aulasDaFaculdade.filter(aula => !feitas.has(aula.id));
   const estudadas = aulasDaFaculdade.length - pendentes.length;
   const diasRestantes = diasAteProva(hoje);
-  const diasDeEstudo = Math.max(1, diasRestantes - 1);
-  const porDia = Math.max(1, Math.min(2, Math.ceil(pendentes.length / diasDeEstudo)));
+  // O AVA fecha o período de estudo antes da prova. Os dias entre um e outro não são sobra:
+  // são os dias de revisão, e é neles que o conteúdo assenta. Por isso as aulas terminam no
+  // fim do período de estudo, não na véspera da prova.
+  // Zero dias de aula é um resultado legítimo: passado o período de estudo do AVA, o que resta
+  // até a prova é revisão. Forçar um dia de aula ali empurraria conteúdo novo para a véspera.
+  const diasDeEstudo = Math.max(0, Math.min(diasRestantes - 1, diasAteOFimDoEstudo(hoje)));
+  const porDia = Math.max(1, Math.min(2, Math.ceil(pendentes.length / Math.max(1, diasDeEstudo))));
   const dias = diasRestantes > 0 && pendentes.length > 0
     ? Array.from({ length: diasRestantes }, (_, indice) => {
       const data = somarDias(hoje, indice);
-      const revisao = indice === diasRestantes - 1;
+      const revisao = indice >= diasDeEstudo;
       return { data: isoLocal(data), tipo: revisao ? 'revisao' : 'aulas', aulas: revisao ? [] : pendentes.slice(indice * porDia, (indice + 1) * porDia) };
     })
     : [{ data: isoLocal(hoje), tipo: 'revisao', aulas: [] }];

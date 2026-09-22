@@ -65,6 +65,26 @@ test('gera nbformat 4 com identificação, explicação e código salvo', () => 
     && cell.source.join('').includes('casos de limite')));
 });
 
+// A entrega da Unidade 1 é um relatório de notas em texto. O notebook mandava "execute tudo
+// novamente para que a saída e os gráficos correspondam", e o estudante foi procurar um
+// gráfico que nunca existiu ali.
+test('o notebook só fala em gráficos nas entregas que desenham algum', () => {
+  const comoExecutar = (id) => {
+    const entrega = entregaDaFaculdade(id);
+    const notebook = JSON.parse(criarNotebookColab({
+      entrega,
+      trabalho: { codigo: 'print(1)', saida: '1' },
+      estudante: { nome: 'Estudante de teste', identificacao: 'RA-1' },
+    }));
+    return notebook.cells.map((celula) => celula.source.join('')).find((texto) => texto.includes('Como executar')) || '';
+  };
+
+  assert.doesNotMatch(comoExecutar('entrega-u1'), /gráfico/i, 'a U1 não produz gráfico');
+  assert.doesNotMatch(comoExecutar('entrega-u4'), /gráfico/i, 'a U4 entrega acurácia e predições, não figuras');
+  assert.match(comoExecutar('entrega-u2'), /gráfico/i, 'a U2 tem o gráfico por gênero');
+  assert.match(comoExecutar('entrega-u3'), /gráfico/i, 'a U3 tem os gráficos da análise');
+});
+
 test('notebook U4 contém bibliotecas e sequência oficiais', () => {
   const texto = criarNotebookColab({
     entrega: entregaDaFaculdade('entrega-u4'),

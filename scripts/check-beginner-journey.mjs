@@ -167,7 +167,7 @@ await page
   .getByRole('navigation', { name: 'Atalhos principais' })
   .getByRole('button', { name: 'Projetos', exact: true })
   .click();
-await page.getByText('TRABALHOS OFICIAIS · PRAZO 27 DE SETEMBRO').waitFor();
+await page.getByText('TRABALHOS OFICIAIS · PRAZO 17/10/2026').waitFor();
 assert.equal(
   await page.locator('.faculdade-projeto-resumo').count(),
   4,

@@ -18,6 +18,95 @@ const cleanTraceback = value => {
   }
   return kept.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 };
+/* Gráficos: o worker só sabe devolver texto, então uma figura do Matplotlib morreria dentro
+   dele. O preparo abaixo guarda a figura como PNG no momento em que ela seria descartada.
+   Capturar em close() é o que importa: as aulas terminam com plt.close() justamente para que
+   executar de novo não desenhe o gráfico novo por cima do antigo, e sem este gancho a figura
+   já teria sido destruída quando o programa termina. show() não captura porque quase sempre
+   vem antes de um close(), o que renderia a mesma figura duas vezes; quem chama show() e não
+   fecha é atendido pela coleta final, que recolhe o que ficou aberto. */
+const usaMatplotlib = codigo => /(^|\n)\s*(import|from)\s+matplotlib\b/.test(String(codigo || ''));
+
+/* Bibliotecas que não vêm na distribuição do Pyodide mas instalam em tempo de execução pelo
+   micropip. Estão aqui porque foram medidas por scripts/medir-bibliotecas.mjs, não porque a
+   documentação promete: Seaborn é exigido pelo roteiro da Unidade 3 e não podia continuar
+   sendo substituído por um aviso. A instalação baixa da rede na primeira vez de cada sessão,
+   então o estudante recebe um aviso em vez de uma tela parada. */
+const INSTALAVEIS = { seaborn: 'seaborn', plotly: 'plotly', openpyxl: 'openpyxl' };
+const pacotesParaInstalar = codigo => Object.keys(INSTALAVEIS).filter(
+  nome => new RegExp(`(^|\\n)\\s*(import|from)\\s+${nome}\\b`).test(String(codigo || '')),
+);
+const instalarPacotes = async nomes => {
+  // Sem os callbacks mudos, o Pyodide escreve "micropip already loaded from default channel" e
+  // "No new packages to load" no meio da saída do estudante — e na segunda execução o texto
+  // muda, o que faz um resultado idêntico parecer diferente.
+  await runtime.loadPackage('micropip', { messageCallback: () => {}, errorCallback: () => {} });
+  const micropip = runtime.pyimport('micropip');
+  try {
+    for (const nome of nomes) {
+      self.postMessage({ type: 'status', message: `Baixando ${nome}… (só na primeira vez)` });
+      await micropip.install(INSTALAVEIS[nome]);
+    }
+  } finally { micropip.destroy?.(); }
+};
+const PREPARO_DOS_GRAFICOS = `
+import matplotlib
+matplotlib.use("Agg")
+import io as _io, base64 as _base64
+import matplotlib.pyplot as _plt
+
+_campus_figuras = []
+
+def _campus_guardar(figura):
+    if figura is None or not figura.get_axes():
+        return
+    deposito = _io.BytesIO()
+    try:
+        figura.savefig(deposito, format="png", dpi=110, bbox_inches="tight")
+    except Exception:
+        return
+    _campus_figuras.append(_base64.b64encode(deposito.getvalue()).decode("ascii"))
+
+# O worker é reaproveitado entre execuções, então este preparo roda de novo a cada vez. Sem a
+# guarda abaixo, a segunda execução guardaria o close JÁ SUBSTITUÍDO como se fosse o original,
+# e ele passaria a chamar a si mesmo até estourar a pilha.
+if not getattr(_plt.close, "_campus_patched", False):
+    _campus_close_original = _plt.close
+
+def close(fig=None):
+    if fig is None:
+        _campus_guardar(_plt.gcf() if _plt.get_fignums() else None)
+    elif fig == "all":
+        for numero in _plt.get_fignums():
+            _campus_guardar(_plt.figure(numero))
+    else:
+        _campus_guardar(fig if hasattr(fig, "savefig") else _plt.figure(fig))
+    return _campus_close_original(fig) if fig is not None else _campus_close_original()
+
+close._campus_patched = True
+_plt.close = close
+
+def _campus_colher():
+    for numero in _plt.get_fignums():
+        _campus_guardar(_plt.figure(numero))
+    _campus_close_original("all")
+    colhidas = list(_campus_figuras)
+    _campus_figuras.clear()
+    return colhidas
+`;
+const LIMITE_DE_IMAGENS = 4;
+const colherGraficos = async () => {
+  try {
+    const colhidas = await runtime.runPythonAsync('_campus_colher()');
+    const lista = colhidas?.toJs ? colhidas.toJs() : colhidas;
+    colhidas?.destroy?.();
+    return (lista || []).slice(0, LIMITE_DE_IMAGENS).map(dados => `data:image/png;base64,${dados}`);
+  } catch {
+    // Um gráfico que não pôde ser salvo não pode derrubar a execução do estudante.
+    return [];
+  }
+};
+
 /* Visualizador: roda o programa com sys.settrace e guarda, a cada linha, quais variáveis
    existem e o que já foi impresso. É o mesmo princípio do Python Tutor. O arquivo recebe o
    nome <visualizador> para o rastreador ignorar tudo que não é código do estudante. */
@@ -83,7 +172,10 @@ self.onmessage = async ({ data }) => {
       importScripts('https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js');
       runtime = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/' });
     }
-    self.postMessage({ type: 'started' });
+    // "started" liga o cronômetro de 15 segundos do estudante, então ele só é enviado quando o
+    // programa dele realmente começa. Baixar pandas ou instalar seaborn é espera de
+    // infraestrutura: se contasse no limite, um primeiro uso de biblioteca seria interrompido
+    // como se fosse laço infinito.
     const append = text => {
       if (output.length > 50000) throw new Error('Limite de saída atingido. Reduza a quantidade de prints.');
       output += text + '\n';
@@ -97,6 +189,7 @@ self.onmessage = async ({ data }) => {
       if (data.trace) {
         globals.set('__fonte', data.code);
         await runtime.loadPackagesFromImports(data.code, { messageCallback: () => {} });
+        self.postMessage({ type: 'started' });
         const bruto = await runtime.runPythonAsync(PROGRAMA_DO_RASTRO, { globals });
         self.postMessage({ type: 'trace', ...JSON.parse(bruto) });
         return;
@@ -114,10 +207,19 @@ self.onmessage = async ({ data }) => {
       }
       // Package download notices are infrastructure, not the student's output.
       await runtime.loadPackagesFromImports(data.code, { messageCallback: () => {} });
+      const aInstalar = pacotesParaInstalar(data.code);
+      if (aInstalar.length) await instalarPacotes(aInstalar);
+      const querGrafico = usaMatplotlib(data.code) || aInstalar.includes('seaborn');
+      if (querGrafico) await runtime.runPythonAsync(PREPARO_DOS_GRAFICOS);
+      self.postMessage({ type: 'started' });
       await runtime.runPythonAsync(data.code, { globals });
-      self.postMessage({ type: 'result', output, ok: true });
+      const imagens = querGrafico ? await colherGraficos() : [];
+      self.postMessage({ type: 'result', output, ok: true, imagens });
     } finally { globals.destroy(); }
   } catch (error) {
-    self.postMessage({ type: 'result', output: output + cleanTraceback(error.message || error), ok: false, kind: runtime ? 'error' : 'environment' });
+    // Um gráfico desenhado antes do erro ainda ajuda a entender onde o programa parou.
+    const desenhou = usaMatplotlib(data.code) || pacotesParaInstalar(data.code).includes('seaborn');
+    const imagens = runtime && desenhou ? await colherGraficos() : [];
+    self.postMessage({ type: 'result', output: output + cleanTraceback(error.message || error), ok: false, kind: runtime ? 'error' : 'environment', imagens });
   }
 };

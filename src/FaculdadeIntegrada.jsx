@@ -1,5 +1,6 @@
 import { Icon, Progress } from './ui.jsx';
 import { panoramaDaFaculdade } from './faculdade-integrada.js';
+import { emNumeros, PRAZO_TRABALHO } from './faculdade.js';
 import './faculdade.css';
 
 export default function FaculdadeIntegrada({
@@ -77,7 +78,7 @@ export default function FaculdadeIntegrada({
       <section className="faculdade-integrada faculdade-integrada-projetos">
         <div className="section-heading">
           <div>
-            <div className="eyebrow">TRABALHOS OFICIAIS · PRAZO 27 DE SETEMBRO</div>
+            <div className="eyebrow">TRABALHOS OFICIAIS · PRAZO {emNumeros(PRAZO_TRABALHO)}</div>
             <h2>Construa e prepare suas quatro entregas</h2>
             <p>Cada estúdio ensina, testa e organiza o notebook e o relatório sem pular conceitos.</p>
           </div>
@@ -186,7 +187,7 @@ export default function FaculdadeIntegrada({
         ))}
       </div>
       <div className="faculdade-entregas-bloco">
-        <div className="eyebrow">TRABALHOS ATÉ 27 DE SETEMBRO</div>
+        <div className="eyebrow">TRABALHOS ATÉ {emNumeros(PRAZO_TRABALHO)}</div>
         <h3>Da aula à entrega, sem precisar adivinhar o próximo passo</h3>
         <CartoesDeEntrega />
       </div>

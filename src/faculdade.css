@@ -160,3 +160,10 @@
   .exercicio-porque.acertou { background: rgba(22, 163, 74, 0.12); }
   .exercicio-porque.errou { background: rgba(245, 158, 11, 0.12); }
 }
+
+/* Uma atividade concluída precisa parecer concluída. Antes só o texto do botão mudava de
+   "Fazer" para "Refazer" — o estudante terminava o exercício e o cartão continuava igual,
+   sem registro visível do que já tinha feito. */
+.faculdade-atividade-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.faculdade-selo{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:#2f8d72;background:#e7f5ef;border:1px solid #bfe3d6;border-radius:999px;padding:4px 10px;white-space:nowrap}
+.faculdade-projeto.is-feito,.unidade-exercicio.is-feito,.faculdade-entrega-unidade.is-feito{border-color:#bfe3d6}

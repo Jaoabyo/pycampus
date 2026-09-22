@@ -12,7 +12,7 @@ import { atividadeDaEntregaValida, entregasDaFaculdade, normalizarTrabalhoDaEntr
 export const STORAGE_KEY = 'pycampus.v1';
 export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 export const shiftDate = (key, days) => { const date = new Date(`${key}T12:00:00`); date.setDate(date.getDate() + days); return localDate(date); };
-export const initialState = () => ({ version: 1, name: 'Estudante', bio: 'Um passo de cada vez, uma linha de código por dia.', avatar: '🚀', goal: 1, weeklyGoal: 5, lembrete: '', completed: [], history: [], lumiNotes: [], projectChecks: {}, projectLinks: {}, projectGrades: {}, projectCodes: {}, projectStepsDone: {}, mastery: {}, functionBridges: {}, customLessons: {}, liberacoesDoLumi: {}, faculdade: { feitas: [], codigos: {}, entregas: {} }, provas: [], ultimoRelatorio: '', activities: {}, sessions: [], codes: {}, learning: {}, playground: '# Seu espaço para experimentar\nprint("Olá, PyCampus!")\n', joined: localDate() });
+export const initialState = () => ({ version: 1, name: 'Estudante', bio: 'Um passo de cada vez, uma linha de código por dia.', avatar: '🚀', goal: 1, weeklyGoal: 5, lembrete: '', registroAcademico: '', completed: [], history: [], lumiNotes: [], projectChecks: {}, projectLinks: {}, projectGrades: {}, projectCodes: {}, projectStepsDone: {}, mastery: {}, functionBridges: {}, customLessons: {}, liberacoesDoLumi: {}, faculdade: { feitas: [], codigos: {}, entregas: {} }, provas: [], ultimoRelatorio: '', activities: {}, sessions: [], codes: {}, learning: {}, playground: '# Seu espaço para experimentar\nprint("Olá, PyCampus!")\n', joined: localDate() });
 const validDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T12:00:00`).valueOf()) && localDate(new Date(`${value}T12:00:00`)) === value;
 const validTime = value => typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 const bounded = (value, fallback, min, max) => Number.isInteger(value) && value >= min && value <= max ? value : fallback;
@@ -28,6 +28,11 @@ export function normalizeState(input) {
   const ids = new Set(lessons.map(l => l.id));
   base.name = typeof input.name === 'string' ? input.name.trim().slice(0, 40) || 'Estudante' : base.name;
   base.bio = typeof input.bio === 'string' ? input.bio.slice(0, 200) : base.bio;
+  // O RA vai impresso no PDF que a faculdade recebe, então é guardado uma vez e reaproveitado
+  // nas quatro entregas. Sem ele, o arquivo saía com 'Preencher antes do envio' no lugar.
+  base.registroAcademico = typeof input.registroAcademico === 'string'
+    ? input.registroAcademico.trim().slice(0, 40)
+    : base.registroAcademico;
   base.avatar = ['🚀', '🐍', '🧑‍💻', '🦊', '🌱', '🌟'].includes(input.avatar) ? input.avatar : base.avatar;
   base.goal = bounded(input.goal, 1, 1, 6);
   base.weeklyGoal = bounded(input.weeklyGoal, 5, 1, 7);

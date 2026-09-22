@@ -22,6 +22,8 @@ export function usePython(options = {}) {
   const [inputRequest, setInputRequest] = useState(null);
   observer.current = options;
   const [busy, setBusy] = useState(false), [output, setOutput] = useState(''), [success, setSuccess] = useState(null);
+  // Os gráficos vêm do worker já em PNG: ele só sabe devolver dados, não desenhar.
+  const [imagens, setImagens] = useState([]);
   const finish = (status, text) => {
     const attempt = active.current;
     if (!attempt) return;
@@ -55,7 +57,7 @@ export function usePython(options = {}) {
         if (data.type === 'input') { clearTimeout(timer.current); awaitingReply.current = true; setInputRequest(data.prompt || 'Digite uma resposta:'); setOutput(data.output || 'O programa está esperando sua resposta abaixo.'); }
         if (data.type === 'result') {
           clearTimeout(timer.current); finish(data.ok ? 'success' : data.kind === 'environment' ? 'environment' : 'error', data.output);
-          setInputRequest(null); inputBuffer.current = null; setOutput(data.output || '(O programa terminou sem saída.)'); setSuccess(data.ok); setBusy(false); settle(data);
+          setInputRequest(null); inputBuffer.current = null; setOutput(data.output || '(O programa terminou sem saída.)'); setImagens(data.imagens || []); setSuccess(data.ok); setBusy(false); settle(data);
         }
       };
       worker.current.onerror = () => stop('Não foi possível carregar o Python. Verifique a conexão e o acesso ao CDN jsDelivr.', 'environment');
@@ -76,5 +78,5 @@ export function usePython(options = {}) {
     timer.current = setTimeout(() => stop('Tempo limite de 15 segundos atingido. Verifique se há um laço infinito.', 'timeout'), 15000);
     Atomics.store(signal, 1, bytes.length); Atomics.store(signal, 0, 1); Atomics.notify(signal, 0);
   };
-  return { busy, output, success, run, stop, inputRequest, reply, reset: () => { setOutput(''); setSuccess(null); } };
+  return { busy, output, imagens, success, run, stop, inputRequest, reply, reset: () => { setOutput(''); setImagens([]); setSuccess(null); } };
 }

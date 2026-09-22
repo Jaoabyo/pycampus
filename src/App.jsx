@@ -488,7 +488,7 @@ function LessonView({ lesson, state, update, notify, openLesson, openProject, na
                   busy={python.busy}
                   onRun={run}
                   onStop={python.stop}
-                  output={python.output}
+                  output={python.output} imagens={python.imagens}
                   success={python.success}
                   celebrate={celebrate}
                   inputRequest={python.inputRequest}
@@ -508,7 +508,7 @@ function LessonView({ lesson, state, update, notify, openLesson, openProject, na
                     challenge={lesson.challenge}
                     expected={lesson.expected}
                     code={code}
-                    output={python.output}
+                    output={python.output} imagens={python.imagens}
                     lessonId={lesson.id}
                     attempts={fails}
                     history={state.history}
@@ -2253,7 +2253,7 @@ function Playground({ state, update, download }) {
       />
       <div className="playground-layout">
         <div>
-          <CodeEditor code={state.playground} onChange={(value) => update((s) => ({ ...s, playground: value }))} busy={python.busy} onRun={() => python.run(state.playground, stdin)} onStop={python.stop} output={python.output} success={python.success} inputRequest={python.inputRequest} onReply={python.reply} stdin={stdin} setStdin={setStdin} />
+          <CodeEditor code={state.playground} onChange={(value) => update((s) => ({ ...s, playground: value }))} busy={python.busy} onRun={() => python.run(state.playground, stdin)} onStop={python.stop} output={python.output} imagens={python.imagens} success={python.success} inputRequest={python.inputRequest} onReply={python.reply} stdin={stdin} setStdin={setStdin} />
           {python.success === false && <ErrorHelp output={python.output} code={state.playground} />}
           <StyleTips code={state.playground} show={python.success === true} />
           <Visualizador code={state.playground} stdin={stdin} titulo="Veja o seu programa executando" />

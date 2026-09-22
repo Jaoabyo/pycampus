@@ -205,7 +205,7 @@ await page
   .click();
 await page.getByText(/O conteúdo da sua/).waitFor();
 assert.equal(await page.locator('.unidade-card').count(), unidades.length);
-await page.getByText('PLANO ATÉ 27 DE SETEMBRO').waitFor();
+await page.getByText('PLANO ATÉ 27 DE SETEMBRO · PROVA 30 DE SETEMBRO').waitFor();
 await page.getByText('PRÓXIMA AÇÃO').waitFor();
 assert.equal(await page.locator('.prova-proxima').count(), 1);
 assert.equal(await page.locator('.prova-acao').count(), 1);

@@ -1,4 +1,7 @@
-const PRAZO = '2026-09-27';
+import { conferencia } from './faculdade-conferencias.js';
+import { PRAZO_TRABALHO } from './faculdade.js';
+
+const PRAZO = PRAZO_TRABALHO;
 const FASES = ['entender', 'construir', 'testar', 'explicar', 'exportar'];
 const CAMPOS_TEXTO = {
   codigo: 50000,
@@ -8,6 +11,7 @@ const CAMPOS_TEXTO = {
   conclusao: 4000,
   insights: 4000,
   saidaExterna: 12000,
+  observacao: 600,
 };
 const CAMPOS_DATA = ['executadaEm', 'executadaNoColabEm', 'concluidaEm'];
 
@@ -24,6 +28,44 @@ const idsValidos = (valores, passos) => {
   return [...new Set(Array.isArray(valores) ? valores.filter((id) => permitidos.has(id)) : [])];
 };
 const textoMaisLongo = (a, b) => b.length > a.length ? b : a;
+
+// O link do notebook vai impresso no PDF que a faculdade recebe. Só entra endereco http(s):
+// um "javascript:" impresso num trabalho academico nao ajuda ninguem e e um risco a toa.
+const enderecoValido = (valor) => {
+  if (typeof valor !== 'string') return '';
+  const limpo = valor.trim().slice(0, 400);
+  if (!/^https?:\/\//i.test(limpo)) return '';
+  try {
+    new URL(limpo);
+    return limpo;
+  } catch {
+    return '';
+  }
+};
+
+// Os gráficos da última execução vão para o PDF da entrega, então são guardados junto do
+// trabalho. Só entra PNG vindo do próprio worker: qualquer outra coisa gravada aqui acabaria
+// desenhada dentro do arquivo que o estudante envia à faculdade. O limite existe porque o
+// AVA recusa acima de 10 MB e o progresso inteiro cabe no navegador.
+const LIMITE_DE_IMAGENS = 4;
+const TAMANHO_MAXIMO_DA_IMAGEM = 900000;
+const imagensValidas = (valores) => (Array.isArray(valores) ? valores : [])
+  .filter((item) => typeof item === 'string'
+    && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(item)
+    && item.length <= TAMANHO_MAXIMO_DA_IMAGEM)
+  .slice(0, LIMITE_DE_IMAGENS);
+
+// O roteiro pede literalmente "um print do código executado pelo menos uma vez" — uma captura
+// de tela, não o código transcrito. O PyCampus não consegue fotografar a tela do estudante,
+// então ele anexa a própria captura e ela entra no PDF. Aceita PNG e JPEG, que é o que as
+// ferramentas de recorte do Windows produzem.
+const LIMITE_DE_CAPTURAS = 3;
+const TAMANHO_MAXIMO_DA_CAPTURA = 2800000;
+export const capturasValidas = (valores) => (Array.isArray(valores) ? valores : [])
+  .filter((item) => typeof item === 'string'
+    && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(item)
+    && item.length <= TAMANHO_MAXIMO_DA_CAPTURA)
+  .slice(0, LIMITE_DE_CAPTURAS);
 const dataMaisRecente = (a, b) => b > a ? b : a;
 
 const expressaoSempreFalsa = (valor) => {
@@ -92,10 +134,14 @@ const criterioCodigo = (id, descricao, teste) => ({
   atende: (trabalho = {}) => teste.test(analisarCodigoPython(trabalho.codigo).executavel),
 });
 
+// O segundo argumento é o trabalho cru. Quase todo critério olha só o código executável, mas
+// alguns precisam do original: comentários, por exemplo, são apagados pela análise justamente
+// para que ninguém finja implementação dentro de um comentário — e é neles que o roteiro
+// manda explicar a lógica.
 const criterioEstrutural = (id, descricao, analisar) => ({
   id,
   descricao,
-  atende: (trabalho = {}) => analisar(analisarCodigoPython(trabalho.codigo)),
+  atende: (trabalho = {}) => analisar(analisarCodigoPython(trabalho.codigo), trabalho),
 });
 
 const stringEmChamada = ({ executavel, strings }, chamada, conteudo) => strings.some((item) => {
@@ -464,10 +510,82 @@ export const entregasDaFaculdade = [
       criterioCodigo('funcao-media', 'calcular a média em uma função com retorno', /def\s+calcular_media\s*\([\s\S]*(?:sum\s*\(|\bfor\b)[\s\S]*return/),
       criterioCodigo('lista-vazia', 'tratar a lista vazia antes da divisão', /if\s+(?:not\s+notas|len\s*\(\s*notas\s*\)\s*==\s*0)/),
       criterioCodigo('limite-sete', 'decidir aprovação com média maior ou igual a 7', />=\s*7/),
-      criterioCodigo('relatorio', 'mostrar um relatório com média e situação', /print\s*\([\s\S]*(?:media|média)[\s\S]*(?:situacao|situação)/i),
+      // O roteiro é literal: "Exibir as notas inseridas, a média e a situação do aluno". Um
+      // relatório que mostra só a média e a situação atende dois terços do que foi pedido.
+      // A análise apaga o conteúdo das strings para ninguém fingir código dentro de texto — mas
+      // o relatório é justamente uma f-string, e as notas aparecem lá dentro. Aqui a busca é no
+      // código sem comentários, porque o que se procura é uma linha que imprime, não uma que
+      // simula imprimir.
+      criterioEstrutural('relatorio', 'exibir as notas, a média e a situação no relatório', (analise, trabalho) => {
+        const semComentarios = String(trabalho?.codigo || '')
+          .split('\n').map((linha) => linha.replace(/#.*$/, '')).join('\n');
+        return /print\s*\([\s\S]*(?:media|média)[\s\S]*(?:situacao|situação|aprovad|reprovad)/i.test(semComentarios)
+          && /print\s*\([^)]*notas/i.test(semComentarios);
+      }),
+      // "Comente o código para explicar cada parte da lógica implementada" está nos
+      // PROCEDIMENTOS e no CHECKLIST do roteiro, e é o que o professor lê primeiro.
+      criterioEstrutural('comentarios', 'comentar o código explicando a lógica', (analise, trabalho) => {
+        // Comentário no fim da linha conta igual ao de linha própria — é até o mais usado para
+        // explicar o que aquela linha faz, que é o que o roteiro pede. Contar só os de linha
+        // própria reprovava um código bem comentado.
+        const comentarios = String(trabalho?.codigo || '').split('\n')
+          .map((linha) => {
+            const posicao = linha.indexOf('#');
+            // Um "#" dentro de string não é comentário; contá-lo deixaria o critério enganável.
+            if (posicao < 0 || /["'][^"']*$/.test(linha.slice(0, posicao))) return '';
+            return linha.slice(posicao).replace(/^#+\s*/, '').trim();
+          })
+          .filter((conteudo) => conteudo.length >= 10
+            // Os comentários que já vinham no esqueleto não contam: não foram escritos por ele.
+            && !/^\d\.\s|^Construa\b|^Defina\b|^Escolha\b/i.test(conteudo));
+        return comentarios.length >= 3;
+      }),
       criterioTexto('explicacao-logica', 'explicar entrada, cálculo e decisão', 'logica', 60),
       criterioTexto('registro-testes', 'registrar os casos testados', 'testes', 40),
       criterioTexto('conclusao', 'escrever uma conclusão própria', 'conclusao', 30),
+    ],
+    // O contrato precisa estar escrito: sem ele, "faça o relatório" não diz o que a função
+    // recebe nem o que devolve, e o estudante adivinha.
+    contrato: 'calcular_media(notas) recebe uma lista de números e devolve a média. Devolver também a situação, como em (media, situacao), é aceito.',
+    conferencias: [
+      conferencia('media-correta', 'a média de [6, 7, 8, 9] é 7.5', 'u1-construir-funcao',
+        'r = calcular_media([6, 7, 8, 9])\n'
+        + 'm = r[0] if isinstance(r, (tuple, list)) else r\n'
+        + 'ok = abs(float(m) - 7.5) < 0.01\n'
+        + 'detalhe = "calcular_media([6, 7, 8, 9]) devolveu %r; a soma 6+7+8+9 e 30 e 30/4 e 7.5" % (m,)'),
+      conferencia('media-outra-lista', 'a mesma função serve para outra lista', 'u1-construir-funcao',
+        'r = calcular_media([10, 5])\n'
+        + 'm = r[0] if isinstance(r, (tuple, list)) else r\n'
+        + 'ok = abs(float(m) - 7.5) < 0.01\n'
+        + 'detalhe = "calcular_media([10, 5]) devolveu %r; o esperado e 7.5" % (m,)'),
+      conferencia('limite-aprovado', 'média exatamente 7 aprova', 'u1-construir-situacao',
+        'ok = False\n'
+        + 'detalhe = "nao encontrei a situacao para a media 7"\n'
+        + 'r = calcular_media([7, 7])\n'
+        + 'if isinstance(r, (tuple, list)) and len(r) > 1:\n'
+        + '    ok = "aprov" in str(r[1]).lower()\n'
+        + '    detalhe = "com media 7 a situacao veio %r; sete e o limite, entao aprova" % (r[1],)\n'
+        + 'else:\n'
+        + '    ok = True\n'
+        + '    detalhe = "a funcao devolve so a media; a situacao e conferida pelo relatorio"'),
+      conferencia('limite-reprovado', 'média abaixo de 7 reprova', 'u1-construir-situacao',
+        'ok = False\n'
+        + 'detalhe = "nao encontrei a situacao para uma media abaixo de 7"\n'
+        + 'r = calcular_media([5, 6])\n'
+        + 'if isinstance(r, (tuple, list)) and len(r) > 1:\n'
+        + '    ok = "reprov" in str(r[1]).lower()\n'
+        + '    detalhe = "com media 5.5 a situacao veio %r" % (r[1],)\n'
+        + 'else:\n'
+        + '    ok = True\n'
+        + '    detalhe = "a funcao devolve so a media; a situacao e conferida pelo relatorio"'),
+      conferencia('lista-vazia', 'a lista vazia não quebra o programa', 'u1-construir-funcao',
+        'try:\n'
+        + '    calcular_media([])\n'
+        + '    ok = True\n'
+        + '    detalhe = "a lista vazia foi tratada sem erro"\n'
+        + 'except ZeroDivisionError:\n'
+        + '    ok = False\n'
+        + '    detalhe = "dividir por len([]) e dividir por zero; trate a lista vazia antes da divisao"'),
     ],
   }, passosU1),
   comPassos({
@@ -586,6 +704,9 @@ export function normalizarTrabalhoDaEntrega(raw, entrega) {
     trabalho[campo] = texto(raw?.[campo], limite);
   }
   for (const campo of CAMPOS_DATA) trabalho[campo] = dataValida(raw?.[campo]);
+  trabalho.imagens = imagensValidas(raw?.imagens);
+  trabalho.capturas = capturasValidas(raw?.capturas);
+  trabalho.linkColab = enderecoValido(raw?.linkColab);
   return trabalho;
 }
 
@@ -600,6 +721,12 @@ export function juntarTrabalhosDaEntrega(a, b, entrega) {
     unido[campo] = textoMaisLongo(aqui[campo], la[campo]);
   }
   for (const campo of CAMPOS_DATA) unido[campo] = dataMaisRecente(aqui[campo], la[campo]);
+  // Os gráficos acompanham a execução mais recente, não se somam: juntar as figuras dos dois
+  // aparelhos poria no PDF um gráfico que não corresponde à saída registrada.
+  unido.imagens = la.imagens.length && la.executadaEm >= aqui.executadaEm ? la.imagens : aqui.imagens;
+  // As capturas o estudante anexa a mao; juntar as dos dois aparelhos nao duplica trabalho.
+  unido.capturas = capturasValidas([...aqui.capturas, ...la.capturas]);
+  unido.linkColab = la.linkColab || aqui.linkColab;
   return unido;
 }
 

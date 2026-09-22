@@ -62,6 +62,11 @@ const celulasDeCodigo = (entrega, source) => {
   ]);
 };
 
+// Só as entregas que desenham alguma coisa devem falar em gráfico. A da Unidade 1 é um
+// relatório de notas em texto, e mencionar figuras ali manda o estudante procurar o que não
+// existe — foi exatamente o que aconteceu.
+const temGrafico = (entrega) => ['u2', 'u3'].includes(entrega?.unidade);
+
 const secaoMarkdown = (titulo, conteudo, fallback = 'Preencha esta seção após executar e conferir o código.') =>
   markdown(`## ${titulo}\n\n${conteudo.trim() || fallback}`);
 
@@ -107,9 +112,14 @@ export function criarNotebookColab({ entrega, trabalho, estudante = {} }) {
     : 'Saída observada';
 
   const cells = [
-    markdown(`# ${entrega.titulo}\n\n**Estudante:** ${nome}  \n**Identificação:** ${identificacao}  \n**Prazo:** 27/09/2026  \n**Origem:** ${entrega.origem}`),
+    // Sem o prazo: ele é o controle de estudo do estudante, não informação para quem corrige, e
+    // a data do PyCampus é a da prova presencial — o AVA tem janela própria para o trabalho.
+    // Imprimir uma data que contradiz o sistema da faculdade só cria dúvida na correção.
+    markdown(`# ${entrega.titulo}\n\n**Estudante:** ${nome}  \n**Identificação:** ${identificacao}  \n**Origem:** ${entrega.origem}`),
     markdown(`## Objetivo\n\n${entrega.resumo}\n\n### Critérios do roteiro\n\n${objetivos}`),
-    markdown(`## Como executar\n\nExecute as células em ordem. Se alterar dados, execute tudo novamente para que a saída e os gráficos correspondam ao código final.${entrega.ambienteEntrega === 'colab' ? '\n\nEste trabalho usa TensorFlow/scikit-learn e precisa da execução final no Google Colab.' : ''}`),
+    // Falar de gráficos numa entrega que não tem gráfico faz o estudante procurar o que não
+    // existe e desconfiar do resto do texto. Só as Unidades 2 e 3 produzem figuras.
+    markdown(`## Como executar\n\nExecute as células em ordem. Se alterar dados, execute tudo novamente para que ${temGrafico(entrega) ? 'a saída e os gráficos correspondam' : 'a saída corresponda'} ao código final.${entrega.ambienteEntrega === 'colab' ? '\n\nEste trabalho usa TensorFlow/scikit-learn e precisa da execução final no Google Colab.' : ''}`),
     ...celulasDeCodigo(entrega, salvo.codigo || entrega.codigoInicial),
     secaoMarkdown('Testes planejados', `${listaTestes}\n\n### Registro do estudante\n\n${salvo.testes}`),
     secaoMarkdown(rotuloResultado, resultado),
@@ -193,7 +203,6 @@ export function criarRelatorioHtml({ entrega, trabalho, estudante = {} }) {
     <div class="meta">
       <div><strong>Estudante:</strong> ${escaparHtml(nome)}</div>
       <div><strong>Identificação:</strong> ${escaparHtml(identificacao)}</div>
-      <div><strong>Prazo:</strong> 27/09/2026</div>
       <div><strong>Execução:</strong> ${escaparHtml(dataExecucao || 'registrar antes do envio')}</div>
     </div>
   </header>

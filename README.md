@@ -61,8 +61,8 @@ Abra **http://127.0.0.1:5173**. O arquivo `iniciar-pycampus.cmd` também inicia 
 - 8 etapas e 48 aulas autorais, cada uma com teoria, exemplo executável, exercício e revisão.
 - Sequência revisada: objetivo e pré-requisitos, exemplo explicado em passos clicáveis, dicas progressivas e preparação dos projetos. A aula de tipos não cobra contas; a sintaxe das contas é ensinada na aula seguinte. Veja `REVISAO-PEDAGOGICA.md`.
 - Laboratório com Python real via Pyodide em um Web Worker, entrada padrão, saída, erros, interrupção e limite de execução.
-- Trilha “Minha faculdade” com 16 aulas das quatro unidades, aplicações dos oito PDFs, plano até 27 de setembro e conferência de lógica além da saída. Veja `REFERENCIA-FACULDADE.md`.
-- Quatro **entregas práticas oficiais**, uma por unidade, integradas em Minha faculdade, Formação, Projetos, busca e painel. Cada estúdio conduz por Entender → Construir → Testar → Explicar → Exportar, salva código e evidências no navegador e gera notebook `.ipynb` para Colab e relatório imprimível. TensorFlow é tratado com honestidade: a preparação roda no PyCampus, mas a execução final da Unidade 4 precisa acontecer no Google Colab. Veja `docs/faculdade/roteiro-entregas-2026-09-27.md`.
+- Trilha “Minha faculdade” com 16 aulas das quatro unidades, aplicações dos oito PDFs, plano até o fim do período de estudo e conferência de lógica além da saída. Veja `REFERENCIA-FACULDADE.md`.
+- Quatro **entregas práticas oficiais**, uma por unidade, integradas em Minha faculdade, Formação, Projetos, busca e painel. Cada estúdio conduz por Entender → Construir → Testar → Explicar → Exportar, salva código e evidências no navegador e gera notebook `.ipynb` para Colab e relatório imprimível. TensorFlow é tratado com honestidade: a preparação roda no PyCampus, mas a execução final da Unidade 4 precisa acontecer no Google Colab. Veja `docs/faculdade/roteiro-entregas.md`.
 - Oito propostas de projetos, com escopo, requisitos e link do repositório.
 - Estúdio para os **oito projetos**, com 42 passos curtos de construção. Cada passo tem tarefa, dicas graduais, execução ou conferência, explicação escrita pelo estudante e registro de progresso. A entrega orienta a criação do README, o teste no computador e a publicação pelo navegador do GitHub. O estudante pode concluir pela autoavaliação ou pedir ao Lumi uma avaliação do repositório público, requisito por requisito.
 - Oficina de prática com 24 miniprojetos curtos, um por assunto das aulas de fundamentos, lógica, estruturas de dados e orientação a objetos. A sequência segue o método PRIMM: **prever** a saída antes de executar, **investigar** o mecanismo (pergunta sobre o código e uma linha para explicar sem consultar), **mudar** uma parte do exemplo e **criar** a própria versão, terminando com uma explicação escrita.
@@ -96,7 +96,7 @@ No fim do roteiro:
 4. revise nome, código, testes, explicação e conclusão;
 5. envie os arquivos manualmente no AVA — o PyCampus prepara, mas nunca afirma que enviou por você.
 
-O roteiro intensivo diário e a conferência final estão em [`docs/faculdade/roteiro-entregas-2026-09-27.md`](docs/faculdade/roteiro-entregas-2026-09-27.md).
+O roteiro intensivo diário e a conferência final estão em [`docs/faculdade/roteiro-entregas.md`](docs/faculdade/roteiro-entregas.md).
 
 ## Liberação das etapas
 

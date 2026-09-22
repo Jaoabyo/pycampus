@@ -2,6 +2,8 @@ const NL = String.fromCharCode(10);
 
 export const solucoesEntregasFaculdade = {
   'entrega-u1': [
+    '# Calcula a media de uma lista de notas. Devolve None quando a lista esta vazia,',
+    '# porque dividir por len([]) seria dividir por zero.',
     'def calcular_media(notas):',
     '    if not notas:',
     '        return None',
@@ -10,15 +12,20 @@ export const solucoesEntregasFaculdade = {
     '        total += nota',
     '    return total / len(notas)',
     '',
+    '# O limite da disciplina: media maior ou igual a 7 aprova; abaixo disso reprova.',
+    'def situacao_do_aluno(media):',
+    '    return "Aprovado" if media >= 7 else "Reprovado"',
+    '',
+    '# As notas ficam guardadas em uma lista, como o roteiro pede.',
     'notas = [6, 7, 7, 8]',
     'media_da_turma = calcular_media(notas)',
     'print(f"Média da turma: {media_da_turma:.1f}")',
     '',
+    '# Relatorio final: o roteiro exige mostrar as notas, a media e a situacao.',
     'estudantes = [("Ana", [8, 7]), ("Bia", [5, 6]), ("Caio", [7, 7])]',
     'for nome, notas_do_estudante in estudantes:',
     '    media = calcular_media(notas_do_estudante)',
-    '    situacao = "Aprovado" if media >= 7 else "Reprovado"',
-    '    print(f"{nome}: média {media:.1f} — {situacao}")',
+    '    print(f"{nome} — notas {notas_do_estudante} · média {media:.1f} · {situacao_do_aluno(media)}")',
   ].join(NL),
 
   'entrega-u2': [

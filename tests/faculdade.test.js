@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { aulasDaFaculdade, tarefasDaFaculdade, unidades, aulasDaUnidade, tarefasDaUnidade, diasAteProva, requisitosFaltandoDaFaculdade, proximaAcaoDaFaculdade, planoDeEstudosDaFaculdade } from '../src/faculdade.js';
+import { aulasDaFaculdade, tarefasDaFaculdade, unidades, aulasDaUnidade, tarefasDaUnidade, diasAteProva, diasAteOFimDoEstudo, FIM_DO_ESTUDO, DATA_PROVA, PRAZO_TRABALHO, requisitosFaltandoDaFaculdade, proximaAcaoDaFaculdade, planoDeEstudosDaFaculdade } from '../src/faculdade.js';
 import { solucoesDaFaculdade } from './faculdade-reference.js';
 import { buscarNaFaculdade, panoramaDaFaculdade } from '../src/faculdade-integrada.js';
 import { initialState } from '../src/progress.js';
@@ -77,10 +77,17 @@ test('saída decorada não passa e a solução de referência usa a lógica pedi
   }
 });
 
-test('a contagem do prazo usa dias civis e chega a zero em 27 de setembro', () => {
-  assert.equal(diasAteProva(new Date(2026, 8, 17, 23, 30)), 10);
-  assert.equal(diasAteProva(new Date(2026, 8, 27, 8, 0)), 0);
-  assert.equal(diasAteProva(new Date(2026, 8, 28, 8, 0)), -1);
+// O calendário da disciplina tem três datas distintas, e fundi-las custou dias de estudo: a
+// plataforma marcava a prova no fim do período de estudo, três dias antes da prova real.
+test('as três datas do calendário são distintas e contadas em dias civis', () => {
+  assert.equal(FIM_DO_ESTUDO, '2026-09-27');
+  assert.equal(DATA_PROVA, '2026-09-30');
+  assert.equal(PRAZO_TRABALHO, '2026-10-17');
+
+  assert.equal(diasAteProva(new Date(2026, 8, 20, 23, 30)), 10);
+  assert.equal(diasAteProva(new Date(2026, 8, 30, 8, 0)), 0);
+  assert.equal(diasAteProva(new Date(2026, 9, 1, 8, 0)), -1);
+  assert.equal(diasAteOFimDoEstudo(new Date(2026, 8, 22, 8, 0)), 5);
 });
 
 test('a próxima ação começa na primeira aula e explica o motivo', () => {
@@ -106,37 +113,47 @@ test('quando tudo foi estudado, a ação vira revisão sem criar aula falsa', ()
   assert.match(acao.titulo, /Revisar/);
 });
 
-test('o plano diário reserva o último dia para revisão e limita o ritmo a duas aulas', () => {
+test('as aulas terminam no fim do período de estudo e os dias seguintes são revisão', () => {
   const plano = planoDeEstudosDaFaculdade({ faculdade: { feitas: [] } }, new Date(2026, 8, 17));
-  assert.equal(plano.dias.length, 10);
-  assert.equal(plano.dias.at(-1).tipo, 'revisao');
-  assert.ok(plano.dias.slice(0, -1).every(dia => dia.aulas.length <= 2));
+  assert.equal(plano.dias.length, 13, 'do dia 17 até a véspera da prova em 30');
   assert.deepEqual(plano.hoje.aulas.map(aula => aula.id), ['u1a1', 'r1']);
-  // Nove dias de aula a duas por dia cobrem as dezesseis; nada deveria sobrar.
+  assert.ok(plano.dias.every(dia => dia.aulas.length <= 2));
+
+  // Dez dias de aula, de 17 a 26, cobrem as dezesseis a duas por dia; nada deveria sobrar.
   assert.deepEqual(plano.foraDoPlano, []);
+
+  // O AVA fecha o estudo em 27/09: de lá até a prova, tudo é revisão.
+  const comAula = plano.dias.filter(dia => dia.tipo === 'aulas');
+  const revisao = plano.dias.filter(dia => dia.tipo === 'revisao');
+  assert.ok(comAula.every(dia => dia.data < FIM_DO_ESTUDO), 'nenhuma aula depois do período de estudo');
+  assert.ok(revisao.every(dia => dia.data >= FIM_DO_ESTUDO));
+  assert.equal(revisao.length, 3, '27, 28 e 29 de setembro');
 });
 
 // O limite de duas aulas por dia é proposital, mas perto da prova ele pode não cobrir o que
 // falta. Quando isso acontece, as aulas que não couberam precisam ser ditas pelo nome: um
 // plano que termina em revisão, calado, faria o estudante acreditar que tudo coube.
-test('o plano avisa quais aulas não cabem no ritmo até a prova', () => {
+// Com as datas certas, as dez aulas pendentes cabem nos cinco dias que restam do período de
+// estudo. Este é o caso que motivou o aviso: em 25/09 sobram dois dias de aula, e oito aulas
+// ficariam de fora — um plano que terminasse em revisão, calado, faria o estudante acreditar
+// que tudo coube.
+test('o plano avisa quais aulas não cabem antes do fim do período de estudo', () => {
   const feitas = aulasDaFaculdade.slice(0, 6).map(aula => aula.id);
-  const plano = planoDeEstudosDaFaculdade({ faculdade: { feitas } }, new Date(2026, 8, 22));
-
-  assert.equal(plano.diasRestantes, 5);
-  assert.ok(plano.dias.slice(0, -1).every(dia => dia.aulas.length <= 2), 'o limite continua valendo');
-
-  const agendadas = plano.dias.flatMap(dia => dia.aulas.map(aula => aula.id));
   const pendentes = aulasDaFaculdade.filter(aula => !feitas.includes(aula.id)).map(aula => aula.id);
-  assert.equal(agendadas.length + plano.foraDoPlano.length, pendentes.length,
-    'toda aula pendente está agendada ou declarada fora do plano');
+
+  const noPrazo = planoDeEstudosDaFaculdade({ faculdade: { feitas } }, new Date(2026, 8, 22));
+  assert.deepEqual(noPrazo.foraDoPlano, [], 'em 22/09 as dez aulas cabem nos cinco dias de estudo');
+
+  const apertado = planoDeEstudosDaFaculdade({ faculdade: { feitas } }, new Date(2026, 8, 25));
+  assert.ok(apertado.dias.every(dia => dia.aulas.length <= 2), 'o limite de duas por dia continua valendo');
+  const agendadas = apertado.dias.flatMap(dia => dia.aulas.map(aula => aula.id));
   assert.deepEqual(
-    [...agendadas, ...plano.foraDoPlano.map(aula => aula.id)].sort(),
+    [...agendadas, ...apertado.foraDoPlano.map(aula => aula.id)].sort(),
     [...pendentes].sort(),
     'nenhuma aula pendente some do plano',
   );
-  assert.ok(plano.foraDoPlano.length > 0, 'dez aulas não cabem em quatro dias a duas por dia');
-  assert.equal(plano.ritmoNecessario, 3, 'o ritmo que caberia é dito ao estudante');
+  assert.ok(apertado.foraDoPlano.length > 0, 'dez aulas não cabem em dois dias a duas por dia');
+  assert.ok(apertado.ritmoNecessario > 2, 'o ritmo que caberia é dito ao estudante');
 });
 
 test('o plano não considera aulas desconhecidas e informa revisão quando o prazo acabou', () => {

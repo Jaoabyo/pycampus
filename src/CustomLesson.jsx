@@ -109,7 +109,7 @@ export default function CustomLesson({ weakness, evidence, lessonId, state, upda
         <div className="expected"><span>SAÍDA ESPERADA</span><pre>{lesson.saidaDesafio}</pre></div>
         {lesson.entradasDesafio?.length > 0 && <p className="small">Este teste usa automaticamente as respostas <strong>{lesson.entradasDesafio.join(', ')}</strong>, na ordem dos input(). Você não precisa digitá-las durante a execução.</p>}
       </div>
-      <CodeEditor code={code} onChange={value => { setCode(value); setPassed(false); }} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} success={python.success} filename="licao_do_lumi.py" runLabel="Testar minha resposta" emptyOutput="Escreva sua resposta e execute." />
+      <CodeEditor code={code} onChange={value => { setCode(value); setPassed(false); }} busy={python.busy} onRun={run} onStop={python.stop} output={python.output} imagens={python.imagens} success={python.success} filename="licao_do_lumi.py" runLabel="Testar minha resposta" emptyOutput="Escreva sua resposta e execute." />
       {passed && <p className="success-text" role="status"><Icon name="CheckCircle2" size={16} /> Saída certa. Agora explique em voz alta por que funciona — é isso que fixa.</p>}
       <button className="text-button" onClick={() => setPuzzle(!puzzle)}><Icon name="Boxes" size={15} /> {puzzle ? 'Fechar o quebra-cabeça' : 'Travou? Monte o código embaralhado'}</button>
       {puzzle && <ParsonsPuzzle item={{ id: `lumi-${weakness.id}`, puzzle: { blocks: toBlocks(lesson.solucao), prefix: '', distractor: '' } }} />}

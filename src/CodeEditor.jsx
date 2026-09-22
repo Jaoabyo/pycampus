@@ -14,7 +14,7 @@ import './project-studio.css';
 // falhar com EOFError sem explicação.
 export const interativo = typeof globalThis !== 'undefined' && globalThis.crossOriginIsolated === true;
 
-export default function CodeEditor({ code, onChange, busy, onRun, onStop, output, success, stdin, setStdin, inputRequest = null, onReply, celebrate = 0, filename = 'main.py', readOnly = false, runDisabled = false, runLabel = 'Executar código', emptyOutput = 'A saída do seu programa aparecerá aqui.', aoVivo = null }) {
+export default function CodeEditor({ code, onChange, busy, onRun, onStop, output, imagens = [], success, stdin, setStdin, inputRequest = null, onReply, celebrate = 0, filename = 'main.py', readOnly = false, runDisabled = false, runLabel = 'Executar código', emptyOutput = 'A saída do seu programa aparecerá aqui.', aoVivo = null }) {
   const editor = useRef(null);
   const reward = useRef({ count: 0, code: '', output: '', valid: false });
   if (reward.current.count !== celebrate) reward.current = { count: celebrate, code, output, valid: celebrate > 0 && success === true && !busy };
@@ -37,6 +37,7 @@ export default function CodeEditor({ code, onChange, busy, onRun, onStop, output
     <div className="run-bar"><span>{runDisabled ? 'Código editável para sua entrega' : 'Ctrl + Enter para executar'}</span>{busy ? <button className="button danger" onClick={() => onStop()}><Icon name="Square" size={15} /> Interromper</button> : <button className="button primary" disabled={runDisabled} onClick={onRun}><Icon name="Play" size={15} /> {runLabel}</button>}</div>
     <div className="console-heading"><Icon name="Terminal" size={15} /> Saída do programa <span className={success === false ? 'error-text' : 'success-text'}>{busy ? '● Executando' : success === true ? '✓ Executado' : success === false ? 'Verifique a mensagem' : ''}</span>{showReward && <span key={celebrate} className="run-check" role="status"><Icon name="Sparkles" size={13} /> Deu certo!</span>}</div>
     <pre className={`console ${success === false ? 'error-text' : ''}`} aria-live="polite">{output || emptyOutput}</pre>
+    {imagens.length > 0 && <div className="graficos" role="group" aria-label={imagens.length === 1 ? 'Gráfico gerado pelo programa' : `${imagens.length} gráficos gerados pelo programa`}>{imagens.map((imagem, indice) => <figure key={indice}><img src={imagem} alt={imagens.length === 1 ? 'Gráfico gerado pelo seu programa' : `Gráfico ${indice + 1} gerado pelo seu programa`} /><figcaption>{imagens.length === 1 ? 'Gráfico do seu programa' : `Gráfico ${indice + 1} de ${imagens.length}`}</figcaption></figure>)}</div>}
     {inputRequest !== null && <form className="input-question" onSubmit={e => { e.preventDefault(); onReply(response); setResponse(''); }}><label>O programa perguntou: <strong>{inputRequest}</strong><input autoFocus aria-label="Resposta ao input" maxLength={2000} value={response} onChange={e => setResponse(e.target.value)} autoComplete="off" /></label><button type="submit" className="button primary">Enviar resposta</button><p>Digite só a resposta, sem aspas. O programa continua depois que você enviar.</p></form>}
   </div>;
 }

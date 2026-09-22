@@ -1,6 +1,22 @@
-# Roteiro das entregas práticas — até 27/09/2026
+# Roteiro das entregas práticas
 
 Este roteiro organiza os quatro trabalhos oficiais de Linguagem de Programação. O objetivo é aprender e produzir evidências próprias, não apenas copiar uma solução. O PyCampus salva o rascunho no navegador; faça também um backup em Configurações antes de limpar dados ou trocar de aparelho.
+
+## As três datas do calendário
+
+Elas estavam fundidas numa só, e isso custava dias de estudo. São diferentes:
+
+| Data | O que é |
+| --- | --- |
+| **27/09/2026** | Fim do **período de estudo** no AVA — é até aqui que as aulas devem estar concluídas. |
+| **30/09/2026** | A **prova presencial** (primeira chamada, dentro da janela de 26/09 a 03/10). |
+| **17/10/2026** | Fim do **período de entrega do trabalho**. |
+
+Os dias 28 e 29 de setembro não são sobra: são os dias de revisão entre o fim do estudo e a prova.
+
+Sobre o prazo do trabalho: o calendário da disciplina diz **17/10** e a tela de envio diz **27/10**. O PyCampus usa a data mais curta, que é a que não corre risco. Se o seu mediador informar outra, vale a dele.
+
+O prazo **não é impresso** no PDF nem no notebook entregues: ele é o seu controle de estudo, não informação para quem corrige, e uma data que contradiga o sistema da faculdade só criaria dúvida na correção.
 
 ## As quatro entregas
 
@@ -24,12 +40,13 @@ Ainda na Unidade 3: o roteiro escreve `CREATE TABLE vendas1` sem `IF NOT EXISTS`
 
 ## Agenda intensiva
 
-- **22/09 — Unidade 1:** revisar as quatro aulas-base, construir a gestão de notas e testar média abaixo de 7, exatamente 7, acima de 7 e lista vazia.
-- **23/09 — Unidade 2:** revisar coleções e classes, construir a biblioteca e conferir busca existente, busca inexistente e contagem por gênero.
-- **24/09 — Unidade 3:** revisar SQLite e pandas, construir a análise de vendas, reexecutar sem duplicar registros e escrever três insights com números.
-- **25/09 — Unidade 4:** estudar treino/teste, normalização, avaliação e predição; construir o notebook Iris e executar a prática local para entender o pipeline.
-- **26/09 — Colab e relatórios:** executar os quatro notebooks do início ao fim no Google Colab, registrar saídas reais, abrir os relatórios e salvar os PDFs.
-- **27/09 — conferência e envio:** revisar a identificação e os critérios, verificar o limite de 10 MB e enviar manualmente no AVA antes do horário informado pela faculdade.
+A prova vem antes do trabalho, então a prioridade até 27/09 são **as aulas**. As entregas 2, 3 e 4 têm até outubro e não precisam competir com a véspera da prova.
+
+- **22 a 26/09 — terminar as 16 aulas.** Duas por dia fecham as que faltam dentro do período de estudo do AVA. É o que o plano da tela mostra.
+- **Em paralelo, a Unidade 1.** Ela já está construída; falta exibir as notas no relatório, comentar o código, anexar o print e baixar o PDF.
+- **27, 28 e 29/09 — revisão.** Refazer desafios sem olhar a resposta, refazer os quatro exercícios de unidade e explicar em voz alta o que cada código faz. É isto que a prova cobra, sem alternativas à vista.
+- **30/09 — prova presencial.**
+- **Depois da prova, até 17/10 — Unidades 2, 3 e 4.** Uma entrega de cada vez, com calma: biblioteca, análise de vendas e Iris.
 
 Se um dia atrasar, não pule a base para “ganhar tempo”: conclua primeiro a Unidade 1, depois a 2, a 3 e a 4. Na última revisão, priorize critérios pendentes e erros reais de execução.
 
