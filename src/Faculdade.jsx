@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Icon, irAoTopo } from './ui.jsx';
+import { Icon, Progress, irAoTopo } from './ui.jsx';
 import {
   unidades,
   aulasDaUnidade,
@@ -29,14 +29,17 @@ import { ensinoDaFaculdade } from './faculdade-ensino.js';
 import { projetosDaFaculdade } from './faculdade-projetos.js';
 import { exercicioDaUnidade } from './faculdade-exercicios.js';
 import { entregasDaFaculdade } from './faculdade-entregas.js';
+import { progressoDaUnidade, recompensasDaFaculdade, XP_FACULDADE, bonusDaEntrega } from './faculdade-recompensas.js';
 import './lesson.css';
 import './practice.css';
 import './project-studio.css';
 import './faculdade.css';
+import './experience.css';
+import './faculdade-mapa.css';
 
 // A trilha da disciplina da faculdade, fora das oito etapas e sem trava: o semestre não espera
-// o estudante terminar 48 aulas. O progresso daqui não concede XP das etapas nem destrava
-// nada — ele conta o dia de estudo, como qualquer outra atividade.
+// o estudante terminar 48 aulas. A faculdade soma XP e conta o dia de estudo;
+// o avanço nas oito etapas continua dependendo das atividades de cada etapa.
 const itemDaFaculdade = (id) =>
   [...aulasDaFaculdade, ...projetosDaFaculdade].find(
     (item) => item.id === id,
@@ -50,6 +53,12 @@ export default function Faculdade({
 }) {
   const [aberta, setAberta] = useState(() => itemDaFaculdade(initialItemId));
   const [exercicio, setExercicio] = useState(null);
+  const recompensas = recompensasDaFaculdade(state);
+  const progressoUnidades = unidades.map(u => progressoDaUnidade(state, u.id, recompensas));
+  const concluidas = progressoUnidades.filter(u => u.concluida).map(u => u.id).join(',');
+  const atual = progressoUnidades.find(u => !u.concluida)?.id || null;
+  const [selecao, setSelecao] = useState(null);
+  const unidadeAberta = selecao?.concluidas === concluidas ? selecao.id : atual;
   useEffect(() => {
     const item = itemDaFaculdade(initialItemId);
     if (item) setAberta(item);
@@ -288,194 +297,189 @@ export default function Faculdade({
         </div>
       </details>
 
-      {unidades.map((unidade) => {
-        const aulas = aulasDaUnidade(unidade.id);
-        const prontas = aulas.filter((a) => feitas.includes(a.id)).length;
-        const entrega = entregasDaFaculdade.find((item) => item.unidade === unidade.id);
-        const trabalho = state.faculdade?.entregas?.[entrega.id] || {};
-        const passosConcluidos = new Set(trabalho.passosConcluidos || []);
-        const proximoPasso = entrega.passos.find((passo) => !passosConcluidos.has(passo.id));
-        const preRequisitosPendentes = entrega.preRequisitos.filter((id) => !feitas.includes(id));
-        // A unidade não é só aulas: tem o miniprojeto, o exercício do AVA e a entrega oficial.
-        // Contar apenas aulas fazia o estudante terminar tudo e continuar vendo "4 de 4", sem
-        // registro do que mais havia feito.
-        const projetosDaUnidade = projetosDaFaculdade.filter((p) => p.unidade === unidade.id);
-        const exercicio = exercicioDaUnidade(unidade.id);
-        const atividades = [
-          ...projetosDaUnidade.map((p) => ({ id: p.id, feito: feitas.includes(p.id) })),
-          ...(exercicio ? [{ id: exercicio.id, feito: feitas.includes(exercicio.id) }] : []),
-          { id: entrega.id, feito: passosConcluidos.size === entrega.passos.length },
-        ];
-        const atividadesFeitas = atividades.filter(({ feito }) => feito).length;
-        return (
-          <section className="card unidade-card" key={unidade.id}>
-            <div className="step-head">
-              <span className={`icon-tile ${unidade.cor}`}>
-                <Icon name={unidade.icone} size={21} />
-              </span>
-              <div>
-                <div className="eyebrow">
-                  UNIDADE {unidade.numero} · {prontas} DE {aulas.length} AULAS ·{' '}
-                  {atividadesFeitas} DE {atividades.length} ATIVIDADES
-                </div>
-                <h3>{unidade.titulo}</h3>
-              </div>
-            </div>
-            <p>{unidade.resumo}</p>
-            <p className="small">
-              <strong>Competência da unidade:</strong> {unidade.competencia}
-            </p>
-            <div className="faculdade-aulas">
-              {aulas.map((aula, indice) => (
-                <button
-                  key={aula.id}
-                  className={`faculdade-aula ${feitas.includes(aula.id) ? 'is-feita' : ''}`}
-                  onClick={() => abrir(aula)}
-                >
-                  <span className="faculdade-aula-num">
-                    {feitas.includes(aula.id) ? (
-                      <Icon name="Check" size={14} />
-                    ) : (
-                      indice + 1
-                    )}
-                  </span>
+      <section className="faculdade-recompensas card" aria-label="Recompensas da Faculdade">
+        <div><span className="eyebrow">SEU ESFORÇO CONTA</span><h2>{recompensas.xp.toLocaleString('pt-BR')} XP na Faculdade</h2><p>As atividades que você já concluiu também contam. Refazer serve para revisar; a recompensa é recebida uma vez.</p></div>
+        <div className="faculdade-recompensas-valores"><span>Aula <b>+100 XP</b></span><span>Miniprojeto <b>+250 XP</b></span><span>Exercício <b>+300 XP</b></span><span>Passo da entrega <b>+25 XP</b></span></div>
+        <p className="small">Ao concluir a entrega prática, receba mais {bonusDaEntrega(entregasDaFaculdade[0])} a {bonusDaEntrega(entregasDaFaculdade[3])} XP de bônus, conforme a complexidade. Complete cada unidade para conquistar seu emblema.</p>
+      </section>
+      {/* O mapa é o mesmo de "Minha formação" — mesmas classes, mesmo zigue-zague em duas
+          colunas —, para as duas trilhas se lerem do mesmo jeito. Por dentro, cada atividade é
+          uma linha: antes a unidade aberta virava um bloco de mais de mil pixels, com a entrega,
+          o miniprojeto e o exercício em cartões inteiros. O conteúdo das unidades fechadas fica
+          no documento (hidden, não desmontado) para o atalho de teclado e a busca da página. */}
+      <div className="learning-map faculdade-mapa" aria-label="Mapa das unidades da Faculdade">
+        <div className="map-path" aria-hidden="true" />
+        {unidades.map((unidade) => {
+          const resumo = progressoUnidades.find((u) => u.id === unidade.id);
+          const expandida = unidadeAberta === unidade.id;
+          const aulas = aulasDaUnidade(unidade.id);
+          const prontas = aulas.filter((a) => feitas.includes(a.id)).length;
+          const entrega = entregasDaFaculdade.find((item) => item.unidade === unidade.id);
+          const trabalho = state.faculdade?.entregas?.[entrega.id] || {};
+          const passosConcluidos = new Set(trabalho.passosConcluidos || []);
+          const proximoPasso = entrega.passos.find((passo) => !passosConcluidos.has(passo.id));
+          const preRequisitosPendentes = entrega.preRequisitos.filter((id) => !feitas.includes(id));
+          const projeto = projetosDaFaculdade.find((p) => p.unidade === unidade.id);
+          const projetoFeito = projeto && feitas.includes(projeto.id);
+          const exercicioUnidade = exercicioDaUnidade(unidade.id);
+          const exercicioFeito = exercicioUnidade && feitas.includes(exercicioUnidade.id);
+          const estado = resumo.concluida ? 'is-complete' : unidade.id === atual ? 'is-current' : 'is-open';
+          return (
+            <article
+              className={`map-stage faculdade-mapa-unidade ${estado} ${expandida ? 'is-selected' : ''}`}
+              key={unidade.id}
+            >
+              <button
+                className="map-node faculdade-unidade-toggle"
+                aria-expanded={expandida}
+                aria-controls={`conteudo-${unidade.id}`}
+                onClick={() => setSelecao({ id: expandida ? null : unidade.id, concluidas })}
+              >
+                <span className="map-index">
+                  {resumo.concluida ? <Icon name="Check" size={20} /> : unidade.numero}
+                </span>
+                <span className="map-node-copy">
+                  <small>
+                    UNIDADE {unidade.numero} ·{' '}
+                    {resumo.concluida ? 'CONQUISTADA' : unidade.id === atual ? 'SUA PRÓXIMA CONQUISTA' : 'CONTINUE APRENDENDO'}
+                  </small>
+                  <strong>{unidade.titulo}</strong>
+                  <em>
+                    {resumo.concluida
+                      ? `Unidade completa · ${resumo.xp.toLocaleString('pt-BR')} XP · emblema conquistado`
+                      : `${resumo.feitas} de ${resumo.total} atividades · ${resumo.xp.toLocaleString('pt-BR')} de ${resumo.xpMaximo.toLocaleString('pt-BR')} XP`}
+                  </em>
+                </span>
+                <span className={`icon-tile ${unidade.cor}`}>
+                  <Icon name={resumo.concluida ? 'Award' : unidade.icone} size={22} />
+                </span>
+              </button>
+
+              <div
+                id={`conteudo-${unidade.id}`}
+                className="map-details faculdade-unidade-conteudo"
+                hidden={!expandida}
+              >
+                <div className="map-progress">
                   <span>
-                    <strong>{aula.titulo}</strong>
+                    {prontas} de {aulas.length} aulas · {resumo.atividadesFeitas} de {resumo.totalAtividades} atividades
+                  </span>
+                  <Progress
+                    value={resumo.total ? (resumo.feitas / resumo.total) * 100 : 0}
+                    label={`Progresso da Unidade ${unidade.numero}: ${resumo.feitas} de ${resumo.total}`}
+                  />
+                </div>
+                <p className="faculdade-mapa-resumo">{unidade.resumo}</p>
+
+                <div className="map-lessons">
+                  {aulas.map((aula, indice) => {
+                    const feita = feitas.includes(aula.id);
+                    return (
+                      <button
+                        key={aula.id}
+                        className={`faculdade-mapa-aula ${feita ? 'is-feita' : ''}`}
+                        onClick={() => abrir(aula)}
+                      >
+                        <span>{feita ? <Icon name="CheckCircle2" size={18} /> : indice + 1}</span>
+                        <strong>{aula.titulo}</strong>
+                        <em>{aula.minutos} min · {XP_FACULDADE.aula} XP</em>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {projeto && (
+                  <button
+                    className={`map-required faculdade-mapa-projeto ${projetoFeito ? 'is-feito' : ''}`}
+                    onClick={() => abrir(projeto)}
+                  >
+                    <Icon name={projetoFeito ? 'CheckCircle2' : 'Hammer'} size={18} />
+                    <span>
+                      <strong>{projeto.titulo}</strong>
+                      <small>
+                        {projetoFeito
+                          ? `Concluído · ${XP_FACULDADE.projeto} XP`
+                          : `Miniprojeto que junta as ${aulas.length} aulas · +${XP_FACULDADE.projeto} XP`}
+                      </small>
+                    </span>
+                    <Icon name="ArrowRight" size={16} />
+                  </button>
+                )}
+
+                {exercicioUnidade && (
+                  <button
+                    className={`map-required faculdade-mapa-exercicio ${exercicioFeito ? 'is-feito' : ''}`}
+                    onClick={() => {
+                      irAoTopo();
+                      setExercicio(exercicioUnidade);
+                    }}
+                  >
+                    <Icon name={exercicioFeito ? 'CheckCircle2' : 'ListTodo'} size={18} />
+                    <span>
+                      <strong>{exercicioUnidade.titulo}</strong>
+                      <small>
+                        {exercicioFeito
+                          ? `Acertou as ${exercicioUnidade.questoes.length} · ${XP_FACULDADE.exercicio} XP`
+                          : `${exercicioUnidade.questoes.length} questões ${exercicioUnidade.recebido ? 'do AVA' : 'no formato do AVA'} · +${XP_FACULDADE.exercicio} XP`}
+                      </small>
+                    </span>
+                    <Icon name="ArrowRight" size={16} />
+                  </button>
+                )}
+
+                <button
+                  className={`map-project faculdade-mapa-entrega ${resumo.entregaConcluida ? 'is-feito' : ''}`}
+                  onClick={() => navigate('faculdade', { facultyItem: entrega.id })}
+                >
+                  <Icon name={resumo.entregaConcluida ? 'CheckCircle2' : 'FolderCode'} size={19} />
+                  <span>
                     <small>
-                      {aula.minutos} min ·{' '}
-                      {aula.origem ||
-                        `aula ${indice + 1} da Unidade ${unidade.numero}`}
+                      ENTREGA PRÁTICA · {passosConcluidos.size}/{entrega.passos.length} PASSOS · ATÉ {emNumeros(PRAZO_TRABALHO)}
+                    </small>
+                    <strong>{entrega.titulo}</strong>
+                    <small>
+                      {resumo.entregaConcluida
+                        ? 'Pronta para o AVA · confira os arquivos antes de enviar'
+                        : preRequisitosPendentes.length
+                          ? `${preRequisitosPendentes.length} aulas-base pendentes · +${bonusDaEntrega(entrega)} XP ao concluir`
+                          : proximoPasso
+                            // "Próximo" para um passo que ficou para trás confundia quem estava em
+                            // 7 de 9: o que falta não está adiante, está pulado.
+                            ? `Falta concluir: ${proximoPasso.titulo} · +${bonusDaEntrega(entrega)} XP ao concluir`
+                            : `Roteiro concluído · +${bonusDaEntrega(entrega)} XP ao concluir`}
                     </small>
                   </span>
                   <Icon name="ArrowRight" size={17} />
                 </button>
-              ))}
-            </div>
-            <div className={`faculdade-entrega-unidade ${passosConcluidos.size === entrega.passos.length ? 'is-feito' : ''}`}>
-              <div>
-                <div className="faculdade-atividade-topo">
-                  <div className="eyebrow">ENTREGA PRÁTICA · ATÉ {emNumeros(PRAZO_TRABALHO)}</div>
-                  {passosConcluidos.size === entrega.passos.length && (
-                    <span className="faculdade-selo">
-                      <Icon name="CheckCircle2" size={15} /> Pronta para o AVA
-                    </span>
-                  )}
-                </div>
-                <h3>{entrega.titulo}</h3>
-                <p>{entrega.resumo}</p>
-                <small>
-                  {preRequisitosPendentes.length
-                    ? `${preRequisitosPendentes.length} aulas-base ainda pendentes. Você pode abrir o roteiro e aprender na ordem.`
-                    : proximoPasso
-                      // Chamar de "próximo" um passo que ficou para trás confunde quem está em
-                      // 7 de 9: o que falta não está adiante, está pulado.
-                      ? `Falta concluir: ${proximoPasso.titulo}`
-                      : 'Roteiro concluído. Confira os critérios e os arquivos antes de enviar.'}
-                </small>
-              </div>
-              <div className="faculdade-entrega-unidade-acao">
-                <strong>{passosConcluidos.size}/{entrega.passos.length}</strong>
-                <span>passos</span>
-                <button
-                  className="button primary"
-                  onClick={() => navigate('faculdade', { facultyItem: entrega.id })}
-                >
-                  {passosConcluidos.size ? 'Continuar entrega' : 'Começar com orientação'}
-                  <Icon name="ArrowRight" size={16} />
-                </button>
-              </div>
-            </div>
-            {projetosDaFaculdade
-              .filter((projeto) => projeto.unidade === unidade.id)
-              .map((projeto) => (
-                <div className={`faculdade-projeto ${feitas.includes(projeto.id) ? 'is-feito' : ''}`} key={projeto.id}>
-                  <div className="faculdade-atividade-topo">
-                    <div className="eyebrow">REÚNA O QUE APRENDEU</div>
-                    {feitas.includes(projeto.id) && (
-                      <span className="faculdade-selo">
-                        <Icon name="CheckCircle2" size={15} /> Concluído
-                      </span>
-                    )}
-                  </div>
-                  <h3>{projeto.titulo}</h3>
-                  <p>{projeto.teoria[0]}</p>
-                  <p className="small">
-                    Preparação: as {aulas.length} aulas desta unidade.{' '}
-                    {prontas === aulas.length
-                      ? 'Aulas registradas: hora de aplicar.'
-                      : `Você registrou ${prontas} de ${aulas.length}; pode consultar o projeto e voltar às aulas quando precisar.`}
+
+                <details className="faculdade-tarefas">
+                  <summary>Tarefas que o professor propõe nesta unidade</summary>
+                  {tarefasDaUnidade(unidade.id).map((tarefa) => (
+                    <div className="faculdade-tarefa" key={tarefa.id}>
+                      <div className="eyebrow">{tarefa.origem}</div>
+                      <strong>{tarefa.titulo}</strong>
+                      <p>{tarefa.enunciado}</p>
+                      <p className="small">Pratica: {tarefa.pratica.join(', ')}</p>
+                    </div>
+                  ))}
+                  <p className="small muted">
+                    Estas são as aplicações propostas na apostila e nos slides.
+                    Resolva cada uma no Laboratório Python e guarde o arquivo: é o
+                    que mais se parece com o que vai ser avaliado.
                   </p>
-                  <button
-                    className="button primary"
-                    onClick={() => abrir(projeto)}
-                  >
-                    {feitas.includes(projeto.id)
-                      ? 'Revisar projeto'
-                      : 'Abrir roteiro do projeto'}{' '}
-                    <Icon name="ArrowRight" size={16} />
-                  </button>
-                </div>
-              ))}
-            {exercicioDaUnidade(unidade.id) && (
-              <div className={`unidade-exercicio ${feitas.includes(exercicioDaUnidade(unidade.id).id) ? 'is-feito' : ''}`}>
-                <div className="faculdade-atividade-topo">
-                  <div className="eyebrow">
-                    {exercicioDaUnidade(unidade.id).recebido
-                      ? 'EXERCÍCIO DE UNIDADES · DO AVA'
-                      : 'TREINO NO FORMATO DO AVA'}
-                  </div>
-                  {feitas.includes(exercicioDaUnidade(unidade.id).id) && (
-                    <span className="faculdade-selo">
-                      <Icon name="CheckCircle2" size={15} /> Acertou as 5
-                    </span>
-                  )}
-                </div>
-                <h3>{exercicioDaUnidade(unidade.id).titulo}</h3>
-                <p>
-                  {exercicioDaUnidade(unidade.id).questoes.length} questões de múltipla
-                  escolha. Cada resposta vem com o motivo de a alternativa certa estar
-                  certa — que é o que a prova presencial vai cobrar sem alternativas.
-                </p>
-                <button
-                  className="button primary"
-                  onClick={() => {
-                    irAoTopo();
-                    setExercicio(exercicioDaUnidade(unidade.id));
-                  }}
-                >
-                  {feitas.includes(exercicioDaUnidade(unidade.id).id)
-                    ? 'Refazer exercício'
-                    : 'Fazer exercício'}{' '}
-                  <Icon name="ArrowRight" size={16} />
-                </button>
+                </details>
               </div>
-            )}
-            <details className="faculdade-tarefas">
-              <summary>Tarefas que o professor propõe nesta unidade</summary>
-              {tarefasDaUnidade(unidade.id).map((tarefa) => (
-                <div className="faculdade-tarefa" key={tarefa.id}>
-                  <div className="eyebrow">{tarefa.origem}</div>
-                  <strong>{tarefa.titulo}</strong>
-                  <p>{tarefa.enunciado}</p>
-                  <p className="small">Pratica: {tarefa.pratica.join(', ')}</p>
-                </div>
-              ))}
-              <p className="small muted">
-                Estas são as aplicações propostas na apostila e nos slides.
-                Resolva cada uma no Laboratório Python e guarde o arquivo: é o
-                que mais se parece com o que vai ser avaliado.
-              </p>
-            </details>
-          </section>
-        );
-      })}
+            </article>
+          );
+        })}
+      </div>
 
       <div className="info-note">
         <Icon name="Info" size={18} />
         <p>
           Esta trilha segue a ementa da sua disciplina e não substitui as
-          videoaulas do AVA. Ela não concede XP das oito etapas nem destrava
-          nada nelas — mas estudar aqui conta o seu dia. As bibliotecas são
+          videoaulas do AVA. Aulas e atividades rendem XP, emblemas e contam o seu dia de estudo.
+          As oito etapas da Formação mantêm seus próprios requisitos. As bibliotecas são
           baixadas na primeira execução, então a primeira vez demora alguns
           segundos.
         </p>
@@ -570,7 +574,7 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
         ],
       },
     }));
-    setAviso('Aula registrada. Ela conta no seu dia de estudo.');
+    setAviso(feita ? 'Revisão registrada. Você já recebeu o XP desta atividade.' : `Atividade registrada: +${aula.id.startsWith('p') ? XP_FACULDADE.projeto : XP_FACULDADE.aula} XP. Ela também conta no seu dia de estudo.`);
   };
 
   return (

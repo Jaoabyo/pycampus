@@ -1585,7 +1585,7 @@ export default function App() {
           <Stat icon="Zap" color="purple" label="Experiência" value={info.xp} suffix="XP" note={info.title} />
           <Stat icon="Flame" color="orange" label="Sequência atual" value={fire} suffix="dias" note="Uma atividade por dia conta" />
           <Stat icon="FolderCode" color="blue" label="Projetos concluídos" value={doneProjects(state).length} suffix="/ 8" note="Seu portfólio em construção" />
-          <Stat icon="Award" color="teal" label="Conquistas" value={earned.length} suffix="/ 8" note="Continue colecionando histórias" />
+          <Stat icon="Award" color="teal" label="Conquistas" value={earned.length} suffix={`/ ${badges.length}`} note="Continue colecionando histórias" />
         </div>
         <section className="card profile-progress">
           <div className="section-heading">
@@ -1648,7 +1648,7 @@ export default function App() {
             <p>
               {state.goal} atividade(s) por dia · {state.weeklyGoal} dia(s) por semana.
             </p>
-            <p className="small muted">XP: 100 por aula validada e 250 por projeto com todos os requisitos marcados. A cada 500 XP você sobe um nível. Revisar uma aula não duplica XP.</p>
+            <p className="small muted">XP na formação: 100 por aula, 40 por miniprojeto e 250 por projeto com todos os requisitos. Na faculdade: 100 por aula, 250 por miniprojeto, 300 por exercício de unidade, 25 por passo de entrega e um bônus de 250 a 550 ao concluir cada entrega — quanto mais difícil, mais vale. A cada 500 XP você sobe um nível. Refazer algo não duplica XP.</p>
           </section>
           <section className="card">
             <h2>

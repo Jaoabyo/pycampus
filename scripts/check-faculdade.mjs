@@ -7,7 +7,8 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { aulasDaFaculdade, unidades } from '../src/faculdade.js';
-import { entregaDaFaculdade } from '../src/faculdade-entregas.js';
+import { entregaDaFaculdade, entregasDaFaculdade } from '../src/faculdade-entregas.js';
+import { exemploDaEntrega } from '../src/faculdade-exemplos.js';
 import { solucoesDaFaculdade } from '../tests/faculdade-reference.js';
 import { ensinoDaFaculdade } from '../src/faculdade-ensino.js';
 import { projetosDaFaculdade } from '../src/faculdade-projetos.js';
@@ -96,6 +97,19 @@ const limpar = (texto) =>
 
 const problemas = [];
 let programas = 0;
+
+for (const entrega of entregasDaFaculdade) {
+  for (const passo of entrega.passos.filter(p => p.fase === 'entender')) {
+    const exemplo = exemploDaEntrega(entrega, passo);
+    assert.ok(exemplo, `${passo.id}: falta declarar o ambiente do exemplo`);
+    if (exemplo.ambiente === 'colab') continue;
+    programas++;
+    const resultado = await rodar(exemplo.codigo);
+    if (!resultado.ok || limpar(resultado.output) !== exemplo.saida) {
+      problemas.push(`${passo.id}: exemplo isolado não produz a saída ensinada — ${limpar(resultado.output)}`);
+    }
+  }
+}
 
 for (const aula of aulasDaFaculdade) {
   programas++;
@@ -204,7 +218,7 @@ await page
   .getByRole('button', { name: 'Minha faculdade', exact: true })
   .click();
 await page.getByText(/O conteúdo da sua/).waitFor();
-assert.equal(await page.locator('.unidade-card').count(), unidades.length);
+assert.equal(await page.locator('.faculdade-mapa-unidade').count(), unidades.length);
 await page.getByText('PLANO ATÉ 27 DE SETEMBRO · PROVA 30 DE SETEMBRO').waitFor();
 await page.getByText('PRÓXIMA AÇÃO').waitFor();
 assert.equal(await page.locator('.prova-proxima').count(), 1);
@@ -213,10 +227,10 @@ await page.getByText('SEU PLANO DE HOJE').waitFor();
 assert.equal(await page.locator('.plano-hoje-item').count(), 2);
 assert.equal(await page.locator('.como-estudar').count(), 1);
 assert.equal(
-  await page.locator('.faculdade-aula').count(),
+  await page.locator('.faculdade-mapa-aula').count(),
   aulasDaFaculdade.length,
 );
-await page.locator('.faculdade-aula').first().click();
+await page.locator('.faculdade-mapa-aula').first().click();
 await page
   .getByText('Ampliar: conceitos e exemplo completo do material')
   .click();
@@ -238,7 +252,7 @@ await mobile
   .click();
 await mobile.getByText(/O conteúdo da sua/).waitFor();
 assert.equal(
-  await mobile.locator('.faculdade-aula').count(),
+  await mobile.locator('.faculdade-mapa-aula').count(),
   aulasDaFaculdade.length,
 );
 assert.ok(

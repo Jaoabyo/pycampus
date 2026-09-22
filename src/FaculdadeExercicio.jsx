@@ -45,7 +45,7 @@ export default function ExercicioDaFaculdade({ exercicio, state, update, voltar,
         ],
       },
     }));
-    setAviso('Exercício registrado. Ele conta no seu dia de estudo.');
+    setAviso(feito ? 'Revisão registrada. Você já recebeu os 300 XP deste exercício.' : 'Exercício registrado: +300 XP. Ele também conta no seu dia de estudo.');
   };
 
   return (

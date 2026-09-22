@@ -8,6 +8,8 @@ import { normalizeProvas } from './exam.js';
 import { normalizeLumiNotes } from './lumi-notes.js';
 import { aulasDaFaculdade } from './faculdade.js';
 import { projetosDaFaculdade } from './faculdade-projetos.js';
+import { exerciciosDaFaculdade } from './faculdade-exercicios.js';
+import { recompensasDaFaculdade, emblemasDaFaculdade } from './faculdade-recompensas.js';
 import { atividadeDaEntregaValida, entregasDaFaculdade, normalizarTrabalhoDaEntrega } from './faculdade-entregas.js';
 export const STORAGE_KEY = 'pycampus.v1';
 export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -16,7 +18,7 @@ export const initialState = () => ({ version: 1, name: 'Estudante', bio: 'Um pas
 const validDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T12:00:00`).valueOf()) && localDate(new Date(`${value}T12:00:00`)) === value;
 const validTime = value => typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 const bounded = (value, fallback, min, max) => Number.isInteger(value) && value >= min && value <= max ? value : fallback;
-const idsDaFaculdadeNaAtividade = new Set([...aulasDaFaculdade, ...projetosDaFaculdade].map(aula => `faculdade:${aula.id}`));
+const idsDaFaculdadeNaAtividade = new Set([...aulasDaFaculdade, ...projetosDaFaculdade, ...exerciciosDaFaculdade].map(aula => `faculdade:${aula.id}`));
 export function normalizeState(input) {
   if (!input || input.version !== 1 || !Array.isArray(input.completed)) throw new Error('Este arquivo não é um backup válido do PyCampus.');
   const base = initialState();
@@ -104,7 +106,7 @@ export function normalizeState(input) {
   if (typeof input.playground === 'string') base.playground = input.playground.slice(0, 50000);
   base.history = normalizeHistory(input.history).map(item => item.status === 'running' ? { ...item, status: 'interrupted', output: 'O registro não recebeu um resultado antes de a página ser fechada, recarregada ou o backup ser restaurado.' } : item);
   // A trilha da faculdade volta do backup como o resto: só ids que existem, texto limitado.
-  const idsDaFaculdade = new Set([...aulasDaFaculdade, ...projetosDaFaculdade].map(aula => aula.id));
+  const idsDaFaculdade = new Set([...aulasDaFaculdade, ...projetosDaFaculdade, ...exerciciosDaFaculdade].map(aula => aula.id));
   base.faculdade = { feitas: [], codigos: {}, entregas: {} };
   if (Array.isArray(input.faculdade?.feitas)) base.faculdade.feitas = [...new Set(input.faculdade.feitas.filter(id => idsDaFaculdade.has(id)))];
   for (const id of idsDaFaculdade) {
@@ -126,7 +128,7 @@ export function normalizeState(input) {
 export const doneProjects = state => projects.filter(p => state.projectChecks[p.id]?.length === p.requirements.length
   || state.projectGrades?.[p.id]?.aprovado === true);
 export const donePractices = state => practiceProjects.filter(p => practiceDone(state.learning?.[p.id], p));
-export const xpTotal = state => state.completed.length * 100 + doneProjects(state).length * 250 + donePractices(state).length * practiceXp;
+export const xpTotal = state => state.completed.length * 100 + doneProjects(state).length * 250 + donePractices(state).length * practiceXp + recompensasDaFaculdade(state).xp;
 export function recordPractice(state, id, date = localDate()) {
   const project = practiceProjects.find(p => p.id === id);
   if (!project || !practiceAttemptDone(state.learning?.[id], project)) return state;
@@ -161,5 +163,6 @@ export const badges = [
   { id: 'week', title: 'Chama acesa', description: 'Estude por 7 dias seguidos.', icon: 'Flame', color: 'orange', check: s => Object.keys(s.activities).some(d => streak(s, d) >= 7) },
   { id: 'half', title: 'Além do básico', description: 'Conclua 24 aulas da formação.', icon: 'Zap', color: 'pink', check: s => s.completed.length >= 24 },
   { id: 'builder', title: 'Criador de sistemas', description: 'Complete os requisitos de 4 projetos.', icon: 'Boxes', color: 'purple', check: s => doneProjects(s).length >= 4 },
-  { id: 'graduate', title: 'Jornada completa', description: 'Conclua as 48 aulas e os 8 projetos.', icon: 'GraduationCap', color: 'yellow', check: s => s.completed.length === lessons.length && doneProjects(s).length === projects.length }
+  { id: 'graduate', title: 'Jornada completa', description: 'Conclua as 48 aulas e os 8 projetos.', icon: 'GraduationCap', color: 'yellow', check: s => s.completed.length === lessons.length && doneProjects(s).length === projects.length },
+  ...emblemasDaFaculdade,
 ];
