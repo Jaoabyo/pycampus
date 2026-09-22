@@ -40,6 +40,8 @@ test('cada conceito obrigatório das entregas aponta para ensino, exemplo, alter
     assert.match(ligacao.explicadoEm, /^(?:[a-z]\w+|entrega-u[1-4]:.+)$/, `${conceito}: fonte inexistente`);
     assert.ok(ligacao.exemplo?.trim(), `${conceito}: sem exemplo`);
     assert.ok(ligacao.alteracao?.trim(), `${conceito}: sem alteração`);
+    assert.notEqual(ligacao.exemplo.trim(), ligacao.alteracao.trim(), `${conceito}: prática repete o exemplo`);
+    assert.notEqual(ligacao.explicadoEm, ligacao.cobradoEm, `${conceito}: ensino e cobrança no mesmo passo`);
     assert.match(ligacao.cobradoEm, /^entrega-u[1-4]:.+/, `${conceito}: cobrança sem endereço`);
   }
   for (const conceito of ['lista', 'acumulador', 'media', 'limite-sete', 'classe', 'self', 'busca', 'contagem-genero', 'grafico-barras']) {

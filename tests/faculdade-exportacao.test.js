@@ -85,6 +85,18 @@ test('notebook U4 contém bibliotecas e sequência oficiais', () => {
   assert.ok(posicoes.every((indice) => indice >= 0));
 });
 
+test('notebook U4 permanece dividido quando a rede usa outro nome válido', () => {
+  const trabalho = {
+    ...trabalhoCompletoU4,
+    codigo: trabalhoCompletoU4.codigo.replaceAll('model', 'rede').replace('tf.keras.Sequential', 'tf.keras.models.Sequential'),
+  };
+  const notebook = JSON.parse(criarNotebookColab({
+    entrega: entregaDaFaculdade('entrega-u4'),
+    trabalho,
+  }));
+  assert.ok(notebook.cells.filter(({ cell_type }) => cell_type === 'code').length >= 4);
+});
+
 test('relatório exibe texto como conteúdo e nunca como marcação executável', () => {
   const html = criarRelatorioHtml({
     entrega: entregaDaFaculdade('entrega-u1'),

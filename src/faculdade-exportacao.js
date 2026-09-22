@@ -42,7 +42,7 @@ const celulasDeCodigo = (entrega, source) => {
   const cortes = [
     0,
     ancora(/train_test_split\s*\(/),
-    ancora(/(?:tf\.keras\.Sequential|\bmodel\s*=)/),
+    ancora(/^\s*\w+\s*=.*tf\.keras(?:\.models)?\.Sequential\s*\(/),
     ancora(/\.evaluate\s*\(/),
     todas.length,
   ];

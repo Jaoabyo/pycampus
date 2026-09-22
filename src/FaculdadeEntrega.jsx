@@ -8,6 +8,7 @@ import { aulasDaFaculdade } from './faculdade.js';
 import { projetosDaFaculdade } from './faculdade-projetos.js';
 import {
   entregaDaFaculdade,
+  entregaLiberadaParaExportacao,
   entregaProntaParaExportar,
   normalizarTrabalhoDaEntrega,
   requisitosFaltandoDaEntrega,
@@ -145,6 +146,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
   const concluidos = new Set(trabalho.passosConcluidos);
   const preRequisitos = situacaoDosPreRequisitos(entrega, state);
   const preRequisitosPendentes = preRequisitos.filter(({ concluido }) => !concluido);
+  const podeExportar = entregaLiberadaParaExportacao(entrega, trabalho, state);
   const faltando = requisitosFaltandoDaEntrega(entrega, trabalho);
   const progresso = (trabalho.passosConcluidos.length / entrega.passos.length) * 100;
   const faseAtual = passoAtual.fase;
@@ -202,6 +204,10 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
   };
 
   const baixarNotebook = () => {
+    if (!podeExportar) {
+      setMensagem('Conclua as aulas-base e os itens pendentes antes de exportar.');
+      return;
+    }
     download(
       criarNotebookColab({ entrega, trabalho, estudante: { nome: state.name } }),
       nomeDoArquivoDaEntrega(entrega, 'ipynb'),
@@ -211,6 +217,10 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
   };
 
   const abrirRelatorio = () => {
+    if (!podeExportar) {
+      setMensagem('Conclua as aulas-base e os itens pendentes antes de exportar.');
+      return;
+    }
     const html = criarRelatorioHtml({ entrega, trabalho, estudante: { nome: state.name } });
     const url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
     const janela = window.open(url, '_blank');
@@ -372,8 +382,8 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
               <div className="entrega-section-head"><div><div className="eyebrow">ARQUIVOS DA ENTREGA</div><h2>Revise antes de enviar ao AVA</h2></div></div>
               <p>O PyCampus prepara os arquivos, mas não envia por você. Abra cada um, execute o notebook no Colab e confira se o PDF ficou abaixo de 10 MB.</p>
               <div className="entrega-arquivos">
-                <button className="entrega-arquivo" disabled={!entregaProntaParaExportar(entrega, trabalho)} onClick={baixarNotebook}><Icon name="Download" size={22} aria-hidden="true" /><span><strong>Baixar notebook</strong><small>Arquivo .ipynb para Google Colab</small></span></button>
-                <button className="entrega-arquivo" disabled={!entregaProntaParaExportar(entrega, trabalho)} onClick={abrirRelatorio}><Icon name="BookOpenCheck" size={22} aria-hidden="true" /><span><strong>Abrir relatório</strong><small>Imprima ou salve em PDF</small></span></button>
+                <button className="entrega-arquivo" disabled={!podeExportar} onClick={baixarNotebook}><Icon name="Download" size={22} aria-hidden="true" /><span><strong>Baixar notebook</strong><small>Arquivo .ipynb para Google Colab</small></span></button>
+                <button className="entrega-arquivo" disabled={!podeExportar} onClick={abrirRelatorio}><Icon name="BookOpenCheck" size={22} aria-hidden="true" /><span><strong>Abrir relatório</strong><small>Imprima ou salve em PDF</small></span></button>
               </div>
             </section>
           )}

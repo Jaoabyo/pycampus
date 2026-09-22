@@ -26,6 +26,12 @@ const idsValidos = (valores, passos) => {
 const textoMaisLongo = (a, b) => b.length > a.length ? b : a;
 const dataMaisRecente = (a, b) => b > a ? b : a;
 
+const expressaoSempreFalsa = (valor) => {
+  let expressao = String(valor).trim();
+  while (expressao.startsWith('(') && expressao.endsWith(')')) expressao = expressao.slice(1, -1).trim();
+  return /^(?:False|None|0(?:\.0+)?|not\s+True|\[\]|\{\}|\(\)|["']{2})$/.test(expressao);
+};
+
 const analisarCodigoPython = (codigo = '') => {
   const fonte = String(codigo);
   const caracteres = fonte.split('');
@@ -70,7 +76,8 @@ const analisarCodigoPython = (codigo = '') => {
     const recuo = atual.length - atual.trimStart().length;
     if (recuoMorto !== null && conteudo && recuo <= recuoMorto) recuoMorto = null;
     if (recuoMorto !== null) linhas[linha] = ' '.repeat(atual.length);
-    if (/^if\s+(?:False|0)\s*:/.test(conteudo)) recuoMorto = recuo;
+    const condicional = conteudo.match(/^(?:if|while)\s+(.+)\s*:\s*$/);
+    if (condicional && expressaoSempreFalsa(condicional[1])) recuoMorto = recuo;
   }
   return { executavel: linhas.join('\n'), strings };
 };
@@ -225,6 +232,24 @@ const passosU2 = [
     'Cadastre dois livros de gêneros diferentes.',
   ),
   passo(
+    'u2-entender-funcao', 'entender', 'Dê um nome ao cadastro',
+    'Uma função evita repetir o modo de criar e guardar livros. Ela recebe os dados, cria um Livro e usa append no catálogo recebido.',
+    'def cadastrar_livro(livros, titulo, autor, genero):\n    livros.append(Livro(titulo, autor, genero))',
+    'Altere os dados da chamada e confirme qual novo objeto entrou na lista.',
+  ),
+  passo(
+    'u2-entender-busca', 'entender', 'Compare títulos sem diferença de caixa',
+    'lower() cria versões minúsculas para a comparação. O texto original do livro não é alterado; somente a comparação usa a forma normalizada.',
+    'titulo_salvo = "Dom Casmurro"\nbusca = "DOM CASMURRO"\nprint(titulo_salvo.lower() == busca.lower())',
+    'Troque a busca por um título ausente e preveja False antes de executar no editor.',
+  ),
+  passo(
+    'u2-entender-contagem', 'entender', 'Acumule uma contagem por gênero',
+    'O dicionário usa o gênero como chave. get(genero, 0) devolve zero quando a chave ainda não existe; somar um registra a ocorrência atual.',
+    'contagem = {}\ngenero = "Romance"\ncontagem[genero] = contagem.get(genero, 0) + 1\nprint(contagem)',
+    'Repita a atualização para Romance e confirme que a contagem muda de 1 para 2.',
+  ),
+  passo(
     'u2-construir-cadastro', 'construir', 'Crie a função de cadastro',
     'A função recebe o catálogo e os dados, constrói o objeto e o adiciona. Ela concentra uma responsabilidade clara.',
     'def cadastrar_livro(livros, titulo, autor, genero):\n    livros.append(Livro(titulo, autor, genero))',
@@ -282,6 +307,12 @@ const passosU3 = [
     'Explique quando commit é necessário.',
   ),
   passo(
+    'u3-entender-agregacao', 'entender', 'Agrupe antes de resumir',
+    'groupby separa as linhas por categoria; selecionar receita escolhe a medida; sum calcula um total para cada grupo. O resultado continua derivado dos dados.',
+    'por_categoria = df.groupby("categoria")["receita"].sum()\nprint(por_categoria)',
+    'Troque categoria por produto e explique como muda a pergunta respondida.',
+  ),
+  passo(
     'u3-construir-sqlite', 'construir', 'Crie uma base reproduzível',
     'O script deve produzir o mesmo resultado ao rodar novamente. Use banco em memória ou recrie a tabela antes de inserir os exemplos.',
     'cursor.execute("DROP TABLE IF EXISTS vendas")',
@@ -337,6 +368,30 @@ const passosU4 = [
     'O modelo aprende no treino e é conferido em exemplos separados de teste. random_state permite repetir a mesma divisão.',
     'X_treino, X_teste, y_treino, y_teste = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)',
     'Explique por que avaliar nos mesmos dados de treino seria enganoso.',
+  ),
+  passo(
+    'u4-entender-escala', 'entender', 'Aprenda a escala sem olhar o teste',
+    'fit_transform calcula média e escala apenas com o treino e já o transforma. transform reutiliza esses mesmos parâmetros no teste, evitando vazamento de informação.',
+    'scaler = StandardScaler()\nX_treino = scaler.fit_transform(X_treino)\nX_teste = scaler.transform(X_teste)',
+    'Explique por que não usamos fit_transform novamente em X_teste.',
+  ),
+  passo(
+    'u4-entender-rede', 'entender', 'Leia a arquitetura de entrada para saída',
+    'Sequential organiza camadas em ordem. Input recebe quatro medidas; Dense com relu aprende combinações; a saída softmax produz três probabilidades.',
+    'model = tf.keras.Sequential([\n    tf.keras.layers.Input(shape=(4,)),\n    tf.keras.layers.Dense(12, activation="relu"),\n    tf.keras.layers.Dense(3, activation="softmax"),\n])',
+    'Identifique por que a entrada tem quatro valores e a saída tem três.',
+  ),
+  passo(
+    'u4-entender-treino', 'entender', 'Entenda uma época e a validação',
+    'Cada época percorre o treino uma vez. validation_split separa uma parte do treino para acompanhar generalização sem tocar no teste final.',
+    'historico = model.fit(X_treino, y_treino, epochs=40, validation_split=0.2, verbose=0)',
+    'Compare accuracy e val_accuracy e explique por que elas podem divergir.',
+  ),
+  passo(
+    'u4-entender-saida', 'entender', 'Separe avaliação de predição',
+    'evaluate resume o desempenho no conjunto reservado. predict devolve probabilidades por amostra; argmax escolhe o índice com maior probabilidade.',
+    'perda, acuracia = model.evaluate(X_teste, y_teste, verbose=0)\nprobabilidades = model.predict(X_teste[:3], verbose=0)\nprevisoes = probabilidades.argmax(axis=1)',
+    'Antes de executar no Colab, diga o formato esperado para três previsões.',
   ),
   passo(
     'u4-construir-escala', 'construir', 'Normalize sem vazar o teste',
@@ -431,7 +486,13 @@ export const entregasDaFaculdade = [
       criterioCodigo('cadastro-livros', 'cadastrar objetos Livro em uma lista', /append\s*\(\s*Livro\s*\(/),
       criterioCodigo('busca-titulo', 'implementar busca por título', /def\s+buscar[\s\S]*\.titulo[\s\S]*\.lower\s*\(/),
       criterioCodigo('contagem-genero', 'agregar a quantidade por gênero', /\.get\s*\([\s\S]*genero|Counter\s*\(/),
-      criterioCodigo('grafico-genero', 'criar gráfico de barras por gênero', /(?:\.bar\s*\(|kind\s*=\s*["']bar["'])/),
+      criterioEstrutural('grafico-genero', 'criar gráfico de barras por gênero', (analise) => (
+        /\.bar\s*\(/.test(analise.executavel)
+        || analise.strings.some((item) => (
+          /^bar$/i.test(item.conteudo.trim())
+          && /\.plot\s*\([^)]*kind\s*=\s*$/.test(analise.executavel.slice(Math.max(0, item.inicio - 140), item.inicio))
+        ))
+      )),
       criterioTexto('explicacao-logica', 'explicar classe, objetos e catálogo', 'logica', 60),
       criterioTexto('registro-testes', 'registrar os testes de cadastro e busca', 'testes', 40),
       criterioTexto('conclusao', 'escrever uma conclusão própria', 'conclusao', 30),
@@ -550,3 +611,8 @@ export function requisitosFaltandoDaEntrega(entrega, trabalho = {}) {
 
 export const entregaProntaParaExportar = (entrega, trabalho) =>
   Boolean(entrega) && requisitosFaltandoDaEntrega(entrega, trabalho).length === 0;
+
+export const entregaLiberadaParaExportacao = (entrega, trabalho, state) => (
+  entregaProntaParaExportar(entrega, trabalho)
+  && situacaoDosPreRequisitos(entrega, state).every(({ concluido }) => concluido)
+);

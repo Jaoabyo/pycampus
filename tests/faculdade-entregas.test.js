@@ -7,6 +7,7 @@ import {
   entregaProntaParaExportar,
   requisitosFaltandoDaEntrega,
   situacaoDosPreRequisitos,
+  entregaLiberadaParaExportacao,
 } from '../src/faculdade-entregas.js';
 import { solucoesEntregasFaculdade } from './faculdade-entregas-reference.js';
 
@@ -61,6 +62,9 @@ test('texto, comentário, ramo morto e saída pronta não fingem código impleme
       `\"\"\"${solucao}\"\"\"\nprint("resultado pronto")`,
       `conteudo = ${JSON.stringify(solucao)}\nprint("resultado pronto")`,
       `if False:\n${solucao.split('\n').map((linha) => `    ${linha}`).join('\n')}\nprint("resultado pronto")`,
+      `if (False):\n${solucao.split('\n').map((linha) => `    ${linha}`).join('\n')}\nprint("resultado pronto")`,
+      `if not True:\n${solucao.split('\n').map((linha) => `    ${linha}`).join('\n')}\nprint("resultado pronto")`,
+      `while False:\n${solucao.split('\n').map((linha) => `    ${linha}`).join('\n')}\nprint("resultado pronto")`,
     ]) {
       const faltando = requisitosFaltandoDaEntrega(entrega, { codigo });
       assert.ok(
@@ -69,6 +73,26 @@ test('texto, comentário, ramo morto e saída pronta não fingem código impleme
       );
     }
   }
+});
+
+test('gráfico pandas com kind bar continua sendo uma solução U2 válida', () => {
+  const entrega = entregaDaFaculdade('entrega-u2');
+  const codigo = solucoesEntregasFaculdade['entrega-u2']
+    .replace(/plt\.bar\([^\n]+\)/, 'pd.Series(contagem).plot(kind="bar")');
+  assert.ok(!requisitosFaltandoDaEntrega(entrega, { codigo }).some(({ id }) => id === 'grafico-genero'));
+});
+
+test('exportação exige trabalho pronto e todas as aulas-base estudadas', () => {
+  const entrega = entregaDaFaculdade('entrega-u1');
+  const trabalho = {
+    codigo: solucoesEntregasFaculdade['entrega-u1'],
+    passosConcluidos: entrega.passos.filter(({ fase }) => fase !== 'exportar').map(({ id }) => id),
+    logica: 'A lista reúne notas, a função calcula a média e a comparação decide a situação apresentada no relatório.',
+    testes: 'Testei lista vazia e médias abaixo, exatamente no limite e acima de sete para conferir cada caminho.',
+    conclusao: 'Os testes confirmam o cálculo, o limite inclusivo e o tratamento da lista vazia.',
+  };
+  assert.equal(entregaLiberadaParaExportacao(entrega, trabalho, { faculdade: { feitas: [] } }), false);
+  assert.equal(entregaLiberadaParaExportacao(entrega, trabalho, { faculdade: { feitas: entrega.preRequisitos } }), true);
 });
 
 test('o catálogo representa todos os requisitos oficiais dos quatro roteiros', () => {
