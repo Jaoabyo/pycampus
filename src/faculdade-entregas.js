@@ -1,5 +1,30 @@
 const PRAZO = '2026-09-27';
 const FASES = ['entender', 'construir', 'testar', 'explicar', 'exportar'];
+const CAMPOS_TEXTO = {
+  codigo: 50000,
+  saida: 12000,
+  logica: 4000,
+  testes: 4000,
+  conclusao: 4000,
+  insights: 4000,
+  saidaExterna: 12000,
+};
+const CAMPOS_DATA = ['executadaEm', 'executadaNoColabEm', 'concluidaEm'];
+
+const texto = (valor, limite) => typeof valor === 'string' ? valor.slice(0, limite) : '';
+const dataValida = (valor) => {
+  if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return '';
+  const data = new Date(`${valor}T12:00:00`);
+  if (Number.isNaN(data.valueOf())) return '';
+  const local = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
+  return local === valor ? valor : '';
+};
+const idsValidos = (valores, passos) => {
+  const permitidos = new Set(passos.map(({ id }) => id));
+  return [...new Set(Array.isArray(valores) ? valores.filter((id) => permitidos.has(id)) : [])];
+};
+const textoMaisLongo = (a, b) => b.length > a.length ? b : a;
+const dataMaisRecente = (a, b) => b > a ? b : a;
 
 const semComentarios = (codigo = '') => String(codigo)
   .split('\n')
@@ -368,6 +393,40 @@ export const idsDasEntregasDaFaculdade = entregasDaFaculdade.map(({ id }) => id)
 
 export const entregaDaFaculdade = (id) =>
   entregasDaFaculdade.find((entrega) => entrega.id === id) || null;
+
+export function normalizarTrabalhoDaEntrega(raw, entrega) {
+  if (!entrega) return null;
+  const trabalho = {
+    passosConcluidos: idsValidos(raw?.passosConcluidos, entrega.passos),
+  };
+  for (const [campo, limite] of Object.entries(CAMPOS_TEXTO)) {
+    trabalho[campo] = texto(raw?.[campo], limite);
+  }
+  for (const campo of CAMPOS_DATA) trabalho[campo] = dataValida(raw?.[campo]);
+  return trabalho;
+}
+
+export function juntarTrabalhosDaEntrega(a, b, entrega) {
+  const aqui = normalizarTrabalhoDaEntrega(a, entrega);
+  const la = normalizarTrabalhoDaEntrega(b, entrega);
+  if (!a && !b) return null;
+  const unido = {
+    passosConcluidos: [...new Set([...aqui.passosConcluidos, ...la.passosConcluidos])],
+  };
+  for (const campo of Object.keys(CAMPOS_TEXTO)) {
+    unido[campo] = textoMaisLongo(aqui[campo], la[campo]);
+  }
+  for (const campo of CAMPOS_DATA) unido[campo] = dataMaisRecente(aqui[campo], la[campo]);
+  return unido;
+}
+
+export function atividadeDaEntregaValida(valor) {
+  if (typeof valor !== 'string' || !valor.startsWith('faculdade-entrega:')) return false;
+  const [, entregaId, passoId, sobra] = valor.split(':');
+  if (sobra !== undefined) return false;
+  const entrega = entregaDaFaculdade(entregaId);
+  return Boolean(entrega?.passos.some(({ id }) => id === passoId));
+}
 
 export function requisitosFaltandoDaEntrega(entrega, trabalho = {}) {
   if (!entrega) return [];

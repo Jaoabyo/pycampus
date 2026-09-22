@@ -36,6 +36,7 @@ test('projetos da faculdade preservam código e conclusão no backup sem mudar a
   state.faculdade = {
     feitas: ['u1a1', ...projetosDaFaculdade.map((p) => p.id)],
     codigos: solucoesProjetosFaculdade,
+    entregas: {},
   };
   const recuperado = normalizeState(JSON.parse(JSON.stringify(state)));
   assert.deepEqual(recuperado.faculdade, state.faculdade);

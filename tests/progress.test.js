@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { initialState, completeLesson, localDate, shiftDate, streak, weekDays, xpTotal, levelInfo, normalizeState, badges } from '../src/progress.js';
 import { lessons, modules, projects } from '../src/curriculum.js';
+import { aulasDaFaculdade } from '../src/faculdade.js';
 
 test('lesson completion grants XP only once and tracks the study date', () => {
   const first = completeLesson(initialState(), 'ola', '2026-09-08');
@@ -35,6 +36,45 @@ test('backup validation drops unknown ids, unsafe URLs, invalid dates and malfor
   assert.deepEqual(normalized.sessions, []);
   assert.deepEqual(Object.keys(normalized.activities), [localDate()]);
   assert.throws(() => normalizeState({ version: 2, completed: [] }));
+});
+
+test('backup antigo mantém as seis aulas da faculdade e ganha entregas vazias', () => {
+  const antigo = { ...initialState(), faculdade: {
+    feitas: aulasDaFaculdade.slice(0, 6).map(({ id }) => id),
+    codigos: {},
+  } };
+  const restaurado = normalizeState(antigo);
+  assert.equal(restaurado.faculdade.feitas.length, 6);
+  assert.deepEqual(restaurado.faculdade.entregas, {});
+});
+
+test('backup aceita somente entregas, passos, datas, atividades e textos permitidos', () => {
+  const hoje = localDate();
+  const entrada = { ...initialState(), faculdade: { feitas: [], codigos: {}, entregas: {
+    'entrega-u1': {
+      codigo: 'x'.repeat(60000),
+      passosConcluidos: ['u1-entender-lista', 'inventado'],
+      conclusao: '<script>alert(1)</script>',
+      executadaNoColabEm: 'ontem',
+      pronta: true,
+    },
+    falsa: { codigo: 'não entra' },
+  } }, activities: {
+    [hoje]: [
+      'faculdade-entrega:entrega-u1:u1-entender-lista',
+      'faculdade-entrega:entrega-u1:inventado',
+      'faculdade-entrega:falsa:u1-entender-lista',
+    ],
+  } };
+  const estado = normalizeState(entrada);
+  const trabalho = estado.faculdade.entregas['entrega-u1'];
+  assert.equal(trabalho.codigo.length, 50000);
+  assert.deepEqual(trabalho.passosConcluidos, ['u1-entender-lista']);
+  assert.equal(trabalho.conclusao, '<script>alert(1)</script>');
+  assert.equal(trabalho.executadaNoColabEm, '');
+  assert.equal(estado.faculdade.entregas.falsa, undefined);
+  assert.equal(trabalho.pronta, undefined);
+  assert.deepEqual(estado.activities[hoje], ['faculdade-entrega:entrega-u1:u1-entender-lista']);
 });
 test('project XP derives from complete checklists and cannot be farmed by toggling', () => {
   const state = initialState();

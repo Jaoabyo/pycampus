@@ -9,6 +9,10 @@ import { projectSteps } from '../src/project-steps.js';
 
 const pratica = practiceProjects[0];
 const treinado = { answered: pratica.investigate.answer, passed: ['modify', 'create'] };
+const estadoComEntrega = (trabalho) => ({
+  ...initialState(),
+  faculdade: { feitas: [], codigos: {}, entregas: { 'entrega-u1': trabalho } },
+});
 
 // Estudar no celular e no computador criava duas jornadas, e importar substituía uma pela
 // outra. A regra desta junção é uma só: nada conquistado pode se perder.
@@ -18,6 +22,24 @@ test('lessons finished on either device all survive the merge', () => {
   const junto = mergeProgress(computador, celular);
   assert.deepEqual(junto.completed.sort(), ['ola', 'tipos', 'variaveis']);
   assert.equal(xpTotal(junto), 300, 'as três aulas contam, sem duplicar a repetida');
+});
+
+test('trabalho da faculdade mescla passos e preserva o maior texto de cada campo', () => {
+  const computador = estadoComEntrega({
+    codigo: 'print(1)',
+    passosConcluidos: ['u1-entender-lista'],
+    testes: 'Teste inicial curto.',
+  });
+  const celular = estadoComEntrega({
+    codigo: 'notas = [7, 8, 9]\nprint(sum(notas) / len(notas))',
+    passosConcluidos: ['u1-construir-cadastro'],
+    conclusao: 'A média resume o desempenho da turma.',
+  });
+  const unido = mergeProgress(computador, celular).faculdade.entregas['entrega-u1'];
+  assert.deepEqual(unido.passosConcluidos.sort(), ['u1-construir-cadastro', 'u1-entender-lista']);
+  assert.match(unido.codigo, /sum/);
+  assert.match(unido.conclusao, /desempenho/);
+  assert.match(unido.testes, /inicial/);
 });
 test('a miniproject trained on the phone counts on the computer too', () => {
   const computador = { ...initialState() };
