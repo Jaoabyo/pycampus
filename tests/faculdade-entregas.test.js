@@ -6,6 +6,7 @@ import {
   entregaDaFaculdade,
   entregaProntaParaExportar,
   requisitosFaltandoDaEntrega,
+  situacaoDosPreRequisitos,
 } from '../src/faculdade-entregas.js';
 import { solucoesEntregasFaculdade } from './faculdade-entregas-reference.js';
 
@@ -35,6 +36,14 @@ test('cada entrega conduz de entendimento até exportação em passos ensinávei
   }
 });
 
+test('pré-requisitos distinguem o que foi estudado do que ainda precisa de aula', () => {
+  const entrega = entregaDaFaculdade('entrega-u1');
+  const situacao = situacaoDosPreRequisitos(entrega, { faculdade: { feitas: ['u1a1', 'r2'] } });
+  assert.deepEqual(situacao.map(({ id, concluido }) => [id, concluido]), [
+    ['u1a1', true], ['r1', false], ['r2', true], ['r3', false],
+  ]);
+});
+
 test('requisitos são derivados do trabalho, não de um campo pronto adulterável', () => {
   const entrega = entregaDaFaculdade('entrega-u1');
   const faltando = requisitosFaltandoDaEntrega(entrega, {
@@ -43,6 +52,23 @@ test('requisitos são derivados do trabalho, não de um campo pronto adulteráve
     pronta: true,
   });
   assert.ok(faltando.some((item) => item.id === 'lista-de-notas'));
+});
+
+test('texto, comentário, ramo morto e saída pronta não fingem código implementado', () => {
+  for (const entrega of entregasDaFaculdade) {
+    const solucao = solucoesEntregasFaculdade[entrega.id];
+    for (const codigo of [
+      `\"\"\"${solucao}\"\"\"\nprint("resultado pronto")`,
+      `conteudo = ${JSON.stringify(solucao)}\nprint("resultado pronto")`,
+      `if False:\n${solucao.split('\n').map((linha) => `    ${linha}`).join('\n')}\nprint("resultado pronto")`,
+    ]) {
+      const faltando = requisitosFaltandoDaEntrega(entrega, { codigo });
+      assert.ok(
+        faltando.some(({ id }) => !['passos-guiados', 'registro-testes', 'explicacao-logica', 'insights', 'conclusao', 'execucao-colab'].includes(id)),
+        `${entrega.id} aceitou tokens que não eram código executado`,
+      );
+    }
+  }
 });
 
 test('o catálogo representa todos os requisitos oficiais dos quatro roteiros', () => {
@@ -63,8 +89,8 @@ test('o catálogo representa todos os requisitos oficiais dos quatro roteiros', 
   for (const termo of ['iris', 'treino', 'normalização', 'tensorflow', 'avaliação', 'predição']) assert.match(texto('entrega-u4'), new RegExp(termo));
 });
 
-test('soluções de referência U1 e U2 atendem aos critérios de código', () => {
-  for (const id of ['entrega-u1', 'entrega-u2']) {
+test('soluções de referência U1 a U4 atendem aos critérios de código', () => {
+  for (const id of ['entrega-u1', 'entrega-u2', 'entrega-u3', 'entrega-u4']) {
     const entrega = entregaDaFaculdade(id);
     const trabalho = {
       codigo: solucoesEntregasFaculdade[id],
@@ -74,7 +100,9 @@ test('soluções de referência U1 e U2 atendem aos critérios de código', () =
       conclusao: 'Os resultados dos casos conferem com as regras e ajudam a localizar qualquer mudança incorreta.',
     };
     assert.deepEqual(
-      requisitosFaltandoDaEntrega(entrega, trabalho).filter(({ id: criterioId }) => !['registro-testes', 'explicacao-logica', 'conclusao'].includes(criterioId)),
+      requisitosFaltandoDaEntrega(entrega, trabalho).filter(({ id: criterioId }) => ![
+        'registro-testes', 'explicacao-logica', 'insights', 'conclusao', 'execucao-colab',
+      ].includes(criterioId)),
       [],
       id,
     );

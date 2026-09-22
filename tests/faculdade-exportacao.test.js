@@ -74,6 +74,15 @@ test('notebook U4 contém bibliotecas e sequência oficiais', () => {
   for (const trecho of ['tensorflow', 'load_iris', 'train_test_split', 'StandardScaler', 'model.evaluate']) {
     assert.ok(texto.includes(trecho), trecho);
   }
+  const notebook = JSON.parse(texto);
+  const celulasCodigo = notebook.cells.filter(({ cell_type }) => cell_type === 'code');
+  assert.ok(celulasCodigo.length >= 4, 'o notebook deve separar preparação, dados, treino e avaliação');
+  assert.equal(celulasCodigo.map((cell) => cell.source.join('')).join('\n'), trabalhoCompletoU4.codigo);
+  const posicoes = ['load_iris', 'train_test_split', 'model.fit', 'model.evaluate'].map((trecho) => (
+    celulasCodigo.findIndex((cell) => cell.source.join('').includes(trecho))
+  ));
+  assert.deepEqual(posicoes, [...posicoes].sort((a, b) => a - b));
+  assert.ok(posicoes.every((indice) => indice >= 0));
 });
 
 test('relatório exibe texto como conteúdo e nunca como marcação executável', () => {

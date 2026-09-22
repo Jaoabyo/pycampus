@@ -35,6 +35,33 @@ const codigo = (source) => ({
   source: linhas(source),
 });
 
+const celulasDeCodigo = (entrega, source) => {
+  if (entrega.unidade !== 'u4') return [codigo(source)];
+  const todas = String(source).split('\n');
+  const ancora = (teste, inicio = 1) => todas.findIndex((linha, indice) => indice >= inicio && teste.test(linha));
+  const cortes = [
+    0,
+    ancora(/train_test_split\s*\(/),
+    ancora(/(?:tf\.keras\.Sequential|\bmodel\s*=)/),
+    ancora(/\.evaluate\s*\(/),
+    todas.length,
+  ];
+  if (cortes.slice(1, -1).some((indice) => indice < 1)
+    || cortes.some((valor, indice) => indice > 0 && valor <= cortes[indice - 1])) {
+    return [codigo(source)];
+  }
+  const titulos = [
+    '1. Ambiente e dados',
+    '2. Separação e normalização',
+    '3. Modelo e treinamento',
+    '4. Avaliação e predição',
+  ];
+  return titulos.flatMap((titulo, indice) => [
+    markdown(`### ${titulo}`),
+    codigo(todas.slice(cortes[indice], cortes[indice + 1]).join('\n')),
+  ]);
+};
+
 const secaoMarkdown = (titulo, conteudo, fallback = 'Preencha esta seção após executar e conferir o código.') =>
   markdown(`## ${titulo}\n\n${conteudo.trim() || fallback}`);
 
@@ -83,7 +110,7 @@ export function criarNotebookColab({ entrega, trabalho, estudante = {} }) {
     markdown(`# ${entrega.titulo}\n\n**Estudante:** ${nome}  \n**Identificação:** ${identificacao}  \n**Prazo:** 27/09/2026  \n**Origem:** ${entrega.origem}`),
     markdown(`## Objetivo\n\n${entrega.resumo}\n\n### Critérios do roteiro\n\n${objetivos}`),
     markdown(`## Como executar\n\nExecute as células em ordem. Se alterar dados, execute tudo novamente para que a saída e os gráficos correspondam ao código final.${entrega.ambienteEntrega === 'colab' ? '\n\nEste trabalho usa TensorFlow/scikit-learn e precisa da execução final no Google Colab.' : ''}`),
-    codigo(salvo.codigo || entrega.codigoInicial),
+    ...celulasDeCodigo(entrega, salvo.codigo || entrega.codigoInicial),
     secaoMarkdown('Testes planejados', `${listaTestes}\n\n### Registro do estudante\n\n${salvo.testes}`),
     secaoMarkdown(rotuloResultado, resultado),
     secaoMarkdown('Explicação da lógica', salvo.logica),

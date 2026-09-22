@@ -26,10 +26,54 @@ const idsValidos = (valores, passos) => {
 const textoMaisLongo = (a, b) => b.length > a.length ? b : a;
 const dataMaisRecente = (a, b) => b > a ? b : a;
 
-const semComentarios = (codigo = '') => String(codigo)
-  .split('\n')
-  .map((linha) => linha.replace(/#.*$/, ''))
-  .join('\n');
+const analisarCodigoPython = (codigo = '') => {
+  const fonte = String(codigo);
+  const caracteres = fonte.split('');
+  const strings = [];
+  let indice = 0;
+  while (indice < fonte.length) {
+    if (fonte[indice] === '#') {
+      while (indice < fonte.length && fonte[indice] !== '\n') caracteres[indice++] = ' ';
+      continue;
+    }
+    if (fonte[indice] !== '"' && fonte[indice] !== "'") {
+      indice += 1;
+      continue;
+    }
+    const inicio = indice;
+    const aspas = fonte[indice];
+    const tamanho = fonte.slice(indice, indice + 3) === aspas.repeat(3) ? 3 : 1;
+    indice += tamanho;
+    const inicioConteudo = indice;
+    while (indice < fonte.length) {
+      if (fonte[indice] === '\\') {
+        caracteres[indice++] = ' ';
+        if (indice < fonte.length) caracteres[indice++] = ' ';
+        continue;
+      }
+      if (fonte.slice(indice, indice + tamanho) === aspas.repeat(tamanho)) break;
+      indice += 1;
+    }
+    const fimConteudo = indice;
+    indice = Math.min(fonte.length, indice + tamanho);
+    strings.push({ inicio, conteudo: fonte.slice(inicioConteudo, fimConteudo) });
+    for (let posicao = inicio; posicao < indice; posicao += 1) {
+      if (caracteres[posicao] !== '\n') caracteres[posicao] = ' ';
+    }
+  }
+
+  const linhas = caracteres.join('').split('\n');
+  let recuoMorto = null;
+  for (let linha = 0; linha < linhas.length; linha += 1) {
+    const atual = linhas[linha];
+    const conteudo = atual.trim();
+    const recuo = atual.length - atual.trimStart().length;
+    if (recuoMorto !== null && conteudo && recuo <= recuoMorto) recuoMorto = null;
+    if (recuoMorto !== null) linhas[linha] = ' '.repeat(atual.length);
+    if (/^if\s+(?:False|0)\s*:/.test(conteudo)) recuoMorto = recuo;
+  }
+  return { executavel: linhas.join('\n'), strings };
+};
 
 const passo = (id, fase, titulo, explicacao, exemplo, evidencia, extras = {}) => ({
   id, fase, titulo, explicacao, exemplo, evidencia, ...extras,
@@ -38,7 +82,18 @@ const passo = (id, fase, titulo, explicacao, exemplo, evidencia, extras = {}) =>
 const criterioCodigo = (id, descricao, teste) => ({
   id,
   descricao,
-  atende: (trabalho = {}) => teste.test(semComentarios(trabalho.codigo)),
+  atende: (trabalho = {}) => teste.test(analisarCodigoPython(trabalho.codigo).executavel),
+});
+
+const criterioEstrutural = (id, descricao, analisar) => ({
+  id,
+  descricao,
+  atende: (trabalho = {}) => analisar(analisarCodigoPython(trabalho.codigo)),
+});
+
+const stringEmChamada = ({ executavel, strings }, chamada, conteudo) => strings.some((item) => {
+  const antes = executavel.slice(Math.max(0, item.inicio - 100), item.inicio);
+  return chamada.test(antes) && conteudo.test(item.conteudo);
 });
 
 const criterioTexto = (id, descricao, campo, minimo = 30) => ({
@@ -394,8 +449,14 @@ export const entregasDaFaculdade = [
     testesOrientados: ['quantidade esperada de linhas', 'receitas não negativas', 'total calculado', 'segunda execução sem duplicar vendas'],
     entregaveis: ['notebook Colab reproduzível com banco, análise e gráficos', 'relatório PDF com três análises e sugestões'],
     criterios: [
-      criterioCodigo('banco-sqlite', 'criar e consultar uma tabela SQLite', /sqlite3\.connect[\s\S]*(?:CREATE\s+TABLE|create\s+table)[\s\S]*(?:SELECT|select)/),
-      criterioCodigo('parametros-sql', 'inserir valores com parâmetros SQL', /execute(?:many)?\s*\([\s\S]*\?/),
+      criterioEstrutural('banco-sqlite', 'criar e consultar uma tabela SQLite', (analise) => (
+        /sqlite3\.connect\s*\(/.test(analise.executavel)
+        && stringEmChamada(analise, /\.execute\s*\(\s*$/, /CREATE\s+TABLE/i)
+        && stringEmChamada(analise, /pd\.read_sql(?:_query)?\s*\(\s*$/, /SELECT/i)
+      )),
+      criterioEstrutural('parametros-sql', 'inserir valores com parâmetros SQL', (analise) => (
+        stringEmChamada(analise, /\.execute(?:many)?\s*\(\s*$/, /\?/)
+      )),
       criterioCodigo('dataframe-pandas', 'carregar a consulta em um DataFrame pandas', /pd\.read_sql(?:_query)?\s*\(/),
       criterioCodigo('analises', 'calcular receita e ao menos uma agregação', /receita[\s\S]*(?:groupby|sum|mean)\s*\(/i),
       criterioCodigo('graficos', 'gerar gráfico Matplotlib', /(?:plt\.|\.plot\s*\()/),
@@ -442,6 +503,11 @@ export const idsDasEntregasDaFaculdade = entregasDaFaculdade.map(({ id }) => id)
 
 export const entregaDaFaculdade = (id) =>
   entregasDaFaculdade.find((entrega) => entrega.id === id) || null;
+
+export const situacaoDosPreRequisitos = (entrega, state = {}) => {
+  const feitos = new Set(state.faculdade?.feitas || []);
+  return (entrega?.preRequisitos || []).map((id) => ({ id, concluido: feitos.has(id) }));
+};
 
 export function normalizarTrabalhoDaEntrega(raw, entrega) {
   if (!entrega) return null;

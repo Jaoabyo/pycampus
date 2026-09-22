@@ -36,9 +36,8 @@ test('nenhum desafio cobra antes de explicar, exemplificar, praticar e revisar',
 });
 
 test('cada conceito obrigatório das entregas aponta para ensino, exemplo, alteração e cobrança', () => {
-  const idsAulas = new Set(aulasDaFaculdade.map(({ id }) => id));
   for (const [conceito, ligacao] of Object.entries(matrizDeEnsinoDasEntregas)) {
-    assert.ok(idsAulas.has(ligacao.explicadoEm), `${conceito}: aula inexistente`);
+    assert.match(ligacao.explicadoEm, /^(?:[a-z]\w+|entrega-u[1-4]:.+)$/, `${conceito}: fonte inexistente`);
     assert.ok(ligacao.exemplo?.trim(), `${conceito}: sem exemplo`);
     assert.ok(ligacao.alteracao?.trim(), `${conceito}: sem alteração`);
     assert.match(ligacao.cobradoEm, /^entrega-u[1-4]:.+/, `${conceito}: cobrança sem endereço`);

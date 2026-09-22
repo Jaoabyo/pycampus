@@ -1,6 +1,7 @@
 // Exemplos pequenos, independentes e explicados antes do desafio. O material
 // ampliado da disciplina continua disponível como aprofundamento, após esta base.
 import { aulasDaFaculdade, unidades } from './faculdade.js';
+import { entregasDaFaculdade } from './faculdade-entregas.js';
 
 const passo = (codigo, explicacao) => ({ codigo, explicacao });
 const guia = (
@@ -481,28 +482,28 @@ const ligacao = (explicadoEm, exemplo, alteracao, cobradoEm) => ({
 // Este mapa é a ponte auditável entre as aulas curtas e os trabalhos maiores.
 // Cada conceito chega ao estúdio somente depois de ser explicado, visto e alterado.
 export const matrizDeEnsinoDasEntregas = {
-  lista: ligacao('r2', 'notas = [2, 4, 6]', 'trocar 6 por 8 e prever o total', 'entrega-u1:u1-entender-lista'),
-  acumulador: ligacao('r2', 'total = total + nota', 'mudar o valor inicial e explicar o efeito', 'entrega-u1:u1-construir-acumulador'),
-  media: ligacao('r3', 'return sum(notas) / len(notas)', 'calcular com outra lista', 'entrega-u1:u1-entender-media'),
-  'limite-sete': ligacao('r1', 'if idade < 12', 'alterar idade para atravessar o limite', 'entrega-u1:u1-construir-situacao'),
-  relatorio: ligacao('u1a1', 'print(f"Media: {media}")', 'alterar as notas e conferir a saída', 'entrega-u1:u1-construir-situacao'),
-  classe: ligacao('u2a3', 'class Pessoa:', 'criar uma segunda Pessoa', 'entrega-u2:u2-entender-classe'),
-  self: ligacao('u2a3', 'self.nome = nome', 'alterar o nome entregue ao objeto', 'entrega-u2:u2-entender-classe'),
-  'lista-de-objetos': ligacao('u2a3', 'pessoa1 = Pessoa("Joao", 30)', 'guardar dois objetos em uma lista', 'entrega-u2:u2-entender-colecao'),
-  cadastro: ligacao('r3', 'def calcular_media(notas):', 'chamar a função com outra entrada', 'entrega-u2:u2-construir-cadastro'),
-  busca: ligacao('u2a1', 'for p, d in enumerate(dias):', 'procurar um item que não existe', 'entrega-u2:u2-construir-busca'),
-  'contagem-genero': ligacao('u2a2', 'len(set(notas))', 'repetir um valor e comparar a contagem', 'entrega-u2:u2-construir-generos'),
-  'grafico-barras': ligacao('u3a4', 'plt.bar(["Jan", "Fev"], [120, 90])', 'alterar uma altura e ler o gráfico', 'entrega-u2:u2-construir-generos'),
-  sqlite: ligacao('u3a1', 'sqlite3.connect(":memory:")', 'inserir e consultar outro contato', 'entrega-u3:u3-construir-sqlite'),
-  pandas: ligacao('u3a2', 'pd.Series([20, 30, 40])', 'alterar um valor e prever a média', 'entrega-u3:u3-construir-dataframe'),
-  agregacao: ligacao('u3a3', 'vendas[vendas["receita"] > 100]', 'alterar o limite do filtro', 'entrega-u3:u3-construir-analise'),
-  graficos: ligacao('u3a4', 'plt.bar(["Jan", "Fev"], [120, 90])', 'alterar rótulos e alturas', 'entrega-u3:u3-construir-graficos'),
-  'treino-teste': ligacao('u4a4', 'meses = np.array([1, 2, 3])', 'reservar um par para conferir a previsão', 'entrega-u4:u4-entender-treino-teste'),
-  normalizacao: ligacao('u4a4', 'vendas = np.array([10, 20, 30])', 'dividir os valores por uma escala comum', 'entrega-u4:u4-construir-escala'),
-  'rede-neural': ligacao('u4a4', 'coeficientes = np.polyfit(meses, vendas, 1)', 'comparar o modelo simples com camadas densas', 'entrega-u4:u4-construir-modelo'),
-  epocas: ligacao('u4a4', 'previsao = np.polyval(coeficientes, 4)', 'repetir o ajuste e observar a medida', 'entrega-u4:u4-construir-treino'),
-  avaliacao: ligacao('u4a3', 'self.assertEqual(triplo(2), 6)', 'provocar uma falha e interpretar', 'entrega-u4:u4-testar-avaliacao'),
-  predicao: ligacao('u4a4', 'np.polyval(coeficientes, 4)', 'prever o mês cinco', 'entrega-u4:u4-testar-predicao'),
+  lista: ligacao('r2', 'notas = [2, 4, 6]', 'notas = [2, 4, 8]', 'entrega-u1:u1-entender-lista'),
+  acumulador: ligacao('r2', 'total = total + nota', 'notas = [2, 4, 8]', 'entrega-u1:u1-construir-acumulador'),
+  media: ligacao('r3', 'return soma / quantidade', 'calcular_media([4, 8])', 'entrega-u1:u1-entender-media'),
+  'limite-sete': ligacao('r1', 'if idade < 12', 'idade = 20', 'entrega-u1:u1-construir-situacao'),
+  relatorio: ligacao('u1a1', 'print(f"Media: {media}")', 'nota_a = "6"', 'entrega-u1:u1-construir-situacao'),
+  classe: ligacao('entrega-u2:u2-entender-classe', 'class Livro:', 'Crie um Livro e mostre seu título.', 'entrega-u2:u2-entender-classe'),
+  self: ligacao('entrega-u2:u2-entender-classe', 'self.titulo = titulo', 'Crie um Livro e mostre seu título.', 'entrega-u2:u2-entender-classe'),
+  'lista-de-objetos': ligacao('entrega-u2:u2-entender-colecao', 'livros.append(Livro', 'Cadastre dois livros de gêneros diferentes.', 'entrega-u2:u2-entender-colecao'),
+  cadastro: ligacao('entrega-u2:u2-construir-cadastro', 'def cadastrar_livro', 'Cadastre pelo menos quatro livros por meio da função.', 'entrega-u2:u2-construir-cadastro'),
+  busca: ligacao('entrega-u2:u2-construir-busca', 'titulo.lower()', 'Faça uma busca existente e uma inexistente.', 'entrega-u2:u2-construir-busca'),
+  'contagem-genero': ligacao('entrega-u2:u2-construir-generos', 'contagem.get(livro.genero, 0)', 'Gere um gráfico de barras usando os gêneros e suas contagens.', 'entrega-u2:u2-construir-generos'),
+  'grafico-barras': ligacao('u3a4', 'plt.bar(meses, vendas)', 'plt.bar(["Mar", "Abr", "Mai"], [60, 80, 90])', 'entrega-u2:u2-construir-generos'),
+  sqlite: ligacao('u3a1', 'sqlite3.connect(":memory:")', '("Ana", "Natal")', 'entrega-u3:u3-construir-sqlite'),
+  pandas: ligacao('u3a2', 'pd.Series([20, 30, 40])', 'pd.Series([20, 30, 40])', 'entrega-u3:u3-construir-dataframe'),
+  agregacao: ligacao('entrega-u3:u3-construir-analise', 'df.groupby("categoria")["receita"].sum()', 'Apresente números derivados do DataFrame, sem escrevê-los manualmente.', 'entrega-u3:u3-construir-analise'),
+  graficos: ligacao('u3a4', 'plt.bar(meses, vendas)', 'plt.bar(["Mar", "Abr", "Mai"], [60, 80, 90])', 'entrega-u3:u3-construir-graficos'),
+  'treino-teste': ligacao('entrega-u4:u4-entender-treino-teste', 'train_test_split(X, y', 'Explique por que avaliar nos mesmos dados de treino seria enganoso.', 'entrega-u4:u4-entender-treino-teste'),
+  normalizacao: ligacao('entrega-u4:u4-construir-escala', 'scaler.fit_transform(X_treino)', 'Use fit_transform no treino e somente transform no teste.', 'entrega-u4:u4-construir-escala'),
+  'rede-neural': ligacao('entrega-u4:u4-construir-modelo', 'tf.keras.Sequential', 'Compile com uma perda compatível com rótulos inteiros e métrica accuracy.', 'entrega-u4:u4-construir-modelo'),
+  epocas: ligacao('entrega-u4:u4-construir-treino', 'epochs=40', 'Treine no Colab e observe accuracy e val_accuracy.', 'entrega-u4:u4-construir-treino'),
+  avaliacao: ligacao('entrega-u4:u4-testar-avaliacao', 'model.evaluate(X_teste', 'Registre a acurácia real produzida no Colab.', 'entrega-u4:u4-testar-avaliacao'),
+  predicao: ligacao('entrega-u4:u4-testar-predicao', 'model.predict(amostra', 'Teste pelo menos três amostras e registre probabilidades e espécie.', 'entrega-u4:u4-testar-predicao'),
 };
 
 // Auditoria estrutural da experiência visível. Ela não considera uma frase na teoria como
@@ -547,6 +548,22 @@ export function auditarProgressaoDaFaculdade() {
   for (const unidade of unidades) {
     const aulas = aulasDaFaculdade.filter((aula) => aula.unidade === unidade.id);
     if (aulas.length !== 4) problemas.push(`${unidade.id}: esperava 4 aulas, encontrou ${aulas.length}`);
+  }
+  for (const [conceito, ligacaoEnsino] of Object.entries(matrizDeEnsinoDasEntregas)) {
+    const [entregaId, passoId] = ligacaoEnsino.explicadoEm.split(':');
+    const aula = ensinoDaFaculdade[ligacaoEnsino.explicadoEm];
+    const passoEntrega = entregasDaFaculdade
+      .find(({ id }) => id === entregaId)?.passos.find(({ id }) => id === passoId);
+    const fonte = aula
+      ? `${aula.codigo}\n${aula.treino.antes}\n${aula.treino.depois}`
+      : `${passoEntrega?.explicacao || ''}\n${passoEntrega?.exemplo || ''}\n${passoEntrega?.evidencia || ''}`;
+    if (!fonte.trim()) problemas.push(`${conceito}: fonte de ensino inexistente`);
+    if (!fonte.includes(ligacaoEnsino.exemplo)) problemas.push(`${conceito}: exemplo não existe na fonte indicada`);
+    if (!fonte.includes(ligacaoEnsino.alteracao)) problemas.push(`${conceito}: prática não existe na fonte indicada`);
+    const [entregaCobrada, passoCobrado] = ligacaoEnsino.cobradoEm.split(':');
+    if (!entregasDaFaculdade.find(({ id }) => id === entregaCobrada)?.passos.some(({ id }) => id === passoCobrado)) {
+      problemas.push(`${conceito}: cobrança inexistente`);
+    }
   }
   if (ids.size !== aulasDaFaculdade.length) problemas.push('ids de aula duplicados');
   return problemas;

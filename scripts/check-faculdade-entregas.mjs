@@ -103,11 +103,15 @@ try {
   await page.getByRole('button', { name: /Exportar/ }).click();
   assert.equal(await page.getByRole('button', { name: /Baixar notebook/ }).isDisabled(), true);
   await page.getByRole('button', { name: 'Registrar este passo' }).click();
-  await page.getByText(/Conclua os itens pendentes do checklist/).waitFor();
+  await page.getByText(/aulas-base pendentes/).waitFor();
+  assert.equal(await page.getByRole('button', { name: /Abrir aula-base/ }).count(), 4);
 
   await page.reload({ waitUntil: 'networkidle' });
   assert.match(page.url(), /faculty=entrega-u4/);
   await page.getByRole('heading', { name: 'Classificação de flores Iris', exact: true }).waitFor();
+  await page.getByRole('button', { name: /Web: front-end, back-end e Python.*Abrir aula-base/ }).click();
+  assert.match(page.url(), /faculty=r4/);
+  await page.getByRole('heading', { name: 'Web: front-end, back-end e Python', exact: true }).waitFor();
 
   await page.goto(`${base}?tab=faculdade&faculty=entrega-u1`, { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: /Construir/ }).click();

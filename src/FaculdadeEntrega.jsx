@@ -11,6 +11,7 @@ import {
   entregaProntaParaExportar,
   normalizarTrabalhoDaEntrega,
   requisitosFaltandoDaEntrega,
+  situacaoDosPreRequisitos,
 } from './faculdade-entregas.js';
 import {
   criarNotebookColab,
@@ -142,6 +143,8 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
 
   const passoAtual = entrega.passos[passoIndice];
   const concluidos = new Set(trabalho.passosConcluidos);
+  const preRequisitos = situacaoDosPreRequisitos(entrega, state);
+  const preRequisitosPendentes = preRequisitos.filter(({ concluido }) => !concluido);
   const faltando = requisitosFaltandoDaEntrega(entrega, trabalho);
   const progresso = (trabalho.passosConcluidos.length / entrega.passos.length) * 100;
   const faseAtual = passoAtual.fase;
@@ -156,6 +159,10 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
   };
 
   const concluirPasso = () => {
+    if (passoAtual.fase !== 'entender' && preRequisitosPendentes.length) {
+      setMensagem(`Conclua primeiro ${preRequisitosPendentes.length === 1 ? 'a aula-base pendente' : `as ${preRequisitosPendentes.length} aulas-base pendentes`}. Os atalhos estão no quadro “Antes de começar”.`);
+      return;
+    }
     const evidencia = podeConcluirPasso(passoAtual, entrega, trabalho);
     if (!evidencia.ok) {
       setMensagem(evidencia.motivo);
@@ -382,7 +389,15 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
           <section className="card entrega-preparo">
             <div className="eyebrow">ANTES DE COMEÇAR</div>
             <h2>O que você já precisa saber</h2>
-            <ul>{entrega.preRequisitos.map((id) => <li key={id}><Icon name="CheckCircle2" size={16} aria-hidden="true" />{nomeDoPreRequisito(id)}</li>)}</ul>
+            <ul>{preRequisitos.map(({ id, concluido }) => (
+              <li key={id} className={concluido ? 'feito' : 'pendente'}>
+                <Icon name={concluido ? 'CheckCircle2' : 'BookOpen'} size={16} aria-hidden="true" />
+                <button type="button" onClick={() => navigate('faculdade', { facultyItem: id })}>
+                  <span>{nomeDoPreRequisito(id)}</span>
+                  <small>{concluido ? 'Estudada' : 'Abrir aula-base'}</small>
+                </button>
+              </li>
+            ))}</ul>
           </section>
           <section className="card entrega-checklist">
             <div className="eyebrow">CHECKLIST REAL</div>
