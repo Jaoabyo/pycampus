@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { localHelp } from '../src/mentor.js';
-import { ensinoDaFaculdade } from '../src/faculdade-ensino.js';
+import { auditarProgressaoDaFaculdade, ensinoDaFaculdade, matrizDeEnsinoDasEntregas } from '../src/faculdade-ensino.js';
 import {
   aulasDaFaculdade,
   requisitosFaltandoDaFaculdade,
@@ -31,11 +31,33 @@ test('cada aula tem preparação explicada e uma alteração guiada antes do des
   assert.match(ensinoDaFaculdade.u1a1.codigo, /float\(nota_a\)/);
 });
 
+test('nenhum desafio cobra antes de explicar, exemplificar, praticar e revisar', () => {
+  assert.deepEqual(auditarProgressaoDaFaculdade(), []);
+});
+
+test('cada conceito obrigatório das entregas aponta para ensino, exemplo, alteração e cobrança', () => {
+  for (const [conceito, ligacao] of Object.entries(matrizDeEnsinoDasEntregas)) {
+    assert.match(ligacao.explicadoEm, /^(?:[a-z]\w+|entrega-u[1-4]:.+)$/, `${conceito}: fonte inexistente`);
+    assert.ok(ligacao.exemplo?.trim(), `${conceito}: sem exemplo`);
+    assert.ok(ligacao.alteracao?.trim(), `${conceito}: sem alteração`);
+    assert.notEqual(ligacao.exemplo.trim(), ligacao.alteracao.trim(), `${conceito}: prática repete o exemplo`);
+    assert.notEqual(ligacao.explicadoEm, ligacao.cobradoEm, `${conceito}: ensino e cobrança no mesmo passo`);
+    assert.match(ligacao.cobradoEm, /^entrega-u[1-4]:.+/, `${conceito}: cobrança sem endereço`);
+  }
+  for (const conceito of ['lista', 'acumulador', 'media', 'limite-sete', 'classe', 'self', 'busca', 'contagem-genero', 'grafico-barras']) {
+    assert.ok(matrizDeEnsinoDasEntregas[conceito], conceito);
+  }
+  for (const conceito of ['sqlite', 'pandas', 'agregacao', 'graficos', 'treino-teste', 'normalizacao', 'rede-neural', 'epocas', 'avaliacao', 'predicao']) {
+    assert.ok(matrizDeEnsinoDasEntregas[conceito], conceito);
+  }
+});
+
 test('projetos da faculdade preservam código e conclusão no backup sem mudar as aulas', () => {
   const state = initialState();
   state.faculdade = {
     feitas: ['u1a1', ...projetosDaFaculdade.map((p) => p.id)],
     codigos: solucoesProjetosFaculdade,
+    entregas: {},
   };
   const recuperado = normalizeState(JSON.parse(JSON.stringify(state)));
   assert.deepEqual(recuperado.faculdade, state.faculdade);

@@ -2,6 +2,7 @@ import { normalizeState, doneProjects, donePractices, xpTotal } from './progress
 import { HISTORY_LIMIT } from './history.js';
 import { practiceAchievement, practiceProjects } from './practice-content.js';
 import { mergeLumiNotes } from './lumi-notes.js';
+import { entregasDaFaculdade, juntarTrabalhosDaEntrega } from './faculdade-entregas.js';
 
 // Estudar no celular e no computador cria duas jornadas separadas, e importar um backup
 // substituía uma pela outra — apagando o que foi feito no outro aparelho. Aqui elas se juntam.
@@ -79,6 +80,20 @@ export function mergeProgress(atual, entrada) {
   base.projectCodes = juntarTextos(atual.projectCodes, entrada.projectCodes);
   base.projectLinks = { ...(entrada.projectLinks || {}), ...(atual.projectLinks || {}) };
   base.playground = maisLongo(atual.playground, entrada.playground);
+
+  base.faculdade = {
+    feitas: uniao(atual.faculdade?.feitas, entrada.faculdade?.feitas),
+    codigos: juntarTextos(atual.faculdade?.codigos, entrada.faculdade?.codigos),
+    entregas: {},
+  };
+  for (const entrega of entregasDaFaculdade) {
+    const unido = juntarTrabalhosDaEntrega(
+      atual.faculdade?.entregas?.[entrega.id],
+      entrada.faculdade?.entregas?.[entrega.id],
+      entrega,
+    );
+    if (unido) base.faculdade.entregas[entrega.id] = unido;
+  }
 
   base.learning = {};
   for (const id of chaves(atual.learning, entrada.learning)) {

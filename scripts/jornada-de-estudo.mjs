@@ -151,7 +151,10 @@ async function conferirTela(page, tela) {
 const browser = await chromium.launch({ channel: 'msedge' });
 for (const [nome, width, height] of [['desktop', 1440, 1000], ['celular', 390, 844]]) {
   const ctx = await browser.newContext({ viewport: { width, height } });
-  await ctx.addInitScript(s => { try { localStorage.setItem('pycampus.v1', s); } catch { /* modo privado */ } }, estado);
+  await ctx.addInitScript(s => { try {
+    localStorage.setItem('pycampus.v1', s);
+    localStorage.setItem('pycampus.guia-inicial.v1', 'ok');
+  } catch { /* modo privado */ } }, estado);
   const page = await ctx.newPage();
   const erros = [];
   page.on('pageerror', e => erros.push(e.message.slice(0, 160)));

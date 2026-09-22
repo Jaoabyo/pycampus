@@ -23,11 +23,12 @@ import { SimpleConcept, LessonOrientation, ExampleWalkthrough, GuidedHints, Proj
 import { DailyMission, LearningMap } from './LearningExperience.jsx';
 import { loadUiPreferences, saveUiPreferences } from './ui-preferences.js';
 import { updateDailyMission } from './daily-mission.js';
-import { buscarNaFaculdade } from './faculdade-integrada.js';
+import { buscarNaFaculdade, destinoDaFaculdadeNoEndereco, enderecoDaFaculdade } from './faculdade-integrada.js';
 import './lesson.css';
 import './guidance.css';
 import './grade.css';
 import './experience.css';
+import './faculdade-entrega.css';
 
 // Telas pesadas que ninguém abre no primeiro segundo: carregadas sob demanda, o conteúdo que
 // só elas usam sai do pacote inicial. Precisam vir depois dos imports, porque lazy() é
@@ -39,6 +40,7 @@ const Prova = lazy(() => import('./Prova.jsx'));
 const Visualizador = lazy(() => import('./Visualizador.jsx'));
 const HistoryView = lazy(() => import('./HistoryView.jsx'));
 const Faculdade = lazy(() => import('./Faculdade.jsx'));
+const FaculdadeEntrega = lazy(() => import('./FaculdadeEntrega.jsx'));
 const FaculdadeIntegrada = lazy(() => import('./FaculdadeIntegrada.jsx'));
 const Sobre = lazy(() => import('./Sobre.jsx'));
 
@@ -742,6 +744,7 @@ function ProximoPasso({ work, state, onAbrir, onVerFormacao }) {
 }
 
 export default function App() {
+  const destinoInicialDaFaculdade = () => destinoDaFaculdadeNoEndereco(window.location.search);
   const [storageError, setStorageError] = useState('');
   const [state, setState] = useState(() => {
     try {
@@ -752,11 +755,11 @@ export default function App() {
     }
   });
   const [uiPrefs, setUiPrefs] = useState(() => loadUiPreferences());
-  const [page, setPage] = useState('dashboard'),
+  const [page, setPage] = useState(() => new URLSearchParams(window.location.search).get('tab') === 'faculdade' ? 'faculdade' : 'dashboard'),
     [selectedLesson, setSelectedLesson] = useState('ola'),
     [selectedProject, setSelectedProject] = useState('calculadora'),
     [practiceTarget, setPracticeTarget] = useState(null),
-    [facultyTarget, setFacultyTarget] = useState(null),
+    [facultyTarget, setFacultyTarget] = useState(destinoInicialDaFaculdade),
     [mobileOpen, setMobileOpen] = useState(false),
     [modal, setModal] = useState(null),
     [toast, setToast] = useState(''),
@@ -815,7 +818,17 @@ export default function App() {
   };
   const navigate = (target, options = {}) => {
     if (target === 'practice' && !options.keepPracticeTarget) setPracticeTarget(null);
-    if (target === 'faculdade') setFacultyTarget(options.facultyItem || null);
+    if (target === 'faculdade') {
+      const item = options.facultyItem || null;
+      setFacultyTarget(item);
+      const destino = enderecoDaFaculdade(item);
+      window.history.replaceState(null, '', `${window.location.pathname}${destino}${window.location.hash}`);
+    } else if (new URLSearchParams(window.location.search).get('tab') === 'faculdade') {
+      const endereco = new URL(window.location.href);
+      endereco.searchParams.delete('tab');
+      endereco.searchParams.delete('faculty');
+      window.history.replaceState(null, '', `${endereco.pathname}${endereco.search}${endereco.hash}`);
+    }
     setPage(target);
     setMobileOpen(false);
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -1813,7 +1826,9 @@ export default function App() {
             {page === 'project' && <ProjectStudio project={projects.find((p) => p.id === selectedProject)} state={state} update={update} back={() => navigate('projects')} openLesson={openLesson} download={download} notify={notify} navigate={navigate} openProject={openProject} />}
             {page === 'practice' && <PracticeStudio state={state} update={update} openLesson={openLesson} openProject={openProject} navigate={navigate} target={practiceTarget} />}
             {page === 'playground' && <Playground state={state} update={update} download={download} />}
-            {page === 'faculdade' && <Faculdade state={state} update={update} navigate={navigate} initialItemId={facultyTarget} />}
+            {page === 'faculdade' && (facultyTarget?.startsWith('entrega-')
+              ? <FaculdadeEntrega entregaId={facultyTarget} state={state} update={update} navigate={navigate} download={download} />
+              : <Faculdade state={state} update={update} navigate={navigate} initialItemId={facultyTarget} />)}
             {page === 'targeted' && <TargetedPractice state={state} update={update} openLesson={openLesson} />}
             {page === 'prova' && <Prova state={state} update={update} openLesson={openLesson} navigate={navigate} />}
             {page === 'sobre' && <Sobre navigate={navigate} />}

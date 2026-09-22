@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { initialState, completeLesson } from '../src/progress.js';
 import { normalizeUiPreferences } from '../src/ui-preferences.js';
 import { missionItemDone, updateDailyMission } from '../src/daily-mission.js';
@@ -58,4 +59,16 @@ test('preferências de interface não entram no estado acadêmico nem alteram XP
   normalizeUiPreferences({ lessonMode: 'complete', courseView: 'list', lessonSteps: { ola: 4 } });
   assert.equal(JSON.stringify(state), before);
   assert.equal(Object.hasOwn(state, 'lessonMode'), false);
+});
+
+test('estúdio da faculdade expõe fases, progresso, editor, saída e exportação', () => {
+  const fonte = readFileSync(new URL('../src/FaculdadeEntrega.jsx', import.meta.url), 'utf8');
+  for (const texto of ['Entender', 'Construir', 'Testar', 'Explicar', 'Exportar']) {
+    assert.match(fonte, new RegExp(texto));
+  }
+  assert.match(fonte, /aria-current/);
+  assert.match(fonte, /aria-live/);
+  assert.match(fonte, /CodeEditor/);
+  assert.match(fonte, /criarNotebookColab/);
+  assert.match(fonte, /criarRelatorioHtml/);
 });

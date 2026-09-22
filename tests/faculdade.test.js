@@ -2,6 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { aulasDaFaculdade, tarefasDaFaculdade, unidades, aulasDaUnidade, tarefasDaUnidade, diasAteProva, requisitosFaltandoDaFaculdade, proximaAcaoDaFaculdade, planoDeEstudosDaFaculdade } from '../src/faculdade.js';
 import { solucoesDaFaculdade } from './faculdade-reference.js';
+import { buscarNaFaculdade, panoramaDaFaculdade } from '../src/faculdade-integrada.js';
+import { initialState } from '../src/progress.js';
+import { entregasDaFaculdade } from '../src/faculdade-entregas.js';
+
+const IDS_HISTORICOS_DAS_16_AULAS = [
+  'u1a1', 'r1', 'r2', 'r3',
+  'u2a1', 'u2a2', 'u2a3', 'u2a4',
+  'u3a1', 'u3a2', 'u3a3', 'u3a4',
+  'r4', 'u4a2', 'u4a3', 'u4a4',
+];
 
 test('a trilha cobre as quatro unidades dos oito PDFs', () => {
   assert.deepEqual(unidades.map(unidade => unidade.id), ['u1', 'u2', 'u3', 'u4']);
@@ -12,6 +22,36 @@ test('a trilha cobre as quatro unidades dos oito PDFs', () => {
     'r4', 'u4a2', 'u4a3', 'u4a4'
   ]);
   for (const unidade of unidades) assert.equal(aulasDaFaculdade.filter(aula => aula.unidade === unidade.id).length, 4, unidade.id);
+});
+
+test('mantém os 16 ids históricos e usa apenas pré-requisitos que existem', () => {
+  assert.equal(aulasDaFaculdade.length, 16);
+  assert.deepEqual(aulasDaFaculdade.map(({ id }) => id), IDS_HISTORICOS_DAS_16_AULAS);
+  const ids = new Set(IDS_HISTORICOS_DAS_16_AULAS);
+  assert.deepEqual(
+    entregasDaFaculdade.flatMap((entrega) =>
+      entrega.preRequisitos
+        .filter((id) => !ids.has(id))
+        .map((id) => `${entrega.id}:${id}`)),
+    [],
+  );
+});
+
+test('a revisão da primeira aula cobra a conversão realmente praticada, não input', () => {
+  const primeira = aulasDaFaculdade.find(({ id }) => id === 'u1a1');
+  assert.doesNotMatch(primeira.pergunta, /input/i);
+  assert.match(primeira.pergunta, /float|conver/i);
+});
+
+test('busca encontra a entrega de Iris e preserva o id navegável', () => {
+  const resultados = buscarNaFaculdade('Iris');
+  assert.ok(resultados.some(({ id, tipo }) =>
+    id === 'entrega-u4' && tipo === 'Entrega prática'));
+});
+
+test('panorama expõe uma entrega por unidade', () => {
+  const panorama = panoramaDaFaculdade(initialState());
+  assert.equal(panorama.unidades.filter(({ entrega }) => entrega).length, 4);
 });
 
 test('toda aula informa a relação com a formação geral sem esconder o foco da faculdade', () => {

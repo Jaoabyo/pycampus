@@ -1,5 +1,8 @@
 // Exemplos pequenos, independentes e explicados antes do desafio. O material
 // ampliado da disciplina continua disponível como aprofundamento, após esta base.
+import { aulasDaFaculdade, unidades } from './faculdade.js';
+import { entregasDaFaculdade } from './faculdade-entregas.js';
+
 const passo = (codigo, explicacao) => ({ codigo, explicacao });
 const guia = (
   objetivo,
@@ -471,3 +474,106 @@ export const ensinoDaFaculdade = {
     'polyfit ajusta a reta usando os pares conhecidos. polyval usa os coeficientes para estimar um valor novo; isso não comprova acurácia em dados futuros.',
   ),
 };
+
+const ligacao = (explicadoEm, exemplo, alteracao, cobradoEm) => ({
+  explicadoEm, exemplo, alteracao, cobradoEm,
+});
+
+// Este mapa é a ponte auditável entre as aulas curtas e os trabalhos maiores.
+// Cada conceito chega ao estúdio somente depois de ser explicado, visto e alterado.
+export const matrizDeEnsinoDasEntregas = {
+  lista: ligacao('r2', 'notas = [2, 4, 6]', 'notas = [2, 4, 8]', 'entrega-u1:u1-entender-lista'),
+  acumulador: ligacao('r2', 'total = total + nota', 'notas = [2, 4, 8]', 'entrega-u1:u1-construir-acumulador'),
+  media: ligacao('r3', 'return soma / quantidade', 'calcular_media([4, 8])', 'entrega-u1:u1-entender-media'),
+  'limite-sete': ligacao('r1', 'if idade < 12', 'idade = 20', 'entrega-u1:u1-construir-situacao'),
+  relatorio: ligacao('u1a1', 'print(f"Media: {media}")', 'nota_a = "6"', 'entrega-u1:u1-construir-situacao'),
+  classe: ligacao('entrega-u2:u2-entender-classe', 'class Livro:', 'Crie um Livro e mostre seu título.', 'entrega-u2:u2-construir-cadastro'),
+  self: ligacao('entrega-u2:u2-entender-classe', 'self.titulo = titulo', 'Crie um Livro e mostre seu título.', 'entrega-u2:u2-construir-cadastro'),
+  'lista-de-objetos': ligacao('entrega-u2:u2-entender-colecao', 'livros.append(Livro', 'Cadastre dois livros de gêneros diferentes.', 'entrega-u2:u2-construir-listagem'),
+  cadastro: ligacao('entrega-u2:u2-entender-funcao', 'def cadastrar_livro', 'Altere os dados da chamada e confirme qual novo objeto entrou na lista.', 'entrega-u2:u2-construir-cadastro'),
+  busca: ligacao('entrega-u2:u2-entender-busca', 'titulo_salvo.lower() == busca.lower()', 'Troque a busca por um título ausente e preveja False antes de executar no editor.', 'entrega-u2:u2-construir-busca'),
+  'contagem-genero': ligacao('entrega-u2:u2-entender-contagem', 'contagem.get(genero, 0)', 'Repita a atualização para Romance e confirme que a contagem muda de 1 para 2.', 'entrega-u2:u2-construir-generos'),
+  'grafico-barras': ligacao('u3a4', 'plt.bar(meses, vendas)', 'plt.bar(["Mar", "Abr", "Mai"], [60, 80, 90])', 'entrega-u2:u2-construir-generos'),
+  sqlite: ligacao('u3a1', 'sqlite3.connect(":memory:")', '("Ana", "Natal")', 'entrega-u3:u3-construir-sqlite'),
+  pandas: ligacao('u3a2', 'pd.Series([10, 20, 30])', 'pd.Series([20, 30, 40])', 'entrega-u3:u3-construir-dataframe'),
+  agregacao: ligacao('entrega-u3:u3-entender-agregacao', 'df_vendas.groupby("categoria")["valor_venda"].sum()', 'Troque categoria por produto e explique como muda a pergunta respondida.', 'entrega-u3:u3-construir-analise'),
+  graficos: ligacao('u3a4', 'plt.bar(meses, vendas)', 'plt.bar(["Mar", "Abr", "Mai"], [60, 80, 90])', 'entrega-u3:u3-construir-graficos'),
+  'treino-teste': ligacao('entrega-u4:u4-entender-treino-teste', 'train_test_split(X, y', 'Explique por que avaliar nos mesmos dados de treino seria enganoso.', 'entrega-u4:u4-testar-avaliacao'),
+  normalizacao: ligacao('entrega-u4:u4-entender-escala', 'scaler.fit_transform(X_treino)', 'Explique por que não usamos fit_transform novamente em X_teste.', 'entrega-u4:u4-construir-escala'),
+  'rede-neural': ligacao('entrega-u4:u4-entender-rede', 'tf.keras.Sequential', 'Identifique por que a entrada tem quatro valores e a saída tem três.', 'entrega-u4:u4-construir-modelo'),
+  epocas: ligacao('entrega-u4:u4-entender-treino', 'epochs=40', 'Compare accuracy e val_accuracy e explique por que elas podem divergir.', 'entrega-u4:u4-construir-treino'),
+  avaliacao: ligacao('entrega-u4:u4-entender-saida', 'model.evaluate(X_teste', 'Antes de executar no Colab, diga o formato esperado para três previsões.', 'entrega-u4:u4-testar-avaliacao'),
+  predicao: ligacao('entrega-u4:u4-entender-saida', 'model.predict(X_teste[:3]', 'Antes de executar no Colab, diga o formato esperado para três previsões.', 'entrega-u4:u4-testar-predicao'),
+};
+
+// Auditoria estrutural da experiência visível. Ela não considera uma frase na teoria como
+// ensino suficiente: antes do desafio, cada aula precisa explicar, mostrar código executável,
+// pedir uma alteração observável e revisar a habilidade praticada.
+export function auditarProgressaoDaFaculdade() {
+  const problemas = [];
+  const ids = new Set(aulasDaFaculdade.map(({ id }) => id));
+
+  for (const aula of aulasDaFaculdade) {
+    const ensino = ensinoDaFaculdade[aula.id];
+    if (!ensino) {
+      problemas.push(`${aula.id}: sem guia de aprendizagem`);
+      continue;
+    }
+    if (!ensino.objetivo?.trim() || ensino.passos.length < 3
+      || ensino.passos.some(({ explicacao }) => String(explicacao).trim().length < 80)) {
+      problemas.push(`${aula.id}: fase explicar incompleta`);
+    }
+    if (!ensino.codigo?.trim() || ensino.passos.some(({ codigo }) => !String(codigo).trim())) {
+      problemas.push(`${aula.id}: fase exemplificar incompleta`);
+    }
+    if (!ensino.treino?.antes?.trim()
+      || !ensino.codigo.includes(ensino.treino.antes)
+      || ensino.treino.antes === ensino.treino.depois
+      || !ensino.treino.depois?.trim()
+      || !ensino.treino.saida?.trim()) {
+      problemas.push(`${aula.id}: fase praticar incompleta`);
+    }
+    if (!ensino.revisao?.pergunta?.trim()
+      || ensino.revisao.opcoes?.length < 3
+      || !ensino.revisao.opcoes[ensino.revisao.resposta]?.trim()
+      || !ensino.revisao.explicacao?.trim()) {
+      problemas.push(`${aula.id}: fase revisar incompleta`);
+    }
+    if (!aula.desafio?.trim() || !aula.starter?.trim() || !aula.esperado?.trim()
+      || !aula.requisitosCodigo?.length) {
+      problemas.push(`${aula.id}: desafio sem evidência verificável`);
+    }
+  }
+
+  for (const unidade of unidades) {
+    const aulas = aulasDaFaculdade.filter((aula) => aula.unidade === unidade.id);
+    if (aulas.length !== 4) problemas.push(`${unidade.id}: esperava 4 aulas, encontrou ${aulas.length}`);
+  }
+  for (const [conceito, ligacaoEnsino] of Object.entries(matrizDeEnsinoDasEntregas)) {
+    const [entregaId, passoId] = ligacaoEnsino.explicadoEm.split(':');
+    const aula = ensinoDaFaculdade[ligacaoEnsino.explicadoEm];
+    const passoEntrega = entregasDaFaculdade
+      .find(({ id }) => id === entregaId)?.passos.find(({ id }) => id === passoId);
+    const fonte = aula
+      ? `${aula.codigo}\n${aula.treino.antes}\n${aula.treino.depois}`
+      : `${passoEntrega?.explicacao || ''}\n${passoEntrega?.exemplo || ''}\n${passoEntrega?.evidencia || ''}`;
+    if (!fonte.trim()) problemas.push(`${conceito}: fonte de ensino inexistente`);
+    if (!fonte.includes(ligacaoEnsino.exemplo)) problemas.push(`${conceito}: exemplo não existe na fonte indicada`);
+    if (!fonte.includes(ligacaoEnsino.alteracao)) problemas.push(`${conceito}: prática não existe na fonte indicada`);
+    if (ligacaoEnsino.exemplo.trim() === ligacaoEnsino.alteracao.trim()) {
+      problemas.push(`${conceito}: exemplo e alteração são idênticos`);
+    }
+    const [entregaCobrada, passoCobrado] = ligacaoEnsino.cobradoEm.split(':');
+    const entregaDestino = entregasDaFaculdade.find(({ id }) => id === entregaCobrada);
+    const indiceCobranca = entregaDestino?.passos.findIndex(({ id }) => id === passoCobrado) ?? -1;
+    if (indiceCobranca < 0) {
+      problemas.push(`${conceito}: cobrança inexistente`);
+    }
+    if (passoEntrega && entregaId === entregaCobrada) {
+      const indiceEnsino = entregaDestino.passos.findIndex(({ id }) => id === passoId);
+      if (indiceEnsino >= indiceCobranca) problemas.push(`${conceito}: cobrado antes de uma etapa anterior de ensino`);
+    }
+  }
+  if (ids.size !== aulasDaFaculdade.length) problemas.push('ids de aula duplicados');
+  return problemas;
+}
