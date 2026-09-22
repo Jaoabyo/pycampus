@@ -45,3 +45,4 @@
 .entrega-capturas-lista img{display:block;width:100%;height:auto}
 .entrega-capturas-lista figcaption{padding:7px 9px;text-align:right}
 .entrega-capturas-lista figcaption>button{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#c25b66;min-height:32px}
+.entrega-colab-rascunho{padding:16px;margin:16px 0;border:1px solid #dfd3ef;border-radius:12px;background:#faf7ff}.entrega-colab-rascunho p{margin-top:0}.entrega-colab-rascunho .button{min-height:44px;white-space:normal}

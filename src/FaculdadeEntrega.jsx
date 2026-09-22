@@ -27,6 +27,8 @@ import {
   situacaoDasConferencias,
 } from './faculdade-conferencias.js';
 import './faculdade-entrega.css';
+import { exemploDaEntrega } from './faculdade-exemplos.js';
+import { XP_FACULDADE, bonusDaEntrega } from './faculdade-recompensas.js';
 
 const FASES = [
   { id: 'entender', titulo: 'Entender', icone: 'BookOpenCheck' },
@@ -132,7 +134,8 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
 
   // Trocar de passo recarrega o exemplo daquele passo: o estudante volta a ver o original, e
   // o que ele experimentou no passo anterior não vaza para o seguinte.
-  const exemploDoPasso = entrega?.passos?.[passoIndice]?.exemplo || '';
+  const exemploPreparado = entrega && exemploDaEntrega(entrega, entrega.passos[passoIndice]);
+  const exemploDoPasso = exemploPreparado?.codigo || '';
   useEffect(() => {
     setExemploEditavel(exemploDoPasso);
     exemploPython.reset();
@@ -203,9 +206,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
   // botão Executar ali só produziria erro de sintaxe.
   // Só nos passos de Entender: em Construir e Testar o editor principal já é o lugar de
   // experimentar, e dois editores na mesma tela dividiriam a atenção sem motivo.
-  const ehExemploExecutavel = passoAtual.fase === 'entender'
-    && /[=(]/.test(passoAtual.exemplo || '')
-    && !/^[A-ZÀ-Ú][^\n]*\.$/.test((passoAtual.exemplo || '').trim());
+  const ehExemploExecutavel = exemploPreparado?.ambiente === 'pycampus';
   const concluidos = new Set(trabalho.passosConcluidos);
   const preRequisitos = situacaoDosPreRequisitos(entrega, state);
   const preRequisitosPendentes = preRequisitos.filter(({ concluido }) => !concluido);
@@ -265,9 +266,13 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
     });
     const proximo = Math.min(entrega.passos.length - 1, passoIndice + 1);
     setPassoIndice(proximo);
+    // O passo não abre celebração (seriam até treze por entrega), então o XP dele precisa
+    // aparecer aqui — senão ele entraria na conta sem o estudante ver de onde veio.
+    const jaContava = trabalho.passosConcluidos.includes(passoAtual.id);
+    const ganho = jaContava ? '' : ` +${XP_FACULDADE.passo} XP.`;
     setMensagem(passoAtual.fase === 'exportar'
-      ? 'Entrega conferida. Abra os arquivos e revise antes de enviar manualmente ao AVA.'
-      : 'Passo registrado. Continue para a próxima ideia quando estiver pronto.');
+      ? `Entrega conferida.${ganho} Abra os arquivos e revise antes de enviar manualmente ao AVA.`
+      : `Passo registrado.${ganho} Continue para a próxima ideia quando estiver pronto.`);
     irAoTopo();
   };
 
@@ -282,6 +287,12 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
       'application/x-ipynb+json',
     );
     setMensagem('Notebook baixado. Abra no Google Colab e execute todas as células em ordem.');
+  };
+
+  const baixarRascunho = () => {
+    download(criarNotebookColab({ entrega, trabalho, estudante: { nome: state.name, identificacao: state.registroAcademico } }),
+      `rascunho-${nomeDoArquivoDaEntrega(entrega, 'ipynb')}`, 'application/x-ipynb+json');
+    setMensagem('Rascunho baixado. No Colab, escolha Arquivo → Fazer upload de notebook e execute as células. Volte para registrar os resultados; baixar o rascunho não conclui a entrega.');
   };
 
   // A captura fica guardada como data URL junto do trabalho, no navegador: o PyCampus não tem
@@ -366,6 +377,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
           <div className="eyebrow">UNIDADE {entrega.unidade.slice(1)} · ENTREGA PRÁTICA</div>
           <h1>{entrega.titulo}</h1>
           <p>{entrega.resumo}</p>
+          <p>+{XP_FACULDADE.passo} XP por passo · +{bonusDaEntrega(entrega)} XP ao concluir a entrega</p>
           <div className="entrega-meta">
             <span><Icon name="Clock3" size={16} aria-hidden="true" /> {entrega.minutos} min em blocos</span>
             <span><Icon name="CalendarDays" size={16} aria-hidden="true" /> Prazo {emNumeros(PRAZO_TRABALHO)}</span>
@@ -417,6 +429,8 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                   <Icon name="Lightbulb" size={17} aria-hidden="true" /> Exemplo pequeno
                   <small>Preveja a saída antes de executar</small>
                 </div>
+                <p className="small">O editor inclui a preparação necessária. Execute, altere um valor e compare a saída. As primeiras linhas retomam os conceitos dos passos anteriores.</p>
+                {exemploPreparado.preparacao && <p><strong>Como ler este exemplo: </strong>{exemploPreparado.preparacao}</p>}
                 <CodeEditor
                   key={passoAtual.id}
                   code={exemploEditavel}
@@ -438,6 +452,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                 <pre>{passoAtual.exemplo}</pre>
               </div>
             )}
+            {exemploPreparado?.ambiente === 'colab' && <p className="entrega-aviso">Este trecho pertence ao notebook no Google Colab e usa os dados preparados nas células anteriores. Na fase Construir, você pode baixar seu rascunho para executar lá e praticar o pipeline local aqui.</p>}
             <div className="entrega-evidencia">
               <Icon name="Target" size={18} aria-hidden="true" />
               <div><strong>Faça agora</strong><p>{passoAtual.evidencia}</p></div>
@@ -459,6 +474,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                 {entrega.ambienteEntrega === 'colab' && <span className="pill orange">Execução final no Colab</span>}
               </div>
               {entrega.avisoAmbiente && <div className="entrega-aviso"><Icon name="Info" size={18} aria-hidden="true" /><p>{entrega.avisoAmbiente}</p></div>}
+              {entrega.ambienteEntrega === 'colab' && <div className="entrega-colab-rascunho"><p>Escreva seu código abaixo. Para testar no Colab, baixe o rascunho e use <strong>Arquivo → Fazer upload de notebook</strong>. Execute as células de cima para baixo e volte à fase Testar para registrar a saída.</p><button className="button outline" onClick={baixarRascunho}><Icon name="Download" size={17} aria-hidden="true" /> Baixar rascunho para o Colab</button></div>}
               {entrega.contrato && (
                 <div className="entrega-contrato">
                   <Icon name="CheckCheck" size={18} aria-hidden="true" />

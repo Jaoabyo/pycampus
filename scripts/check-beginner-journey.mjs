@@ -125,6 +125,10 @@ await page
   .waitFor({ timeout: 120000 });
 await page.getByRole('radio').first().check();
 await page.getByRole('button', { name: 'Registrar esta aula' }).click();
+const academicCelebration = page.locator('.celebration-dialog[open]');
+await academicCelebration.waitFor();
+assert.match(await academicCelebration.innerText(), /100 XP/);
+await academicCelebration.getByRole('button', { name: 'Confirmar e continuar' }).click();
 await page.getByText('Esta aula já conta no seu estudo').waitFor();
 await page.screenshot({
   path: join(tmpdir(), 'pycampus-faculdade-mobile.png'),
@@ -140,7 +144,7 @@ assert.equal(
   'voltar deve preservar o plano',
 );
 assert.equal(
-  await page.locator('.faculdade-projeto').count(),
+  await page.locator('.faculdade-mapa-projeto').count(),
   4,
   'cada unidade oferece um projeto de integração',
 );

@@ -37,9 +37,22 @@ const progresso = async (quantidade) => {
     quantidade,
   );
 };
-const registrar = async (quantidade) => {
+// Um passo vale 25 XP mas não abre confete: seriam até treze interrupções numa entrega, e a
+// comemoração da entrega concluída deixaria de ser especial. O XP do passo aparece na mensagem
+// do estúdio; a celebração fica para o passo que conclui o trabalho.
+const registrar = async (quantidade, { celebra = false } = {}) => {
   await page.getByRole('button', { name: /Registrar este passo|Continuar/ }).click();
   await progresso(quantidade);
+  const celebracao = page.locator('.celebration-dialog[open]');
+  if (celebra) {
+    await celebracao.waitFor();
+    assert.match(await celebracao.locator('.celebration-xp').innerText(), /XP/);
+    await celebracao.getByRole('button', { name: 'Confirmar e continuar' }).click();
+    return;
+  }
+  await page.waitForTimeout(400);
+  assert.equal(await celebracao.count(), 0, `o passo ${quantidade} não pode abrir celebração`);
+  assert.match(await page.locator('.entrega-mensagem').innerText(), /\+25 XP/, `o passo ${quantidade} precisa mostrar o XP ganho`);
 };
 
 try {
@@ -157,7 +170,8 @@ try {
   await popup.waitForLoadState('domcontentloaded');
   assert.match(await popup.locator('body').innerText(), /Sistema de gestão de notas/);
   await popup.close();
-  await registrar(9);
+  // O último passo conclui a entrega: aqui sim há celebração, com o bônus da entrega.
+  await registrar(9, { celebra: true });
 
   await page.goto(`${base}?tab=faculdade&faculty=entrega-u4`, { waitUntil: 'networkidle' });
   await page.getByRole('heading', { name: 'Classificação de flores Iris', exact: true }).waitFor();

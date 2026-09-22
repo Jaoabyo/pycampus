@@ -695,7 +695,7 @@ export const situacaoDosPreRequisitos = (entrega, state = {}) => {
   return (entrega?.preRequisitos || []).map((id) => ({ id, concluido: feitos.has(id) }));
 };
 
-export function normalizarTrabalhoDaEntrega(raw, entrega) {
+function normalizarRascunho(raw, entrega) {
   if (!entrega) return null;
   const trabalho = {
     passosConcluidos: idsValidos(raw?.passosConcluidos, entrega.passos),
@@ -709,6 +709,26 @@ export function normalizarTrabalhoDaEntrega(raw, entrega) {
   trabalho.linkColab = enderecoValido(raw?.linkColab);
   return trabalho;
 }
+
+// A versão concluída é conservada para que experimentar no editor não retire uma conquista.
+// Na restauração, validamos o conteúdo de novo: um booleano ou um número de XP não basta.
+export function normalizarTrabalhoDaEntrega(raw, entrega) {
+  if (!entrega) return null;
+  const trabalho = normalizarRascunho(raw, entrega);
+  const anterior = raw?.conquista ? normalizarRascunho(raw.conquista, entrega) : null;
+  const conquista = trabalhoConcluidoDaEntrega(entrega, anterior) ? anterior
+    : trabalhoConcluidoDaEntrega(entrega, trabalho) ? trabalho : null;
+  if (conquista) {
+    // Saídas gráficas já ficam no rascunho; a evidência de recompensa não duplica imagens.
+    trabalho.conquista = { ...conquista, imagens: [], capturas: [] };
+  }
+  return trabalho;
+}
+
+export const trabalhoConcluidoDaEntrega = (entrega, trabalho) => Boolean(trabalho
+  && dataValida(trabalho.concluidaEm)
+  && entrega.passos.every(p => trabalho.passosConcluidos?.includes(p.id))
+  && entregaProntaParaExportar(entrega, trabalho));
 
 export function juntarTrabalhosDaEntrega(a, b, entrega) {
   const aqui = normalizarTrabalhoDaEntrega(a, entrega);
@@ -727,6 +747,8 @@ export function juntarTrabalhosDaEntrega(a, b, entrega) {
   // As capturas o estudante anexa a mao; juntar as dos dois aparelhos nao duplica trabalho.
   unido.capturas = capturasValidas([...aqui.capturas, ...la.capturas]);
   unido.linkColab = la.linkColab || aqui.linkColab;
+  const conquista = aqui.conquista || la.conquista;
+  if (conquista) unido.conquista = conquista;
   return unido;
 }
 

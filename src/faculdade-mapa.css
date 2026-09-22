@@ -1,0 +1,33 @@
+/* O desenho do mapa vem de experience.css, o mesmo de "Minha formação": zigue-zague em duas
+   colunas, trilha no meio, conectores e o nó com número, título e ícone. Aqui fica só o que é
+   próprio da faculdade — o cartão de XP e a faixa de unidade completa. */
+.faculdade-recompensas,.faculdade-mapa{--acad-ink:#382b4b;--acad-muted:#665a76;--acad-purple:#7043bd;--acad-soft:#f6f1fc;--acad-line:#e4d9f1;--acad-green:#236348}
+.faculdade-recompensas{padding:24px;margin:24px 0;border-color:var(--acad-line);background:linear-gradient(120deg,#fff,var(--acad-soft));color:var(--acad-ink)}
+.faculdade-recompensas h2{margin:6px 0 8px;font-size:24px}.faculdade-recompensas p{max-width:76ch;color:var(--acad-muted);line-height:1.6}
+.faculdade-recompensas-valores{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}
+.faculdade-recompensas-valores>span{display:grid;gap:6px;padding:14px;border:1px solid var(--acad-line);border-radius:12px;background:#fff;color:var(--acad-muted);font-size:13px}
+.faculdade-recompensas-valores b{font-size:18px;color:var(--acad-purple)}
+
+/* Duas colunas deixam cada nó com metade da largura; a grade não pode esticar o vizinho de
+   linha quando uma unidade abre, senão o cartão ao lado ganha um vazio enorme. */
+.faculdade-mapa{align-items:start;margin:8px 0 22px}
+.faculdade-mapa .map-node{min-height:78px}
+.faculdade-mapa .map-node:focus-visible{outline:3px solid var(--acad-purple);outline-offset:3px}
+.faculdade-mapa .map-details[hidden]{display:none}
+.faculdade-mapa-resumo{margin:0 0 10px;font-size:11.5px;line-height:1.55;color:var(--acad-muted)}
+.faculdade-mapa .map-lessons>button.is-feita>span{background:#def2e7;color:#347a61}
+.faculdade-mapa .map-required.is-feito,.faculdade-mapa .map-project.is-feito{border-color:#c5e2d3;background:#f3faf6;color:var(--acad-green)}
+.faculdade-mapa .map-required.is-feito small,.faculdade-mapa .map-project.is-feito small{color:#4e8a6f}
+.faculdade-mapa .faculdade-tarefas{margin-top:10px;font-size:12px}
+
+/* Unidade completa: a mesma casca da etapa concluída da formação, com uma faixa verde que
+   diz o que foi conquistado — é o sinal de que dá para seguir para a próxima. */
+.faculdade-mapa-unidade.is-complete .map-node{border-color:#c5e2d3;background:linear-gradient(110deg,#eef9f2,#fff 70%)}
+.faculdade-mapa-unidade.is-complete .map-node-copy small{color:#4e8a6f}
+.faculdade-mapa-unidade.is-complete .map-node-copy em{color:var(--acad-green);font-weight:700}
+.faculdade-mapa-unidade.is-complete .map-progress .progress>span{background:var(--acad-green)}
+
+@media(max-width:760px){
+  .faculdade-recompensas{padding:20px}
+  .faculdade-recompensas-valores{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
