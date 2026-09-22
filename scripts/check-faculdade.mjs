@@ -11,7 +11,7 @@ import { solucoesDaFaculdade } from '../tests/faculdade-reference.js';
 import { ensinoDaFaculdade } from '../src/faculdade-ensino.js';
 import { projetosDaFaculdade } from '../src/faculdade-projetos.js';
 import { solucoesProjetosFaculdade } from '../tests/faculdade-projetos-reference.js';
-import { solucoesEntregasFaculdade } from '../tests/faculdade-entregas-reference.js';
+import { praticasLocaisEntregas, solucoesEntregasFaculdade } from '../tests/faculdade-entregas-reference.js';
 
 const NL = String.fromCharCode(10);
 const BASE = process.env.PYCAMPUS_TEST_URL || 'http://127.0.0.1:5176/';
@@ -136,6 +136,7 @@ for (const projeto of projetosDaFaculdade) {
 const evidenciasDasEntregas = {
   'entrega-u1': ['Média da turma:', 'Aprovado', 'Reprovado'],
   'entrega-u2': ['Livro encontrado:', 'Busca inexistente: não encontrado', 'Livros por gênero:', 'Barras: 3'],
+  'entrega-u3': ['Total de vendas: 5', 'Receita total:', 'Produto de maior receita: Monitor', 'Gráfico:', 'Barras: 3'],
 };
 for (const [id, evidencias] of Object.entries(evidenciasDasEntregas)) {
   programas++;
@@ -145,6 +146,19 @@ for (const [id, evidencias] of Object.entries(evidenciasDasEntregas)) {
   for (const evidencia of evidencias) {
     if (!saida.includes(evidencia)) problemas.push(`${id}: saída não contém ${JSON.stringify(evidencia)}`);
   }
+  if (id === 'entrega-u3') {
+    programas++;
+    const repeticao = await rodar(solucoesEntregasFaculdade[id]);
+    if (!repeticao.ok || limpar(repeticao.output) !== saida) {
+      problemas.push(`${id}: a segunda execução mudou o resultado ou duplicou registros`);
+    }
+  }
+}
+programas++;
+const praticaU4 = praticasLocaisEntregas['entrega-u4'];
+const resultadoU4 = await rodar(praticaU4.codigo);
+if (!resultadoU4.ok || limpar(resultadoU4.output) !== praticaU4.esperado) {
+  problemas.push(`entrega-u4: prática local não produz a saída ensinada — ${limpar(resultadoU4.output)}`);
 }
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page

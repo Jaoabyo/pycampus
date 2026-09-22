@@ -42,6 +42,9 @@ test('cada conceito obrigatório das entregas aponta para ensino, exemplo, alter
   for (const conceito of ['lista', 'acumulador', 'media', 'limite-sete', 'classe', 'self', 'busca', 'contagem-genero', 'grafico-barras']) {
     assert.ok(matrizDeEnsinoDasEntregas[conceito], conceito);
   }
+  for (const conceito of ['sqlite', 'pandas', 'agregacao', 'graficos', 'treino-teste', 'normalizacao', 'rede-neural', 'epocas', 'avaliacao', 'predicao']) {
+    assert.ok(matrizDeEnsinoDasEntregas[conceito], conceito);
+  }
 });
 
 test('projetos da faculdade preservam código e conclusão no backup sem mudar as aulas', () => {

@@ -5,7 +5,7 @@ import {
   entregaDaFaculdade,
   requisitosFaltandoDaEntrega,
 } from '../src/faculdade-entregas.js';
-import { solucoesEntregasFaculdade } from './faculdade-entregas-reference.js';
+import { praticasLocaisEntregas, solucoesEntregasFaculdade } from './faculdade-entregas-reference.js';
 
 test('expõe as quatro entregas oficiais na ordem das unidades', () => {
   assert.deepEqual(
@@ -88,4 +88,35 @@ test('U1 e U2 dividem conceitos novos em passos pequenos antes de cobrar', () =>
   for (const termo of ['classe', 'objeto', '__init__', 'self', 'append', 'lower', 'dicionário', 'gráfico', 'inexistente']) {
     assert.match(u2.toLocaleLowerCase('pt-BR'), new RegExp(termo.toLocaleLowerCase('pt-BR')), termo);
   }
+});
+
+test('U3 recria a base antes de inserir e cobre a análise oficial', () => {
+  const codigo = solucoesEntregasFaculdade['entrega-u3'];
+  assert.match(codigo, /DROP TABLE IF EXISTS vendas/i);
+  assert.match(codigo, /executemany/);
+  assert.match(codigo, /read_sql_query/);
+  assert.match(codigo, /groupby/);
+  assert.match(codigo, /try:[\s\S]*import seaborn[\s\S]*except/);
+  assert.match(codigo, /plt\.bar/);
+});
+
+test('U4 exige saída e data reais do Colab para satisfazer execução externa', () => {
+  const entrega = entregaDaFaculdade('entrega-u4');
+  const trabalho = {
+    codigo: solucoesEntregasFaculdade['entrega-u4'],
+    passosConcluidos: entrega.passos.map(({ id }) => id),
+    saidaExterna: 'Acurácia no teste: 0.9667',
+    logica: 'O pipeline separa os dados, ajusta a escala apenas no treino, treina a rede e avalia em dados reservados.',
+    testes: 'Conferi os formatos, a avaliação final e três predições com suas probabilidades.',
+    conclusao: 'A acurácia observada é uma evidência neste conjunto e não garante desempenho em qualquer flor.',
+  };
+  assert.ok(requisitosFaltandoDaEntrega(entrega, trabalho).some(({ id }) => id === 'execucao-colab'));
+  assert.ok(!requisitosFaltandoDaEntrega(entrega, { ...trabalho, executadaNoColabEm: '2026-09-24' }).some(({ id }) => id === 'execucao-colab'));
+});
+
+test('prática local da U4 ensina o pipeline sem fingir que é TensorFlow', () => {
+  const pratica = praticasLocaisEntregas['entrega-u4'];
+  assert.match(pratica.aviso, /não é uma rede neural/i);
+  assert.doesNotMatch(pratica.codigo, /tensorflow|sklearn/i);
+  for (const termo of ['treino', 'teste', 'normalizar', 'prever', 'acuracia']) assert.match(pratica.codigo, new RegExp(termo, 'i'));
 });

@@ -47,6 +47,13 @@ const criterioTexto = (id, descricao, campo, minimo = 30) => ({
   atende: (trabalho = {}) => String(trabalho[campo] || '').trim().length >= minimo,
 });
 
+const criterioExecucaoColab = {
+  id: 'execucao-colab',
+  descricao: 'registrar a saída real e a data da execução no Google Colab',
+  atende: (trabalho = {}) => String(trabalho.saidaExterna || '').trim().length >= 20
+    && Boolean(dataValida(trabalho.executadaNoColabEm)),
+};
+
 const criterioPassos = (ids) => ({
   id: 'passos-guiados',
   descricao: 'concluir os passos guiados com suas evidências',
@@ -382,7 +389,7 @@ export const entregasDaFaculdade = [
       criterioCodigo('modelo-tensorflow', 'construir e treinar uma rede TensorFlow', /tf\.keras[\s\S]*Sequential[\s\S]*\.fit\s*\(/),
       criterioCodigo('avaliacao', 'avaliar o modelo nos dados de teste', /\.evaluate\s*\(/),
       criterioCodigo('predicao', 'gerar e interpretar uma predição', /\.predict\s*\([\s\S]*(?:argmax|np\.argmax)/),
-      criterioTexto('execucao-colab', 'registrar a saída real da execução no Colab', 'saidaExterna', 20),
+      criterioExecucaoColab,
       criterioTexto('explicacao-logica', 'explicar o pipeline e suas limitações', 'logica', 100),
       criterioTexto('conclusao', 'concluir com a acurácia observada', 'conclusao', 50),
     ],
