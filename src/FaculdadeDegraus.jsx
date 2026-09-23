@@ -3,7 +3,7 @@ import { Icon } from './ui.jsx';
 import { usePython } from './useTrackedPython.js';
 import CodeEditor from './CodeEditor.jsx';
 import { ErrorHelp } from './RunFeedback.jsx';
-import { degrausDaFaculdade } from './faculdade-degraus.js';
+import { degrausDaFaculdade, separarSonda } from './faculdade-degraus.js';
 import './project-studio.css';
 import './faculdade.css';
 
@@ -35,9 +35,13 @@ export default function FaculdadeDegraus({ aulaId, state, update }) {
   }));
   const executar = () => {
     setResultado(null);
-    python.run(codigo, '', (saida) => {
-      if (!saida.ok) { setResultado({ ok: false, erro: true }); return; }
-      const conferencia = atual.conferir({ graficos: saida.graficos || [], codigo });
+    // A sonda vai depois do código, para o número de linha de um erro continuar sendo o do estudante.
+    const programa = trilha.sonda ? `${codigo}
+${trilha.sonda}` : codigo;
+    python.run(programa, '', (resultado) => {
+      if (!resultado.ok) { setResultado({ ok: false, erro: true }); return; }
+      const { saida, sonda } = separarSonda(resultado.output);
+      const conferencia = atual.conferir({ graficos: resultado.graficos || [], codigo, saida, banco: sonda });
       setResultado(conferencia);
       if (conferencia.ok && !terminou) {
         guardar({ feitos: atualIndice + 1 });
@@ -62,7 +66,7 @@ export default function FaculdadeDegraus({ aulaId, state, update }) {
       {terminou ? (
         <div className="faculdade-degrau-fim" role="status">
           <Icon name="Trophy" size={18} aria-hidden="true" />
-          <p><strong>Você montou um gráfico de barras completo, com os seus dados.</strong> Pode continuar mexendo no código abaixo: a conferência do último degrau continua valendo.</p>
+          <p>{trilha.conclusao} Pode continuar mexendo no código abaixo: a conferência do último degrau continua valendo.</p>
         </div>
       ) : (
         <div className="faculdade-degrau">
@@ -78,7 +82,7 @@ export default function FaculdadeDegraus({ aulaId, state, update }) {
         busy={python.busy}
         onRun={executar}
         onStop={python.stop}
-        output={python.output}
+        output={separarSonda(python.output).saida}
         imagens={python.imagens}
         success={python.success}
         celebrate={celebrar}
@@ -86,7 +90,7 @@ export default function FaculdadeDegraus({ aulaId, state, update }) {
         runLabel="Executar e conferir"
         emptyOutput="Escreva o degrau no editor e execute. O gráfico aparece aqui, e a conferência logo abaixo."
       />
-      {resultado?.erro && <ErrorHelp output={python.output} code={codigo} />}
+      {resultado?.erro && <ErrorHelp output={separarSonda(python.output).saida} code={codigo} />}
       {resultado && !resultado.erro && (
         <p role="status" className={resultado.ok ? 'practice-feedback faculdade-degrau-ok' : 'practice-feedback'}>
           {resultado.ok

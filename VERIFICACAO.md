@@ -1,5 +1,11 @@
 # Verificação da entrega
 
+## Degraus de SQL conferidos pelo banco, e o 150 que não aparecia (relatado pelo estudante) · 23/09/2026
+
+- O estudante testou os degraus de gráfico no site: "ficou de um nível excelente, achei bem divertido". Notou que a barra de 150 não tinha número no eixo: o Matplotlib marca de 20 em 20. A conclusão da trilha agora ensina plt.bar_label para escrever o valor em cima de cada barra.
+- A aula de SQL ganhou seis degraus (criar tabela, chave e tipos, inserir com ? e commit, consultar, UPDATE e DELETE com WHERE). Uma sonda roda depois do código do estudante e lê o banco de verdade: tabelas, colunas, tipos, chave primária, linhas e se há mudança sem commit. Ela vai no fim para não mudar o número de linha dos erros, e sua linha é tirada da saída antes de chegar à tela.
+- `check-faculdade-degraus`: **38 programas no Pyodide** (gráfico, bar_label e 20 casos de SQL); certos aprovam e erros típicos reprovam pelo motivo certo: tipo errado, tabela com outro nome, close() no meio, sem chave, sem commit, valor escrito dentro do SQL, UPDATE e DELETE sem WHERE. Na tela real: tipo errado reprovado, certo avança, sonda invisível. `npm test`: **365 testes aprovados**; build aprovado.
+
 ## Código do professor sem "porrada de coisa nova", e gráfico em degraus (relatado pelo estudante) · 23/09/2026
 
 - O estudante apontou que o exemplo do guia é pequeno e claro, mas o código do material vem depois com muita coisa nunca vista; e que a aula de Módulos mostrava um gráfico pronto e só pedia uma raiz quadrada.

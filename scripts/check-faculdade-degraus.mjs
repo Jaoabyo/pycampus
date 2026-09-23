@@ -7,7 +7,7 @@
 //   node scripts/check-faculdade-degraus.mjs
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
-import { degrausDaFaculdade } from '../src/faculdade-degraus.js';
+import { degrausDaFaculdade, separarSonda } from '../src/faculdade-degraus.js';
 
 const BASE = process.env.PYCAMPUS_TEST_URL || 'http://127.0.0.1:5176/';
 
@@ -64,8 +64,87 @@ const casos = [
   ['seus-dados', `${I}gastos = ["Luz", "Água", "Internet", "Mercado"]\nvalores = [180, 90, 120, 640]\nplt.bar(gastos, valores)\nplt.xlabel("Conta")\nplt.ylabel("Reais")\nplt.title("Meus gastos")\n`, false, 'plt.close()'],
 ];
 
+// O extra da conclusão: bar_label precisa existir no Matplotlib do navegador.
+casos.push(['seus-dados', `${I}dias = ["Seg", "Ter", "Qua", "Qui"]
+horas = [2, 1, 3, 5]
+barras = plt.bar(dias, horas)
+plt.bar_label(barras)
+plt.xlabel("Dia")
+plt.ylabel("Horas")
+plt.title("Semana")
+plt.close()
+`, true]);
+
+// SQL: a conferência lê o banco pela sonda que roda depois do código do estudante.
+const sql = degrausDaFaculdade.u3a1;
+const S = sql.inicial;
+const criar4 = 'cursor.execute("CREATE TABLE Produtos (id INTEGER PRIMARY KEY, nome TEXT, preco REAL, estoque INTEGER)")\n';
+const inserir = 'cursor.execute("INSERT INTO Produtos (nome, preco, estoque) VALUES (?, ?, ?)", ("Camiseta", 19.99, 50))\ncursor.execute("INSERT INTO Produtos (nome, preco, estoque) VALUES (?, ?, ?)", ("Caneca", 29.9, 20))\n';
+const s3 = `${S}${criar4}${inserir}conexao.commit()
+`;
+const s4 = `${s3}cursor.execute("SELECT * FROM Produtos")
+print(cursor.fetchall())
+`;
+const s5 = `${s4}cursor.execute("UPDATE Produtos SET preco = ? WHERE id = ?", (24.99, 1))
+conexao.commit()
+`;
+const casosSql = [
+  ['criar-tabela', `${S}cursor.execute("CREATE TABLE Produtos (nome TEXT, preco REAL)")
+`, true],
+  ['criar-tabela', `${S}cursor.execute("CREATE TABLE Produtos (nome TEXT, preco INTEGER)")
+`, false, 'tipo INTEGER'],
+  ['criar-tabela', `${S}cursor.execute("CREATE TABLE Produto (nome TEXT, preco REAL)")
+`, false, 'ainda não existe'],
+  ['criar-tabela', `${S}cursor.execute("CREATE TABLE Produtos (nome TEXT, preco REAL)")
+conexao.close()
+`, false, 'foi fechada'],
+  ['id-e-estoque', `${S}${criar4}`, true],
+  ['id-e-estoque', `${S}cursor.execute("CREATE TABLE Produtos (id INTEGER, nome TEXT, preco REAL, estoque INTEGER)")
+`, false, 'Falta dizer que o id é a chave'],
+  ['id-e-estoque', `${S}cursor.execute("CREATE TABLE Produtos (id INTEGER PRIMARY KEY, nome TEXT, preco REAL)")
+`, false, 'falta a coluna estoque'],
+  ['inserir', s3, true],
+  ['inserir', `${S}${criar4}${inserir}`, false, 'ainda não foi gravada'],
+  ['inserir', `${S}${criar4}cursor.execute("INSERT INTO Produtos (nome, preco, estoque) VALUES ('Camiseta', 19.99, 50)")
+cursor.execute("INSERT INTO Produtos (nome, preco, estoque) VALUES ('Caneca', 29.9, 20)")
+conexao.commit()
+`, false, 'escritos dentro do SQL'],
+  ['inserir', `${S}${criar4}cursor.execute("INSERT INTO Produtos (nome, preco, estoque) VALUES (?, ?, ?)", ("Camiseta", 50, 19.99))
+cursor.execute("INSERT INTO Produtos (nome, preco, estoque) VALUES (?, ?, ?)", ("Caneca", 29.9, 20))
+conexao.commit()
+`, false, 'ordem dos valores'],
+  ['consultar', s4, true],
+  ['consultar', `${s3}cursor.execute("SELECT * FROM Produtos")
+`, false, 'precisa mostrar as duas linhas'],
+  ['atualizar', s5, true],
+  ['atualizar', `${s4}cursor.execute("UPDATE Produtos SET preco = ?", (24.99,))
+conexao.commit()
+`, false, 'confira o WHERE'],
+  ['atualizar', `${s4}cursor.execute("UPDATE Produtos SET preco = ? WHERE id = ?", (24.99, 1))
+`, false, 'ainda não foi gravada'],
+  ['apagar', `${s5}cursor.execute("DELETE FROM Produtos WHERE id = ?", (2,))
+conexao.commit()
+`, true],
+  ['apagar', `${s5}cursor.execute("DELETE FROM Produtos")
+conexao.commit()
+`, false, 'confira o WHERE'],
+  ['apagar', `${s5}cursor.execute("DELETE FROM Produtos WHERE id = 2")
+conexao.commit()
+`, false, 'escrito dentro do SQL'],
+];
+
 const resultados = await rodarNoMesmoWorker(casos.map(([, codigo]) => codigo));
+const resultadosSql = await rodarNoMesmoWorker(casosSql.map(([, codigo]) => `${codigo}
+${sql.sonda}`));
 const falhas = [];
+casosSql.forEach(([id, codigo, devePassar, motivo], i) => {
+  const r = resultadosSql[i];
+  const { saida, sonda } = separarSonda(r.output);
+  if (saida.includes('__PYCAMPUS')) falhas.push(`sql ${id} #${i}: a linha da sonda vazou para a saída`);
+  const conferencia = r.ok ? sql.degraus.find((d) => d.id === id).conferir({ graficos: r.graficos, codigo, saida, banco: sonda }) : { ok: false, motivo: `erro ao executar: ${r.output}` };
+  const certo = conferencia.ok === devePassar && (devePassar || conferencia.motivo.includes(motivo));
+  if (!certo) falhas.push(`sql ${id} #${i}: esperava ${devePassar ? 'aprovar' : `reprovar com "${motivo}"`}, veio ${JSON.stringify(conferencia)} · banco ${JSON.stringify(sonda)}`);
+});
 casos.forEach(([id, codigo, devePassar, motivo], i) => {
   const r = resultados[i];
   const degrau = trilha.degraus.find((d) => d.id === id);
@@ -87,4 +166,4 @@ if (falhas.length) {
   process.exit(1);
 }
 assert.ok(resultados.length === casos.length);
-console.log(`Degraus aprovados: ${casos.length} programas executados no Pyodide; certos aprovam, errados reprovam pelo motivo certo.`);
+console.log(`Degraus aprovados: ${casos.length + casosSql.length} programas executados no Pyodide; certos aprovam, errados reprovam pelo motivo certo.`);
