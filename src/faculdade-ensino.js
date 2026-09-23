@@ -258,8 +258,8 @@ export const ensinoDaFaculdade = {
         'execute envia um comando ao banco. CREATE TABLE cria a tabela Pessoas com duas colunas de texto. A estrutura precisa existir antes de inserirmos os dados. SQL é a linguagem dentro das aspas; Python envia esse texto ao banco.',
       ),
       passo(
-        'cursor.execute("INSERT INTO Pessoas VALUES (?, ?)", ("Ana", "Recife"))\nconn.commit()',
-        'INSERT INTO insere uma linha. Cada ? recebe um valor da tupla separada: Ana vai para nome e Recife para cidade. Não monte SQL colando dados no texto. commit confirma a gravação da transação.',
+        'cursor.execute("INSERT INTO Pessoas (nome, cidade) VALUES (?, ?)", ("Ana", "Recife"))\nconn.commit()',
+        'INSERT INTO insere uma linha. Os nomes entre parênteses dizem em que colunas os valores entram; eles são obrigatórios quando alguma coluna fica de fora, como um id que o SQLite numera sozinho. Cada ? recebe um valor da tupla separada: Ana vai para nome e Recife para cidade. Não monte SQL colando dados no texto. commit grava de vez a mudança.',
       ),
       passo(
         'cursor.execute("SELECT * FROM Pessoas")\nprint(cursor.fetchall())\nconn.close()',
@@ -347,7 +347,7 @@ export const ensinoDaFaculdade = {
       ),
       passo(
         'plt.title("Vendas")\nprint("Barras:", len(plt.gca().patches))\nplt.close()',
-        'title define o título. gca() pega o eixo atual, a região onde as barras foram desenhadas. patches reúne as formas das barras; len conta essas formas. print separa o texto e a contagem com um espaço. close encerra a figura — é nesse momento que o PyCampus guarda a imagem para mostrar. Sem ele, executar de novo desenharia as barras novas por cima das antigas.',
+        'title define o título. gca() pega o eixo atual, a região onde as barras foram desenhadas. patches reúne as formas das barras; len conta essas formas. print separa o texto e a contagem com um espaço. close encerra a figura. O gráfico aparece com ou sem ele; o close serve para que um segundo gráfico, no mesmo programa, comece numa figura nova em vez de cair em cima deste. Conte as barras antes do close: depois dele, gca() abriria um gráfico novo e vazio, e a contagem daria 0.',
       ),
     ],
     'plt.bar(meses, vendas)',

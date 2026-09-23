@@ -10,7 +10,7 @@ const ponte = (termos, mostra, explicacao) => ({ termos, mostra, explicacao });
 export const pontesDasAulas = {
   u1a1: [
     ponte(['type()', '.__name__'], 'type(nome).__name__',
-      'type(valor) pergunta ao Python de que tipo é o valor, e .__name__ pega só o nome desse tipo. Por isso type(nome).__name__ mostra str (texto) e type(nota_1).__name__ mostra int (inteiro).'),
+      'type(valor) pergunta ao Python de que tipo é o valor, e .__name__ pega só o nome desse tipo. Por isso type(nome).__name__ mostra str (texto) e type(nota_1).__name__ mostra int (inteiro). Sem o .__name__, print(type(nota_1)) mostra <class \'int\'>, o formato que aparece no Colab e na prova.'),
     ponte(['True'], 'True',
       'True é o valor "verdadeiro" do tipo bool; o outro valor possível é False. Escreve-se sem aspas e com a primeira letra maiúscula: fez_inscricao = True registra que a inscrição foi feita.'),
   ],
@@ -38,15 +38,15 @@ export const pontesDasAulas = {
   ],
   u2a3: [
     ponte(['super()'], 'super().__init__(marca, modelo, ano)',
-      'super() dá acesso à classe-pai. Esta linha roda o __init__ de Veiculo, que já guarda marca, modelo, ano e velocidade; o Carro só acrescenta a potencia. Sem ela, você repetiria as quatro linhas do pai.'),
+      'super() dá acesso à classe-pai. Esta linha roda o __init__ de Veiculo, que já guarda marca, modelo, ano e velocidade; o Carro só acrescenta a potencia. Sem ela, você repetiria as quatro linhas do pai. Repare também que o Carro reescreve acelerar: carro1.acelerar(50) usa a versão do Carro, que soma 50 e mais 150 de potência, e por isso o status mostra 200 km/h, e não 50.'),
   ],
   u2a4: [
     ponte(['.log2'], 'm.log2(1024)',
-      'log2 responde: 2 elevado a quanto dá 1024? Dá 10.0, porque 2 multiplicado por ele mesmo dez vezes é 1024.'),
+      'log2 responde: 2 elevado a quanto dá 1024? Dá 10.0, porque multiplicar dez vezes o número 2 (2 × 2 × ... × 2) dá 1024.'),
     ponte(['factorial()'], 'from math import factorial',
       'from math import factorial traz só a função factorial, que passa a ser chamada sem o math. na frente. factorial(5) é 5 × 4 × 3 × 2 × 1 = 120.'),
     ponte(['matplotlib', '.use'], 'import matplotlib\nmatplotlib.use("Agg")',
-      'Matplotlib é a biblioteca de gráficos. matplotlib.use("Agg") manda desenhar o gráfico como imagem, sem abrir janela. No PyCampus o gráfico aparece com ou sem essa linha, e no Colab você não precisa dela: lá o gráfico aparece embaixo da célula.'),
+      'Matplotlib é a biblioteca de gráficos. matplotlib.use("Agg") manda desenhar o gráfico como imagem, sem abrir janela. No PyCampus o gráfico aparece com ou sem essa linha. No Colab, apague-a: ela pode impedir o gráfico de aparecer embaixo da célula, e o trabalho ficaria sem gráfico.'),
     ponte(['matplotlib.pyplot', '.pyplot'], 'import matplotlib.pyplot as plt',
       'pyplot é a parte do Matplotlib que desenha. import matplotlib.pyplot as plt a carrega com o apelido plt, do mesmo jeito que import math as m.'),
     ponte(['.bar'], 'plt.bar(meses, vendas)',
@@ -62,7 +62,7 @@ export const pontesDasAulas = {
   ],
   u3a1: [
     ponte(['SQL IF', 'SQL NOT', 'SQL EXISTS'], 'CREATE TABLE IF NOT EXISTS',
-      'IF NOT EXISTS faz o CREATE TABLE só criar a tabela quando ela ainda não existe. Sem isso, executar a célula uma segunda vez dá erro de tabela já existente.'),
+      'IF NOT EXISTS faz o CREATE TABLE só criar a tabela quando ela ainda não existe. Num banco guardado em arquivo, como o dados_vendas.db do trabalho, executar a célula de novo sem isso daria erro de tabela já existente. Com :memory:, como aqui, o banco nasce vazio a cada execução.'),
     ponte(['SQL INTEGER', 'SQL REAL'], 'INTEGER, REAL, TEXT',
       'São os tipos das colunas. INTEGER guarda números inteiros (estoque 50), REAL guarda números com casas decimais (preço 19.99) e TEXT guarda texto (nome).'),
     ponte(['SQL PRIMARY', 'SQL KEY'], 'id INTEGER PRIMARY KEY',
@@ -78,7 +78,7 @@ export const pontesDasAulas = {
   ],
   u3a2: [
     ponte(['.index', 'index='], 'pd.Series(dados["Idade"], index=dados["Nome"])',
-      'O índice é o rótulo de cada valor de uma Series; series2.index guarda A, B e C. index= escolhe esses rótulos na criação: aqui os nomes viram os rótulos das idades, e a Series mostra Alice 25, Bob 30 e assim por diante.'),
+      'O índice é o rótulo de cada valor de uma Series; series2.index guarda A, B e C. index= escolhe esses rótulos na criação: aqui os nomes viram os rótulos das idades, e a Series mostra Alice 25, Bob 30 e assim por diante. A última linha do print, dtype: int64, só informa o tipo dos valores: números inteiros.'),
     ponte(['list()'], 'list(series2.index)',
       'list transforma o que receber numa lista comum, que o print mostra entre colchetes: [\'A\', \'B\', \'C\'].'),
     ponte(['.shape'], 'df.shape',
@@ -92,7 +92,7 @@ export const pontesDasAulas = {
     ponte(['inplace='], 'inplace=True',
       'inplace=True altera o próprio df. Sem ele, drop_duplicates devolveria uma tabela nova e o df continuaria com as duplicadas.'),
     ponte(['.loc'], 'df.loc[1]',
-      'loc busca uma linha pelo rótulo do índice, não pela posição. Depois de tirar a duplicada, sobraram os rótulos 1, 2, 3 e 4; df.loc[1] mostra a linha do Produto B com todas as colunas.'),
+      'loc busca uma linha pelo rótulo do índice, não pela posição. Depois de tirar a duplicada, sobraram os rótulos 1, 2, 3 e 4; df.loc[1] mostra a linha do Produto B com todas as colunas, em pé: à esquerda os nomes das colunas, e Name: 1 é o rótulo da linha. Pegadinha de prova: o rótulo 0 saiu com a duplicada, então df.loc[0] daria KeyError, enquanto df.iloc[0], que busca pela posição, traz o Produto B.'),
   ],
   u3a4: [
     ponte(['.plot'], 'plt.plot(x, y)\ndf.plot(...)',
@@ -102,7 +102,7 @@ export const pontesDasAulas = {
     ponte(['y=', 'kind='], 'df.plot(x="Produto", y="qtde_vendida", kind="bar")',
       'x= escolhe a coluna do eixo de baixo, y= a coluna das alturas e kind= o tipo de gráfico: bar é barras; também existem line (linha) e pie (pizza).'),
     ponte(['.groupby', '.count'], 'contas.groupby("time")["total_bill"].count()',
-      'groupby("time") separa as contas por período (Lunch e Dinner) e ["total_bill"] escolhe a coluna do valor. Depois, mean tira a média de cada grupo, sum soma e count conta quantas contas há: Dinner 3, Lunch 2.'),
+      'groupby("time") separa as contas por período (Lunch e Dinner) e ["total_bill"] escolhe a coluna do valor. Depois, mean tira a média de cada grupo, sum soma e count conta quantas contas há: Dinner 3, Lunch 2. São as mesmas contas do estimator do Seaborn: pela média, Dinner 40.0 contra Lunch 15.0; pela soma, 120.0 contra 30.0, porque há mais jantares.'),
   ],
 };
 
@@ -125,7 +125,7 @@ export const pontesDasEntregas = {
   ],
   'u3-entender-banco': [
     ponte(['SQL DATE'], 'data_venda DATE',
-      'DATE marca a coluna como data. No SQLite a data fica guardada como texto no formato ano-mês-dia, por exemplo "2024-01-15", o que faz a ordem alfabética ser também a ordem das datas.'),
+      'DATE avisa que a coluna guarda datas, mas o SQLite não tem um tipo de data de verdade: a data fica guardada como texto no formato ano-mês-dia, por exemplo "2024-01-15", o que faz a ordem alfabética ser também a ordem das datas.'),
   ],
   'u3-construir-sqlite': [
     ponte(['SQL DROP'], 'DROP TABLE IF EXISTS vendas1',
@@ -153,7 +153,7 @@ export const pontesDasEntregas = {
   ],
   'u4-entender-escala': [
     ponte(['StandardScaler()'], 'scaler = StandardScaler()',
-      'StandardScaler é a ferramenta que põe todas as medidas na mesma escala, com média 0. Esta linha só cria a ferramenta; quem aprende a escala a partir dos dados é o fit_transform da linha seguinte.'),
+      'StandardScaler é a ferramenta que põe todas as medidas na mesma escala, com média 0 e desvio padrão 1. Esta linha só cria a ferramenta; quem aprende a escala a partir dos dados é o fit_transform da linha seguinte.'),
   ],
   'u4-entender-rede': [
     ponte(['.keras', '.layers'], 'tf.keras.layers.Dense(...)',

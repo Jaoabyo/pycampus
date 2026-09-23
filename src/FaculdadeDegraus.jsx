@@ -41,7 +41,7 @@ ${trilha.sonda}` : codigo;
     python.run(programa, '', (resultado) => {
       if (!resultado.ok) { setResultado({ ok: false, erro: true }); return; }
       const { saida, sonda } = separarSonda(resultado.output);
-      const conferencia = atual.conferir({ graficos: resultado.graficos || [], codigo, saida, banco: sonda });
+      const conferencia = atual.conferir({ graficos: resultado.graficos || [], codigo, saida, banco: sonda, sonda });
       setResultado(conferencia);
       if (conferencia.ok && !terminou) {
         guardar({ feitos: atualIndice + 1 });

@@ -1,5 +1,14 @@
 # Verificação da entrega
 
+## Degraus em sete aulas e revisão de todo o texto da faculdade · 23/09/2026
+
+- Pedido do estudante: "avalie todo conteúdo da faculdade e garanta tudo operacional, de qualidade e explicado bonito assim". Medido: só 2 das 16 aulas tinham degraus; o maior salto entre guia e código do professor estava em Classes (24 linhas), Visualização (28), pandas (17 e 19) e Conjuntos/dicionários/NumPy (21).
+- Degraus novos: pandas Series e DataFrame (6), pandas transformar e filtrar (4), Visualização com linha, df.plot, groupby, média contra soma e gráfico do grupo (5), Conjuntos/dicionários/NumPy (6) e Classes com o mesmo Veiculo e Carro do professor, até herança e sobrescrita (6). Uma sonda de variáveis descreve o que o programa deixou (Series, DataFrames, arrays, conjuntos, dicionários, classes e objetos com seus atributos), e o worker passou a devolver também os pontos das linhas dos gráficos.
+- O degrau do status reprova o erro clássico de prova: print dentro do método em vez de return, que mostra o texto seguido de None.
+- Uma revisão de todo o texto (teoria, guias, pontes, degraus, revisões) conferiu os valores citados e as respostas marcadas, e apontou erros que foram corrigidos: eu tinha escrito, em quatro lugares, que sem plt.close "executar de novo desenha por cima", o que é falso aqui, porque o worker fecha todas as figuras ao fim de cada execução; a ponte do matplotlib.use("Agg") agora manda apagar a linha no Colab; o guia de SQL passou a usar a lista de colunas no INSERT (sem ela, o desafio de Contatos quebra); SGBD, injeção de SQL e o efeito real do commit foram explicados; loc contra iloc virou pegadinha explicada com o próprio exemplo; unittest.main no notebook ganhou argv=['']; desafios que mandavam "criar" o que o código inicial já trazia foram reescritos. 29 correções.
+- `check-faculdade-degraus`: **100 programas no Pyodide**, certos aprovam e erros típicos reprovam pelo motivo certo. `check-faculdade`: 100 programas batem. `npm test`: **365 testes aprovados**; build aprovado. Na tela real: Classes e pandas reprovam o erro com a explicação e avançam no certo; sonda invisível; 390 px sem rolagem horizontal.
+- Ainda não coberto: degraus das Unidades 1 e 4; and/or (r1), range/while/continue (r2) e assert/doctest (u4a3) só aparecem na teoria; em várias revisões a alternativa correta é a mais longa.
+
 ## Degraus de SQL conferidos pelo banco, e o 150 que não aparecia (relatado pelo estudante) · 23/09/2026
 
 - O estudante testou os degraus de gráfico no site: "ficou de um nível excelente, achei bem divertido". Notou que a barra de 150 não tinha número no eixo: o Matplotlib marca de 20 em 20. A conclusão da trilha agora ensina plt.bar_label para escrever o valor em cima de cada barra.

@@ -315,7 +315,7 @@ const passosU2 = [
   ),
   passo(
     'u2-construir-generos', 'construir', 'Conte livros por gênero',
-    'Um dicionário associa cada gênero à sua contagem. get(genero, 0) fornece zero na primeira ocorrência. Termine o gráfico com plt.close(): sem isso, executar de novo desenha as barras novas por cima das antigas.',
+    'Um dicionário associa cada gênero à sua contagem. get(genero, 0) fornece zero na primeira ocorrência. Termine o gráfico com plt.close(): se o programa desenhar outro gráfico depois, ele começa numa figura nova, em vez de misturar as barras.',
     'contagem[livro.genero] = contagem.get(livro.genero, 0) + 1\nplt.bar(contagem.keys(), contagem.values())\nplt.close()',
     'Gere um gráfico de barras usando os gêneros e suas contagens.',
   ),
@@ -378,7 +378,7 @@ const passosU3 = [
   ),
   passo(
     'u3-construir-graficos', 'construir', 'Transforme resultados em gráficos',
-    'Matplotlib está disponível no PyCampus. O roteiro também pede Seaborn, que só existe no Colab: escreva o gráfico de modo que ele funcione com Seaborn quando houver e com Matplotlib quando não houver. Termine com plt.close(): sem isso, executar de novo desenha as barras novas por cima das antigas e o gráfico passa a mentir.',
+    'Matplotlib está disponível no PyCampus. O roteiro também pede Seaborn, que só existe no Colab: escreva o gráfico de modo que ele funcione com Seaborn quando houver e com Matplotlib quando não houver. Termine cada gráfico com plt.close(): assim o gráfico seguinte, por categoria ou por produto, começa numa figura nova em vez de se misturar a este e passar a mentir.',
     'por_categoria.plot(kind="bar", title="Receita por categoria")\nplt.tight_layout()\nplt.show()\nplt.close()',
     'Crie um gráfico por categoria e outro por produto.',
   ),

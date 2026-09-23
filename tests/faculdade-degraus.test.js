@@ -41,7 +41,7 @@ test('cada trilha de degraus pertence a uma aula e cada degrau ensina, mostra e 
 test('sem execução, nenhum degrau aprova', () => {
   for (const trilha of Object.values(degrausDaFaculdade)) {
     for (const degrau of trilha.degraus) {
-      assert.equal(degrau.conferir({ graficos: [], codigo: '', saida: '', banco: null }).ok, false, degrau.id);
+      assert.equal(degrau.conferir({ graficos: [], codigo: '', saida: '', banco: null, sonda: null }).ok, false, degrau.id);
     }
   }
 });

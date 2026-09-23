@@ -61,6 +61,12 @@ _campus_fatos = []
 # O que o gráfico mostra, em dados: é o que permite conferir um gráfico de verdade (quantas
 # barras, com que alturas, qual título) em vez de só procurar plt.bar no texto do código.
 # Lido depois do savefig, porque só o desenho preenche os rótulos dos eixos categóricos.
+def _campus_valor(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return str(v)
+
 def _campus_descrever(figura):
     eixos = []
     for eixo in figura.get_axes():
@@ -71,6 +77,7 @@ def _campus_descrever(figura):
             "eixo_x": eixo.get_xlabel(),
             "eixo_y": eixo.get_ylabel(),
             "linhas": len(eixo.lines),
+            "pontos": [{"x": [_campus_valor(v) for v in list(l.get_xdata())[:50]], "y": [_campus_valor(v) for v in list(l.get_ydata())[:50]]} for l in eixo.lines[:5]],
         })
     return eixos
 
