@@ -10,6 +10,112 @@
 const passo = (explica, exemplo, entrada, saida) => ({ explica, exemplo, entrada, saida });
 
 export const ensinoDosProjetos = {
+  calculadora: {
+    valores: passo(
+      'Uma variável é um nome que guarda um valor. O sinal = guarda o valor da direita no nome da esquerda. Cada informação ganha o seu nome, uma por linha. Números com casas decimais usam ponto: 3000.0. print mostra o valor guardado.',
+      'dinheiro = 100.0\narroz = 25.0\nfeijao = 10.5\nprint(dinheiro)',
+      '',
+      '100.0',
+    ),
+    total: passo(
+      'Para somar, use + entre os nomes das variáveis. O resultado vai para uma variável nova, que guarda o total. Assim você pode usar esse total depois, sem somar de novo.',
+      'arroz = 25.0\nfeijao = 10.5\nleite = 6.0\ntotal = arroz + feijao + leite\nprint(total)',
+      '',
+      '41.5',
+    ),
+    saldo: passo(
+      'O que sobra é o dinheiro menos o total: use -. Para mostrar com duas casas decimais, a f-string tem um formato: {sobra:.2f}. O :.2f muda só a aparência do número, não a conta.',
+      'dinheiro = 100.0\ntotal = 41.5\nsobra = dinheiro - total\nprint(f"{sobra:.2f}")',
+      '',
+      '58.50',
+    ),
+    pergunta: passo(
+      'input mostra a pergunta e espera a pessoa digitar. O que ela digita fica guardado na variável da esquerda. Na linha de baixo, print mostra o que foi recebido.',
+      'nome = input("Qual é o seu nome? ")\nprint(nome)',
+      'Ana',
+      'Qual é o seu nome? Ana',
+    ),
+    conversao: passo(
+      'input sempre devolve texto, mesmo quando a pessoa digita um número. Para fazer conta, converta: float(texto) vira um número com casas decimais. Use dois nomes: um para o texto lido e outro para o número.',
+      'texto = input("Quanto custa o arroz? ")\npreco = float(texto)\nprint(preco)',
+      '25',
+      'Quanto custa o arroz? 25.0',
+    ),
+    entrada: passo(
+      'Agora os valores vêm do teclado, e não mais escritos no código. Para cada valor: pergunta com input e converte com float. As contas vêm depois das perguntas, do mesmo jeito que já estavam.',
+      'dinheiro = float(input("Quanto você tem? "))\narroz = float(input("Quanto custa o arroz? "))\nsobra = dinheiro - arroz\nprint(f"{sobra:.2f}")',
+      '100\n25',
+      'Quanto você tem? Quanto custa o arroz? 75.00',
+    ),
+    relatorio: passo(
+      'Um relatório mostra cada valor com o seu nome. Na f-string, o texto fica fora das chaves e a variável fica dentro: f"Sobra: {sobra:.2f}". Um print para cada linha.',
+      'dinheiro = 100.0\ntotal = 41.5\nsobra = dinheiro - total\nprint(f"Dinheiro: {dinheiro:.2f}")\nprint(f"Gastos: {total:.2f}")\nprint(f"Sobra: {sobra:.2f}")',
+      '',
+      'Dinheiro: 100.00\nGastos: 41.50\nSobra: 58.50',
+    ),
+  },
+  tarefas: {
+    'tarefas-uma-tarefa': passo(
+      'Um dicionário guarda várias informações de uma coisa só, cada uma com um nome, a chave. Ele vai entre chaves { }: "titulo": "Matrix" liga a chave titulo ao valor Matrix. Para ler uma informação, use a chave entre colchetes: filme["titulo"].',
+      'filme = {"id": 1, "titulo": "Matrix", "visto": False}\nprint(filme["titulo"])',
+      '',
+      'Matrix',
+    ),
+    'construcao-1': passo(
+      'Uma lista pode guardar dicionários inteiros. Começa vazia, com [ ], e append coloca o dicionário todo dentro dela, e não só o título. Cada posição da lista passa a ser um filme completo.',
+      'filme = {"id": 1, "titulo": "Matrix", "visto": False}\nfilmes = []\nfilmes.append(filme)\nprint(filmes)',
+      '',
+      '[{\'id\': 1, \'titulo\': \'Matrix\', \'visto\': False}]',
+    ),
+    'tarefas-ler-chave': passo(
+      'for filme in filmes pega um dicionário por volta e guarda na variável filme. Dentro do for, filme["titulo"] lê o título daquele filme. Com um filme na lista, o for dá uma volta só.',
+      'filmes = [{"id": 1, "titulo": "Matrix", "visto": False}]\nfor filme in filmes:\n    print(filme["titulo"])',
+      '',
+      'Matrix',
+    ),
+    'construcao-2': passo(
+      'Um segundo filme é outro dicionário, com o mesmo formato e outros valores, colocado com append. Agora o for dá duas voltas, e em cada uma mostra o número e o título daquele filme.',
+      'filmes = [{"id": 1, "titulo": "Matrix", "visto": False}]\nfilmes.append({"id": 2, "titulo": "Up", "visto": False})\nfor filme in filmes:\n    print(filme["id"], filme["titulo"])',
+      '',
+      '1 Matrix\n2 Up',
+    ),
+    'tarefas-achar': passo(
+      'Para achar um filme pelo número, o for olha todos e o if escolhe só o que interessa: filme["id"] == id_procurado. Repare: == compara, enquanto = guarda um valor.',
+      'filmes = [{"id": 1, "titulo": "Matrix", "visto": False}, {"id": 2, "titulo": "Up", "visto": False}]\nid_procurado = 2\nfor filme in filmes:\n    if filme["id"] == id_procurado:\n        print(filme["titulo"])',
+      '',
+      'Up',
+    ),
+    'construcao-3': passo(
+      'Ler é filme["visto"]; trocar é filme["visto"] = True. Escrever numa chave que já existe troca o valor guardado. Como o if escolhe só o filme certo, só ele muda. Depois, mostrar todos confirma quem mudou.',
+      'filmes = [{"id": 1, "titulo": "Matrix", "visto": False}, {"id": 2, "titulo": "Up", "visto": False}]\nfor filme in filmes:\n    if filme["id"] == 2:\n        filme["visto"] = True\nfor filme in filmes:\n    print(filme["titulo"], filme["visto"])',
+      '',
+      'Matrix False\nUp True',
+    ),
+    'tarefas-posicao': passo(
+      'Às vezes você quer o lugar do filme na lista, e não o filme. range(len(filmes)) dá as posições 0, 1, 2 e assim por diante. Comece posicao com -1, que quer dizer "não achei"; quando o if encontra, guarda a posição.',
+      'filmes = [{"id": 1, "titulo": "Matrix", "visto": False}, {"id": 2, "titulo": "Up", "visto": False}]\nposicao = -1\nfor i in range(len(filmes)):\n    if filmes[i]["id"] == 2:\n        posicao = i\nprint(posicao)',
+      '',
+      '1',
+    ),
+    'construcao-4': passo(
+      'pop(posicao) tira da lista o item daquela posição. Mas só pode tirar se achou: por isso o if posicao != -1 vem antes. Se o número não existir, posicao continua -1 e nada é removido.',
+      'filmes = [{"id": 1, "titulo": "Matrix", "visto": False}, {"id": 2, "titulo": "Up", "visto": False}]\nposicao = -1\nfor i in range(len(filmes)):\n    if filmes[i]["id"] == 2:\n        posicao = i\nif posicao != -1:\n    filmes.pop(posicao)\nprint(len(filmes))\nfor filme in filmes:\n    print(filme["titulo"])',
+      '',
+      '1\nMatrix',
+    ),
+    'tarefas-uma-funcao': passo(
+      'Uma função dá nome a uma ação. listar recebe a lista e mostra todos; ela não precisa devolver nada, porque o trabalho dela é mostrar. Depois de criada com def, a função só roda quando é chamada: listar(filmes).',
+      'def listar(filmes):\n    for filme in filmes:\n        print(filme["id"], filme["titulo"])\n\nfilmes = [{"id": 1, "titulo": "Matrix", "visto": False}, {"id": 2, "titulo": "Up", "visto": False}]\nlistar(filmes)',
+      '',
+      '1 Matrix\n2 Up',
+    ),
+    'construcao-5': passo(
+      'Um menu é um while que repete até a pessoa escolher sair: cada volta lê a opção com input e o if chama a ação certa. Para dar um número novo a cada cadastro, guarde um contador (proximo_id) e some 1 depois de usar. strip() tira os espaços e evita cadastrar um título vazio.',
+      'filmes = [{"id": 1, "titulo": "Matrix", "visto": False}]\nproximo_id = 2\n\ndef listar(filmes):\n    for filme in filmes:\n        print(filme["id"], filme["titulo"])\n\nopcao = ""\nwhile opcao != "0":\n    opcao = input("1 listar, 2 cadastrar, 0 sair: ")\n    if opcao == "1":\n        listar(filmes)\n    elif opcao == "2":\n        titulo = input("Título: ").strip()\n        if titulo:\n            filmes.append({"id": proximo_id, "titulo": titulo, "visto": False})\n            proximo_id += 1\n        else:\n            print("O título não pode ficar vazio.")\nprint("Até logo!")',
+      '2\nUp\n1\n0',
+      '1 listar, 2 cadastrar, 0 sair: Título: 1 listar, 2 cadastrar, 0 sair: 1 Matrix\n2 Up\n1 listar, 2 cadastrar, 0 sair: Até logo!',
+    ),
+  },
   quiz: {
     'construcao-1': passo(
       'input mostra a pergunta e espera a pessoa digitar. O que ela digita volta como texto e fica guardado na variável. Depois, if compara esse texto com a resposta certa: se for igual, roda o bloco de baixo; se não, roda o bloco do else. Como input sempre devolve texto, a resposta certa também vai entre aspas: "4", e não 4.',
