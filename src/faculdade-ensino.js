@@ -48,10 +48,10 @@ export const ensinoDaFaculdade = {
     'Por que usamos float(nota_a) antes de calcular a média?',
     [
       'Para transformar o texto da nota em número e fazer a conta',
-      'Para mostrar a nota na tela',
-      'Para guardar a nota como texto',
+      'Não é preciso: o Python converte o texto sozinho quando encontra o +',
+      'Para arredondar cada nota antes de somar',
     ],
-    'As aspas indicam texto. float converte esse texto para número; + e / fazem a conta, e print exibe o resultado. Aqui não usamos input(): as notas já estão no programa.',
+    'As aspas fazem "4" ser texto, e o Python não converte sozinho: "4" + "8" junta os textos e vira "48", e dividir isso por 2 dá erro. float transforma o texto em número; aí o + soma de verdade. float também não arredonda: float("8.5") continua 8.5.',
   ),
 
   r1: guia(
@@ -104,10 +104,10 @@ export const ensinoDaFaculdade = {
     'Por que total começa em 0 antes do for?',
     [
       'Para acumular a soma sem acrescentar um valor extra',
-      'Para repetir a lista zero vezes',
-      'Para impedir que nota mude',
+      'Tanto faz o valor inicial: o for substitui total na primeira volta',
+      'Poderia ficar dentro do for, que o resultado seria o mesmo',
     ],
-    'A cada volta somamos uma nota ao valor anterior. Começar em zero fora do laço preserva o total acumulado; reiniciar dentro do laço apagaria as somas anteriores.',
+    'total = total + nota soma cada nota ao que já estava em total, sem apagar nada. Se total começasse em 5, a soma sairia 5 a mais. E se total = 0 ficasse dentro do for, ele voltaria a zero a cada volta e sobraria só a última nota.',
   ),
 
   r3: guia(
@@ -161,9 +161,9 @@ export const ensinoDaFaculdade = {
     [
       'A posição e o valor de uma cor',
       'Apenas a quantidade total de cores',
-      'Uma cópia alterável da tupla',
+      'O valor e a posição, contando a partir de 1',
     ],
-    'enumerate combina a contagem, começando em zero, com o elemento visitado. len responde outra pergunta: quantos elementos existem ao todo.',
+    'enumerate entrega a posição e o item a cada volta, e a posição começa em 0: azul é 0, verde é 1. Para começar em 1 é preciso pedir, com enumerate(cores, start=1). len responde outra pergunta: quantos elementos existem ao todo.',
   ),
 
   u2a2: guia(
@@ -188,10 +188,10 @@ export const ensinoDaFaculdade = {
     'Por que len(set(valores)) pode ser menor que len(valores)?',
     [
       'Porque set remove repetições antes da contagem',
-      'Porque len ignora o último elemento',
-      'Porque set remove todos os números pares',
+      'Porque len não conta elementos repetidos',
+      'Porque set guarda os valores em ordem e descarta o último',
     ],
-    'A lista conta ocorrências, inclusive repetidas. O conjunto mantém cada valor uma única vez.',
+    'len conta todos os itens, repetidos inclusive: [2, 2, 5, 5, 8] tem 5. set guarda cada valor uma vez só, {2, 5, 8}, e não promete ordem nenhuma. Por isso len(set(valores)) cai para 3.',
   ),
 
   u2a3: guia(
@@ -216,10 +216,10 @@ export const ensinoDaFaculdade = {
     'O que contador.avancar() faz neste exemplo?',
     [
       'Altera o valor guardado naquele objeto',
-      'Cria outra classe chamada avancar',
+      'Aumenta o valor de todos os objetos Contador',
       'Apenas imprime o valor atual',
     ],
-    'O método recebe o próprio objeto como self e aumenta self.valor. A exibição só acontece no print seguinte.',
+    'O método recebe o próprio objeto como self e aumenta self.valor — só o daquele objeto. Outro contador, criado com Contador(10), continuaria em 10. Mostrar o valor é trabalho do print da linha seguinte, não do método.',
   ),
 
   u2a4: guia(
@@ -242,8 +242,8 @@ export const ensinoDaFaculdade = {
     'raiz = m.sqrt(100)',
     '10',
     'Após import math as m, como chamamos a raiz quadrada?',
-    ['m.sqrt(...)', 'math = sqrt(...)', 'import.sqrt(...)'],
-    'O apelido m passa a ser o nome usado para acessar as funções do módulo, como sqrt.',
+    ['m.sqrt(...)', 'math.sqrt(...)', 'sqrt(...)'],
+    'Com import math as m, o único nome criado é m: math.sqrt daria NameError, porque o nome math não existe no programa. sqrt sozinho só funciona com from math import sqrt.',
   ),
 
   u3a1: guia(
@@ -272,10 +272,10 @@ export const ensinoDaFaculdade = {
     'Para que servem os dois ? no INSERT do exemplo?',
     [
       'Receber nome e cidade enviados separadamente',
-      'Criar duas tabelas',
-      'Ler todas as pessoas cadastradas',
+      'Pedir que o usuário digite o nome e a cidade',
+      'Marcar as colunas que podem ficar vazias',
     ],
-    'Os marcadores separam o comando SQL dos dados. Os dois valores da tupla preenchem os marcadores na mesma ordem.',
+    'Cada ? é um lugar reservado que o sqlite3 preenche com um valor da tupla, na mesma ordem: Ana no primeiro, Recife no segundo. Ele não pergunta nada a ninguém nem define coluna opcional — separa o comando dos dados, e é isso que impede a injeção de SQL.',
   ),
 
   u3a2: guia(
@@ -301,9 +301,9 @@ export const ensinoDaFaculdade = {
     [
       'A média dos valores da série',
       'O maior valor da série',
-      'A quantidade de colunas de uma tabela',
+      'A mediana, o valor do meio',
     ],
-    'mean soma os valores e divide pela quantidade de valores válidos. Neste exemplo não há dados ausentes.',
+    'mean soma e divide pela quantidade: (10 + 20 + 30) / 3 = 20.0. Aqui a média coincide com a mediana, mas nem sempre: em [10, 20, 90] a média é 40.0 e a mediana é 20.0. Para a mediana, o método é median().',
   ),
 
   u3a3: guia(
@@ -328,10 +328,10 @@ export const ensinoDaFaculdade = {
     'O que os colchetes externos fazem em vendas[vendas["receita"] > 50]?',
     [
       'Mantêm as linhas cuja comparação é verdadeira',
-      'Substituem todas as receitas por 50',
-      'Ordenam os nomes alfabeticamente',
+      'Devolvem uma lista de True e False, uma por linha',
+      'Apagam da tabela vendas as linhas com receita até 50',
     ],
-    'A comparação cria uma seleção de True e False. Aplicar essa seleção à tabela preserva só as linhas que atendem à condição.',
+    'Quem produz os True e False é a comparação de dentro: vendas["receita"] > 50 dá [False, True]. Os colchetes de fora usam essa lista para escolher as linhas verdadeiras e devolvem uma tabela nova — vendas continua com as duas linhas.',
   ),
 
   u3a4: guia(
@@ -339,7 +339,7 @@ export const ensinoDaFaculdade = {
     [
       passo(
         'import matplotlib\nmatplotlib.use("Agg")\nimport matplotlib.pyplot as plt',
-        'Matplotlib monta gráficos. Agg permite criar a figura sem abrir uma janela. pyplot é a parte que usaremos, com apelido plt. Neste exercício verificamos a estrutura criada por texto; não exibimos a imagem do gráfico.',
+        'Matplotlib monta gráficos. Agg permite criar a figura sem abrir uma janela. pyplot é a parte que usaremos, com apelido plt. O PyCampus mostra a imagem logo abaixo da saída; o print da contagem confere, em texto, quantas barras foram criadas.',
       ),
       passo(
         'meses = ["Mar", "Abr"]\nvendas = [60, 80]\nplt.bar(meses, vendas)',
@@ -347,7 +347,7 @@ export const ensinoDaFaculdade = {
       ),
       passo(
         'plt.title("Vendas")\nprint("Barras:", len(plt.gca().patches))\nplt.close()',
-        'title define o título. gca() pega o eixo atual, a região onde as barras foram desenhadas. patches reúne as formas das barras; len conta essas formas. print separa o texto e a contagem com um espaço. close libera a figura ao terminar.',
+        'title define o título. gca() pega o eixo atual, a região onde as barras foram desenhadas. patches reúne as formas das barras; len conta essas formas. print separa o texto e a contagem com um espaço. close encerra a figura — é nesse momento que o PyCampus guarda a imagem para mostrar. Sem ele, executar de novo desenharia as barras novas por cima das antigas.',
       ),
     ],
     'plt.bar(meses, vendas)',
@@ -356,10 +356,10 @@ export const ensinoDaFaculdade = {
     'O que determina a altura de cada barra em plt.bar(meses, vendas)?',
     [
       'O valor correspondente na lista vendas',
-      'O número de letras de cada mês',
-      'O título do gráfico',
+      'A lista meses, que vem primeiro',
+      'A média das vendas, igual para todas as barras',
     ],
-    'A primeira lista fornece os rótulos; a segunda fornece as alturas. title só nomeia o gráfico, sem mudar os dados.',
+    'Em plt.bar(x, altura), a primeira lista dá o rótulo de cada barra e a segunda dá a altura, par a par: Mar com 60, Abr com 80. Cada barra tem a sua altura; trocar a ordem dos argumentos trocaria o papel das listas.',
   ),
 
   r4: guia(
@@ -409,9 +409,9 @@ export const ensinoDaFaculdade = {
     [
       'Começar a numeração em 1',
       'Pular a primeira aba',
-      'Executar só uma volta',
+      'Fazer a lista também começar no índice 1',
     ],
-    'start muda apenas o número inicial. Todos os elementos da lista continuam sendo visitados.',
+    'start muda só o número que enumerate entrega. A lista continua começando no índice 0 — abas[0] ainda é Inicio — e todas as abas são visitadas.',
   ),
 
   u4a3: guia(
@@ -440,10 +440,10 @@ export const ensinoDaFaculdade = {
     'O que acontece se esperamos 7, mas triplo(2) devolve 6?',
     [
       'O teste registra uma falha de comparação',
-      'A função passa a devolver 7 automaticamente',
-      'O teste não é executado',
+      'O programa para com um erro na mesma hora',
+      'O teste passa, porque a função rodou sem erro',
     ],
-    'O teste não altera a função. Ele evidencia a diferença entre observado e esperado. Uma falha também pode indicar uma expectativa escrita errada, como aqui.',
+    'assertEqual compara observado e esperado; se forem diferentes, o unittest anota uma falha e segue — o programa não para. Rodar sem erro não basta para passar: o teste existe para pegar resultado errado, não só código quebrado. Aqui a falha aponta uma expectativa escrita errada, porque o triplo de 2 é mesmo 6.',
   ),
 
   u4a4: guia(

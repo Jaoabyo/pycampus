@@ -28,12 +28,12 @@ export const projetosDaFaculdade = [
     pergunta: 'Por que a conversão precisa acontecer antes de somar as notas?',
     opcoes: [
       'As notas estão em texto; a soma da média precisa de números',
-      'Para colocar aspas no resultado',
-      'Para mudar a ordem da lista',
+      'Não precisa: sum soma textos que parecem números',
+      'Para arredondar as notas antes da média',
     ],
     resposta: 0,
     explicacao:
-      'float transforma cada texto em número. O acumulador reúne os valores; return entrega a média; if escolhe a situação a partir dela.',
+      'As notas chegam como texto, e sum não soma texto: sum(["6", "8"]) dá erro de tipo. float transforma cada texto em número; o acumulador reúne os valores, return entrega a média e if escolhe a situação a partir dela.',
     requisitosCodigo: [
       requisito(
         'funcao',
@@ -157,8 +157,8 @@ export const projetosDaFaculdade = [
     pergunta: 'Por que incluir uma subtração com resultado negativo?',
     opcoes: [
       'Para verificar um caso diferente dos resultados positivos',
-      'Para obrigar todos os testes a falhar',
-      'Para dispensar o teste de soma',
+      'Para ter mais testes, que é o que garante um código bom',
+      'Não muda nada: se funciona com positivos, funciona com negativos',
     ],
     resposta: 0,
     explicacao:

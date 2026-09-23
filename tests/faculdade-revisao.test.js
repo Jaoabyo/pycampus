@@ -156,3 +156,42 @@ test('juntar dois aparelhos guarda a resposta mais recente de cada questão', ()
   const invertido = mergeProgress(b, a);
   assert.equal(invertido.revisaoFaculdade.u1q1.ultima, '2026-09-22');
 });
+
+// Três pegadinhas clássicas de prova de múltipla escolha que as aulas não diziam. A do loc é
+// a mesma da questão u3q5, que um estudante errou por achar que "terceira linha" é loc[2].
+test('as aulas ensinam as pegadinhas que a prova de múltipla escolha cobra', async () => {
+  const { aulasDaFaculdade } = await import('../src/faculdade.js');
+  const texto = (id) => aulasDaFaculdade.find((a) => a.id === id).teoria.join(' ');
+  assert.match(texto('u2a2'), /\{\} vazio cria um dicionário/);
+  assert.match(texto('u2a2'), /set\(\)/);
+  assert.match(texto('u2a1'), /\("a",\)/);
+  assert.match(texto('u3a3'), /iloc/);
+  assert.match(texto('u3a3'), /loc\[70\]/);
+  assert.match(texto('u3a3'), /KeyError/);
+});
+
+// Os gráficos passaram a aparecer na tela. Duas frases continuavam dizendo que não.
+test('nenhuma aula afirma que o gráfico não aparece', async () => {
+  const { aulasDaFaculdade } = await import('../src/faculdade.js');
+  const { ensinoDaFaculdade } = await import('../src/faculdade-ensino.js');
+  const tudo = JSON.stringify([aulasDaFaculdade, ensinoDaFaculdade]);
+  assert.doesNotMatch(tudo, /não exibimos a imagem/);
+  assert.doesNotMatch(tudo, /não abre em janela/);
+});
+
+// Alternativa errada que ninguém marca não testa nada. As revisões agora usam erros reais —
+// nenhuma pode voltar a ter as opções absurdas que tinham antes.
+test('as revisões não voltam a usar alternativas absurdas', () => {
+  const absurdas = [
+    'Para repetir a lista zero vezes', 'O número de letras de cada mês',
+    'Substituem todas as receitas por 50', 'Cria outra classe chamada avancar',
+    'Porque set remove todos os números pares', 'Para colocar aspas no resultado',
+    'A função passa a devolver 7 automaticamente',
+  ];
+  const opcoes = questoesDaFaculdade.flatMap((q) => q.opcoes);
+  for (const frase of absurdas) assert.ok(!opcoes.includes(frase), frase);
+  // E cada explicação de revisão continua longa o bastante para dizer por que a errada tenta.
+  for (const q of questoesDaFaculdade.filter((x) => x.tipo === 'aula')) {
+    assert.ok(q.porque.length > 90, `${q.id}: a explicação encurtou demais`);
+  }
+});
