@@ -28,6 +28,7 @@ import {
 } from './faculdade-conferencias.js';
 import NovidadesDoCodigo from './FaculdadeNovidades.jsx';
 import FaculdadeDegraus from './FaculdadeDegraus.jsx';
+import { ErrorHelp } from './RunFeedback.jsx';
 import { degrausDaFaculdade } from './faculdade-degraus.js';
 import { pontesDasEntregas } from './faculdade-pontes.js';
 import './faculdade.css';
@@ -521,6 +522,8 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                 runLabel={entrega.ambienteEntrega === 'colab' ? 'Execute no Colab' : 'Executar código'}
                 emptyOutput="Execute o código para registrar uma saída real."
               />
+              {/* A entrega não tinha ajuda de erro: os 14 erros da biblioteca apareciam só como traceback. */}
+              {python.success === false && <ErrorHelp output={lerConferencias(python.output).saida} code={trabalho.codigo} />}
               {Array.isArray(atePassoAtual(conferencias)) && atePassoAtual(conferencias).length > 0 && (
                 <div
                   className={`entrega-conferencias ${situacaoDasConferencias(atePassoAtual(conferencias)) === 'aprovada' ? 'aprovada' : 'reprovada'}`}

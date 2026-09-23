@@ -1,3 +1,5 @@
+import { diagnosticoDeClasses } from './error-guide-classes.js';
+
 // Leitura de erro como habilidade ensinável: primeiro o método (última linha, tipo, número da linha),
 // depois um roteiro específico para o tipo que apareceu.
 export const readingSteps = [
@@ -48,6 +50,9 @@ export function readError(output, code) {
   const type = match[1].split('.').pop();
   const numbers = [...output.matchAll(/line (\d+)/g)].map(m => Number(m[1]));
   if (andaimeIntacto(code)) return { type, message: match[2] || '', line: numbers.length ? numbers[numbers.length - 1] : null, ...GUIA_ANDAIME };
+  // Erros de classes e nomes ganham a causa com os nomes do próprio código, antes da ajuda geral do tipo.
+  const especifico = diagnosticoDeClasses(type, match[2] || '', code, numbers.length ? numbers[numbers.length - 1] : null);
+  if (especifico) return { type, message: match[2] || '', line: numbers.length ? numbers[numbers.length - 1] : null, ...especifico };
   const guide = type === 'SyntaxError' && /cannot assign to function call/.test(match[2] || '') ? { title: 'Separe a leitura e a conversão em duas linhas', meaning: 'Uma chamada como input() não pode ficar à esquerda de =.', steps: ['Primeira linha: texto = input("Quanto é sua despesa? ")', 'Segunda linha: despesa_1 = float(texto)', 'Terceira linha, se quiser mostrar: print(despesa_1)', 'Não junte as duas ações como despesa_1 = input() = float(despesa_1).'] } : guides[type] || fallback;
   return { type, message: match[2] || '', line: numbers.length ? numbers[numbers.length - 1] : null, ...guide };
 }

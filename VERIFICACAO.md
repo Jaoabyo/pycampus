@@ -1,5 +1,12 @@
 # Verificação da entrega
 
+## Ajuda de erro para classes, com os nomes do código (medido no histórico do estudante) · 23/09/2026
+
+- O backup mostrou 95 execuções com erro, 94 delas em classes e objetos (aula de Classes, miniprojeto do contador de visitas, biblioteca), sempre os mesmos enganos: método sem self (14 vezes), método chamado na lista em vez do objeto, a classe Pessoa usada no lugar do objeto pessoa1, método que a classe não tem, nome usado antes de ser criado. A ajuda genérica por tipo não apontava nenhuma dessas causas.
+- `src/error-guide-classes.js` lê o código (classes, métodos, atributos, objetos criados) e explica a causa com os nomes do estudante: "O método pessoas_unicas está sem o self", "Use o seu objeto: registro.pessoas_unicas()", "Pessoa é a classe; o objeto tem outro nome: pessoa1", "A classe Pessoa não tem status: tem nome, idade, cumprimentar e aniversario", "livros foi usado antes de ser criado". Todas as 23 mensagens distintas do histórico foram reproduzidas; 12 testes fixam as reais.
+- A tela da entrega não tinha ajuda de erro nenhuma; agora tem. Conferido na tela real com livros usado antes de criado.
+- `npm test`: **379 testes**; pacote inicial 184,4 kB (limite 185,5 kB: está perto).
+
 ## Reforço da biblioteca e conferência nos passos da entrega da Unidade 2 (relatado pelo estudante) · 23/09/2026
 
 - O estudante: "o sistema de biblioteca está muito complexo, não consegui pegar o conteúdo que preciso saber para construir". No backup dele: a função de cadastro (casdastro_livro) estava com recuo dentro da classe Livro, virando método; quantidade_disponive sem o l; cadastrar e listar na mesma função; nenhuma chamada. E o passo "busca" aparecia concluído sem busca nenhuma no código.
