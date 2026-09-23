@@ -27,6 +27,7 @@
     "auditar:perguntas": "node scripts/auditar-perguntas.mjs",
     "test:faculdade": "node scripts/check-faculdade.mjs",
     "test:degraus-faculdade": "node scripts/check-faculdade-degraus.mjs",
+    "test:ensino-projetos": "node scripts/check-project-ensino.mjs",
     "test:entregas-faculdade": "node scripts/check-faculdade-entregas.mjs",
     "test:recompensas-faculdade": "node scripts/check-faculdade-recompensas.mjs",
     "test:iniciante": "node scripts/check-beginner-journey.mjs",

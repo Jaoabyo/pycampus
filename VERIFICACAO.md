@@ -1,5 +1,12 @@
 # Verificação da entrega
 
+## "Como fazer" nos passos dos projetos, começando pelo quiz (relatado pelo estudante) · 23/09/2026
+
+- O estudante, sobre o quiz: "não especifica direito, é algo muito raso e não explica nada". Medido nos 8 projetos: nos 70 passos, o campo que deveria explicar o porquê era cópia do enunciado; nenhum passo tinha exemplo de código; 63 não conferiam resultado.
+- `src/project-ensino.js` dá a cada passo a ideia explicada e um exemplo pequeno em outro assunto (cores, animais), com a entrada digitada e a saída que aparece. A tela do projeto mostra isso em "Como fazer", logo abaixo do enunciado. Feito para os 11 passos do quiz.
+- `check-project-ensino`: os 11 exemplos executados no Pyodide com as entradas indicadas; a saída mostrada é a real. Teste garante cobertura de todos os passos do quiz. Visto na tela com o backup do estudante.
+- Falta: os outros 7 projetos (59 passos) e conferência automática nos passos que hoje só pedem autoavaliação.
+
 ## Correção do mediador na Unidade 1: o None da lista vazia (nota 85) · 23/09/2026
 
 - O mediador descontou: "a função não trata adequadamente o caso em que a lista de notas está vazia, retornando apenas None. Seria interessante adicionar uma verificação no código principal". A causa estava no PyCampus: o passo ensinava return None e parava ali, e a própria solução de referência fazia print(f"{media:.1f}") sem conferir.

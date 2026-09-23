@@ -8,6 +8,7 @@ import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
 import { appendLumiNote } from './lumi-notes.js';
 import CodeEditor, { interativo } from './CodeEditor.jsx';
+import { ensinoDoPasso } from './project-ensino.js';
 import { ErrorHelp, OutputCompare } from './RunFeedback.jsx';
 import CodeReview from './CodeReview.jsx';
 import { ProjectPreparation } from './LessonGuidance.jsx';
@@ -101,7 +102,7 @@ export default function ProjectStudio({ project, state, update, back, openLesson
       </button>;
     })}</div>
     <details className="card studio-brief"><summary>O que vamos construir e quais aulas ajudam</summary><p>{project.brief}</p><ProjectPreparation project={project} lessons={lessons} openLesson={openLesson} /></details>
-    <section className="card studio-work"><div className="eyebrow">PASSO {current + 1} DE {steps.length} · {inBrowser ? 'PRÁTICA NO NAVEGADOR' : step.mode === 'plan' ? 'PLANEJAMENTO' : 'SERVIDOR NO COMPUTADOR'}</div><h2>{step.title}</h2><p className="coach-task">{step.instruction}</p><p>Faça só esta parte agora. Se já começou o projeto, continue no seu código abaixo.</p>
+    <section className="card studio-work"><div className="eyebrow">PASSO {current + 1} DE {steps.length} · {inBrowser ? 'PRÁTICA NO NAVEGADOR' : step.mode === 'plan' ? 'PLANEJAMENTO' : 'SERVIDOR NO COMPUTADOR'}</div><h2>{step.title}</h2><p className="coach-task">{step.instruction}</p><ComoFazer ensino={ensinoDoPasso(project.id, step.id)} /><p>Faça só esta parte agora. Se já começou o projeto, continue no seu código abaixo.</p>
       {step.mode === 'local' && <LocalServerGuide file={file} />}
       <button className="button outline" disabled={hints >= step.hints.length} onClick={() => setHints(n => n + 1)}>{hints ? 'Preciso de mais uma pista' : 'Me dê uma pista'}</button>
       {step.hints.slice(0, hints).map((hint, index) => <p className="hint" key={index}><strong>Pista {index + 1}:</strong> {hint}</p>)}
@@ -211,5 +212,23 @@ function RegisterGate({ id, conferencia, registrado }) {
       <Icon name={item.feito ? 'CheckCircle2' : 'Circle'} size={18} />
       <span><strong>{item.texto}</strong></span>
     </li>)}</ul>
+  </section>;
+}
+
+// O passo dizia o que fazer e nunca como. Aqui vem a ideia explicada e um exemplo pequeno em
+// outro assunto, com a saída real que ele produz, para o estudante aplicar no próprio projeto.
+function ComoFazer({ ensino }) {
+  if (!ensino) return null;
+  const entradas = String(ensino.entrada || '').split('\n').map((linha) => (linha.trim() ? linha : '(Enter vazio)'));
+  return <section className="projeto-como" aria-label="Como fazer este passo">
+    <h3><Icon name="Lightbulb" size={17} /> Como fazer</h3>
+    <p>{ensino.explica}</p>
+    <div className="eyebrow">EXEMPLO EM OUTRO ASSUNTO</div>
+    <pre className="example-code">{ensino.exemplo}</pre>
+    {ensino.entrada
+      ? <p className="small">Se a pessoa digitar {entradas.map((e, i) => <span key={i}>{i > 0 && ', depois '}<strong>{e}</strong></span>)}, aparece:</p>
+      : <p className="small">Ao executar, aparece:</p>}
+    <pre className="example-code">{ensino.saida}</pre>
+    <p className="small">Agora aplique a mesma ideia no seu código, com as suas perguntas.</p>
   </section>;
 }
