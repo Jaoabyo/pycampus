@@ -26,6 +26,9 @@ import {
   programaComConferencias,
   situacaoDasConferencias,
 } from './faculdade-conferencias.js';
+import NovidadesDoCodigo from './FaculdadeNovidades.jsx';
+import { pontesDasEntregas } from './faculdade-pontes.js';
+import './faculdade.css';
 import './faculdade-entrega.css';
 import { exemploDaEntrega } from './faculdade-exemplos.js';
 import { XP_FACULDADE, bonusDaEntrega } from './faculdade-recompensas.js';
@@ -423,6 +426,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
               </span>
             </div>
             <p className="entrega-explicacao">{passoAtual.explicacao}</p>
+            <NovidadesDoCodigo pontes={pontesDasEntregas[passoAtual.id]} />
             {ehExemploExecutavel ? (
               <div className="entrega-exemplo-vivo">
                 <div className="entrega-exemplo-titulo">

@@ -24,6 +24,9 @@ import CodeEditor from './CodeEditor.jsx';
 import { ErrorHelp, OutputCompare } from './RunFeedback.jsx';
 import Mentor from './Mentor.jsx';
 import FaculdadeGuia from './FaculdadeGuia.jsx';
+import NovidadesDoCodigo from './FaculdadeNovidades.jsx';
+import FaculdadeDegraus from './FaculdadeDegraus.jsx';
+import { pontesDasAulas } from './faculdade-pontes.js';
 import ExercicioDaFaculdade from './FaculdadeExercicio.jsx';
 import FaculdadeRevisao from './FaculdadeRevisao.jsx';
 import PrevisaoDaSaida, { previsaoLiberada } from './PrevisaoDaSaida.jsx';
@@ -706,6 +709,10 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
       )}
 
       {!aula.guia && (
+        <FaculdadeDegraus aulaId={aula.id} state={state} update={update} />
+      )}
+
+      {!aula.guia && (
         <details className="card faculdade-passo">
           <summary>Ampliar: conceitos e exemplo completo do material</summary>
           <div className="step-head">
@@ -755,6 +762,7 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
               aprofundamento; o treino guiado acima prepara o desafio desta
               aula.
             </p>
+            <NovidadesDoCodigo pontes={pontesDasAulas[aula.id]} />
             {aula.notaAmbiente && (
               <div className="faculdade-limite">
                 <Icon name="Info" size={16} />

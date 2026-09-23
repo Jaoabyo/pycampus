@@ -1,5 +1,14 @@
 # Verificação da entrega
 
+## Código do professor sem "porrada de coisa nova", e gráfico em degraus (relatado pelo estudante) · 23/09/2026
+
+- O estudante apontou que o exemplo do guia é pequeno e claro, mas o código do material vem depois com muita coisa nunca vista; e que a aula de Módulos mostrava um gráfico pronto e só pedia uma raiz quadrada.
+- Medido, não suposto: `src/faculdade-novidades.js` extrai os termos do código do professor e desconta o que os guias anteriores mostraram. Havia **57 termos sem explicação nas aulas e 49 nos passos das entregas** (81 distintos, contando cada um na primeira aparição). A pior era Módulos e Matplotlib, com 14.
+- `src/faculdade-pontes.js` explica cada um com o valor que ele produz no próprio exemplo, mostrado antes do código ("N coisas novas neste código"). `tests/faculdade-novidades.test.js` falha se um termo novo ficar sem ponte ou se uma ponte sobrar; conferido removendo uma ponte, que o teste acusou.
+- O worker passou a devolver, com cada imagem, os dados do gráfico (alturas, nomes das barras, título e eixos). A aula de Módulos ganhou cinco degraus de gráfico de barras conferidos por esses dados, não pelo texto do código.
+- `check-faculdade-degraus`: **18 programas no Pyodide**, certos aprovam e errados reprovam pelo motivo certo. `check-faculdade`: 100 programas batem. `npm test`: **361 testes aprovados**; build aprovado. Na tela real (1440 px e 390 px): degrau errado reprovado, certo avança, progresso sobrevive ao recarregar, sem rolagem horizontal no celular.
+- Corrigido nesta verificação: eu havia dito ao estudante que `.patches` nunca era explicado; o guia de Visualização explica. E a data da prova é 30/09, não 27/09.
+
 ## Prova rápida aparecendo antes da hora, e animação de sucesso (relatado pelo estudante)
 
 O estudante colou um trecho da oficina e apontou dois problemas: a "Prova rápida" e a pergunta "escolha uma linha do seu código" apareciam já na Etapa 1 (Preveja), antes de o estudante ter escrito qualquer código; e pediu uma animação quando o código roda certo.

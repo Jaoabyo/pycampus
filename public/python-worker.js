@@ -56,6 +56,23 @@ import io as _io, base64 as _base64
 import matplotlib.pyplot as _plt
 
 _campus_figuras = []
+_campus_fatos = []
+
+# O que o gráfico mostra, em dados: é o que permite conferir um gráfico de verdade (quantas
+# barras, com que alturas, qual título) em vez de só procurar plt.bar no texto do código.
+# Lido depois do savefig, porque só o desenho preenche os rótulos dos eixos categóricos.
+def _campus_descrever(figura):
+    eixos = []
+    for eixo in figura.get_axes():
+        eixos.append({
+            "barras": [float(p.get_height()) for p in eixo.patches if hasattr(p, "get_height")],
+            "rotulos": [t.get_text() for t in eixo.get_xticklabels()],
+            "titulo": eixo.get_title(),
+            "eixo_x": eixo.get_xlabel(),
+            "eixo_y": eixo.get_ylabel(),
+            "linhas": len(eixo.lines),
+        })
+    return eixos
 
 def _campus_guardar(figura):
     if figura is None or not figura.get_axes():
@@ -66,6 +83,10 @@ def _campus_guardar(figura):
     except Exception:
         return
     _campus_figuras.append(_base64.b64encode(deposito.getvalue()).decode("ascii"))
+    try:
+        _campus_fatos.append(_campus_descrever(figura))
+    except Exception:
+        _campus_fatos.append([])
 
 # O worker é reaproveitado entre execuções, então este preparo roda de novo a cada vez. Sem a
 # guarda abaixo, a segunda execução guardaria o close JÁ SUBSTITUÍDO como se fosse o original,
@@ -93,6 +114,12 @@ def _campus_colher():
     colhidas = list(_campus_figuras)
     _campus_figuras.clear()
     return colhidas
+
+def _campus_colher_fatos():
+    import json as _json
+    fatos = _json.dumps(_campus_fatos)
+    _campus_fatos.clear()
+    return fatos
 `;
 const LIMITE_DE_IMAGENS = 4;
 const colherGraficos = async () => {
@@ -103,6 +130,14 @@ const colherGraficos = async () => {
     return (lista || []).slice(0, LIMITE_DE_IMAGENS).map(dados => `data:image/png;base64,${dados}`);
   } catch {
     // Um gráfico que não pôde ser salvo não pode derrubar a execução do estudante.
+    return [];
+  }
+};
+// Chamado logo depois de colherGraficos, que é quem fecha as figuras e registra os fatos.
+const colherFatos = async () => {
+  try {
+    return JSON.parse(await runtime.runPythonAsync('_campus_colher_fatos()')).slice(0, LIMITE_DE_IMAGENS);
+  } catch {
     return [];
   }
 };
@@ -214,12 +249,14 @@ self.onmessage = async ({ data }) => {
       self.postMessage({ type: 'started' });
       await runtime.runPythonAsync(data.code, { globals });
       const imagens = querGrafico ? await colherGraficos() : [];
-      self.postMessage({ type: 'result', output, ok: true, imagens });
+      const graficos = querGrafico ? await colherFatos() : [];
+      self.postMessage({ type: 'result', output, ok: true, imagens, graficos });
     } finally { globals.destroy(); }
   } catch (error) {
     // Um gráfico desenhado antes do erro ainda ajuda a entender onde o programa parou.
     const desenhou = usaMatplotlib(data.code) || pacotesParaInstalar(data.code).includes('seaborn');
     const imagens = runtime && desenhou ? await colherGraficos() : [];
-    self.postMessage({ type: 'result', output: output + cleanTraceback(error.message || error), ok: false, kind: runtime ? 'error' : 'environment', imagens });
+    const graficos = runtime && desenhou ? await colherFatos() : [];
+    self.postMessage({ type: 'result', output: output + cleanTraceback(error.message || error), ok: false, kind: runtime ? 'error' : 'environment', imagens, graficos });
   }
 };

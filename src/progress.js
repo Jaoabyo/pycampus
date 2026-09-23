@@ -12,6 +12,7 @@ import { exerciciosResumidos as exerciciosDaFaculdade } from './faculdade-exerci
 import { recompensasDaFaculdade, emblemasDaFaculdade } from './faculdade-recompensas.js';
 import { atividadeDaEntregaValida, entregasDaFaculdade, normalizarTrabalhoDaEntrega } from './faculdade-entregas.js';
 import { normalizarRevisao, normalizarSimulados } from './faculdade-revisao-estado.js';
+import { normalizarDegraus } from './faculdade-degraus.js';
 export const STORAGE_KEY = 'pycampus.v1';
 export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 export const shiftDate = (key, days) => { const date = new Date(`${key}T12:00:00`); date.setDate(date.getDate() + days); return localDate(date); };
@@ -125,6 +126,8 @@ export function normalizeState(input) {
       entrega,
     );
   }
+  const degraus = normalizarDegraus(input.faculdade?.degraus);
+  if (Object.keys(degraus).length) base.faculdade.degraus = degraus;
   base.lumiNotes = normalizeLumiNotes(input.lumiNotes);
   return base;
 }

@@ -167,3 +167,18 @@
 .faculdade-atividade-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .faculdade-selo{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:#2f8d72;background:#e7f5ef;border:1px solid #bfe3d6;border-radius:999px;padding:4px 10px;white-space:nowrap}
 .faculdade-projeto.is-feito,.unidade-exercicio.is-feito,.faculdade-entrega-unidade.is-feito{border-color:#bfe3d6}
+.faculdade-novidades{margin:14px 0 16px;padding:14px 16px;border:1px solid #e3dafa;border-radius:12px;background:#faf8ff}
+.faculdade-novidades-topo{display:flex;align-items:center;gap:8px;color:#4f3a99}.faculdade-novidades-topo svg{color:#7a5ae0}
+.faculdade-novidades>p{margin:6px 0 12px;color:#5f6070;font-size:13px}
+.faculdade-novidades dl{display:grid;gap:10px;margin:0}
+.faculdade-novidades dl>div{display:grid;grid-template-columns:minmax(0,220px) 1fr;gap:12px;align-items:start;padding:10px 12px;border-radius:9px;background:#fff;border:1px solid #efeaf9}
+.faculdade-novidades dt pre{margin:0;padding:6px 8px;border-radius:7px;background:#f3effd;color:#3c2a80;font-size:12px;white-space:pre-wrap;word-break:break-word}
+.faculdade-novidades dd{margin:0;color:#50556b;font-size:13px;line-height:1.65}
+@media(max-width:600px){.faculdade-novidades dl>div{grid-template-columns:1fr;gap:6px}}
+.faculdade-degraus-trilha{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 16px;padding:0;list-style:none}
+.faculdade-degraus-trilha li{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;border:1px solid #e6e1ef;background:#fff;color:#6b6780;font-size:12px}
+.faculdade-degraus-trilha li.atual{border-color:#8f6ff0;background:#f5f1ff;color:#4f3a99;font-weight:700}
+.faculdade-degraus-trilha li.feito{border-color:#bfe3d6;background:#e7f5ef;color:#2f8d72}
+.faculdade-degrau{margin-bottom:14px}.faculdade-degrau h3{margin:0 0 6px}
+.faculdade-degrau-fim{display:flex;gap:10px;align-items:flex-start;margin-bottom:14px;padding:12px 14px;border-radius:10px;background:#e7f5ef;color:#24604f}.faculdade-degrau-fim p{margin:0}
+.faculdade-degrau-ok{color:#2f8d72;font-weight:600}
