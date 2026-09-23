@@ -5,7 +5,7 @@ import { stepsFor } from '../src/project-steps.js';
 
 // Os passos diziam o que fazer e nunca como. Um projeto com "Como fazer" tem de cobrir todos os
 // passos, e cada exemplo precisa mostrar a saída (medida por scripts/check-project-ensino.mjs).
-const COMPLETOS = ['calculadora', 'quiz', 'tarefas'];
+const COMPLETOS = ['calculadora', 'quiz', 'tarefas', 'banco', 'estoque', 'api', 'qualidade-projeto', 'final'];
 
 test('os projetos com "Como fazer" cobrem todos os passos, sem passo inventado', () => {
   for (const [projeto, passos] of Object.entries(ensinoDosProjetos)) {

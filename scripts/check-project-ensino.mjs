@@ -12,12 +12,17 @@ const browser = await chromium.launch({ channel: 'msedge' });
 const page = await (await browser.newContext()).newPage();
 await page.goto(BASE, { waitUntil: 'domcontentloaded' });
 
+// Os passos com servidor (FastAPI) rodam no computador e não são executados aqui.
 const casos = Object.entries(ensinoDosProjetos).flatMap(([projeto, passos]) =>
-  Object.entries(passos).map(([id, p]) => ({ projeto, id, ...p })));
+  Object.entries(passos).map(([id, p]) => ({ projeto, id, ...p }))).filter((caso) => !caso.local);
 
+// Um Python novo por exemplo: os exemplos do estoque gravam num arquivo, e um não pode herdar
+// o banco que o anterior deixou.
 const saidas = await page.evaluate(async (lista) => {
-  const worker = new Worker('/python-worker.js');
+  let worker;
   const rodar = (codigo, stdin) => new Promise((resolve) => {
+    worker?.terminate();
+    worker = new Worker('/python-worker.js');
     const prazo = setTimeout(() => resolve({ ok: false, output: '(passou de 240s)' }), 240000);
     const aoReceber = (e) => {
       if (e.data.type !== 'result') return;
@@ -30,7 +35,7 @@ const saidas = await page.evaluate(async (lista) => {
   });
   const resultado = [];
   for (const caso of lista) resultado.push(await rodar(caso.exemplo, caso.entrada));
-  worker.terminate();
+  worker?.terminate();
   return resultado;
 }, casos);
 await browser.close();

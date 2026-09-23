@@ -225,7 +225,9 @@ function ComoFazer({ ensino }) {
     <p>{ensino.explica}</p>
     <div className="eyebrow">EXEMPLO EM OUTRO ASSUNTO</div>
     <pre className="example-code">{ensino.exemplo}</pre>
-    {ensino.entrada
+    {ensino.local
+      ? <p className="small">{ensino.local}. Aparece:</p>
+      : ensino.entrada
       ? <p className="small">Se a pessoa digitar {entradas.map((e, i) => <span key={i}>{i > 0 && ', depois '}<strong>{e}</strong></span>)}, aparece:</p>
       : <p className="small">Ao executar, aparece:</p>}
     <pre className="example-code">{ensino.saida}</pre>

@@ -7,9 +7,274 @@
 // entender o jeito e aplicar no próprio quiz sem copiar a resposta. A saída de cada exemplo é
 // medida no Pyodide por scripts/check-project-ensino.mjs, com as entradas indicadas.
 
-const passo = (explica, exemplo, entrada, saida) => ({ explica, exemplo, entrada, saida });
+// local: o passo roda no computador (servidor), não no navegador; o exemplo não é executado aqui.
+const passo = (explica, exemplo, entrada, saida, opcoes = {}) => ({ explica, exemplo, entrada, saida, ...opcoes });
 
 export const ensinoDosProjetos = {
+  api: {
+    'construcao-1': passo(
+      'Antes de pensar em servidor, a lógica vive em funções comuns. criar_meta recebe o nome, monta um dicionário com um id novo e guarda na lista; buscar_meta percorre a lista e devolve a meta com aquele id, ou None. Testar com print mostra que as regras funcionam sem rede nenhuma.',
+      'metas = []\n\ndef criar_meta(nome):\n    meta = {"id": len(metas) + 1, "nome": nome}\n    metas.append(meta)\n    return meta\n\ndef buscar_meta(id_meta):\n    for meta in metas:\n        if meta["id"] == id_meta:\n            return meta\n    return None\n\ncriar_meta("Ler 10 páginas")\ncriar_meta("Beber água")\nprint(buscar_meta(2))\nprint(buscar_meta(9))',
+      '',
+      '{\'id\': 2, \'nome\': \'Beber água\'}\nNone',
+    ),
+    'construcao-2': passo(
+      'raise ValueError("...") recusa um dado inválido e para a função com uma mensagem clara; quem chama pode tratar com try e except. Para páginas, uma fatia da lista devolve só um pedaço: metas[inicio:inicio + limite].',
+      'metas = [{"id": 1, "nome": "Ler"}, {"id": 2, "nome": "Correr"}, {"id": 3, "nome": "Dormir cedo"}]\n\ndef criar_meta(nome):\n    if not nome.strip():\n        raise ValueError("O nome não pode ficar vazio.")\n    metas.append({"id": len(metas) + 1, "nome": nome})\n\ndef listar_metas(inicio, limite):\n    return metas[inicio:inicio + limite]\n\ntry:\n    criar_meta("   ")\nexcept ValueError as erro:\n    print("Recusado:", erro)\nprint(listar_metas(0, 2))\nprint(listar_metas(2, 2))',
+      '',
+      'Recusado: O nome não pode ficar vazio.\n[{\'id\': 1, \'nome\': \'Ler\'}, {\'id\': 2, \'nome\': \'Correr\'}]\n[{\'id\': 3, \'nome\': \'Dormir cedo\'}]',
+    ),
+    'api-tabela': passo(
+      'As funções continuam com o mesmo nome e o mesmo jeito de usar; só muda onde os dados ficam. O append vira um INSERT com ?, e o for de busca vira um SELECT com WHERE id = ?. lastrowid diz qual id o banco acabou de dar.',
+      'import sqlite3\n\nconn = sqlite3.connect(":memory:")\nconn.execute("CREATE TABLE metas (id INTEGER PRIMARY KEY, nome TEXT)")\n\ndef criar_meta(nome):\n    cursor = conn.execute("INSERT INTO metas (nome) VALUES (?)", (nome,))\n    conn.commit()\n    return cursor.lastrowid\n\ndef buscar_meta(id_meta):\n    return conn.execute("SELECT id, nome FROM metas WHERE id = ?", (id_meta,)).fetchone()\n\nnovo = criar_meta("Ler 10 páginas")\nprint(novo)\nprint(buscar_meta(novo))',
+      '',
+      '1\n(1, \'Ler 10 páginas\')',
+    ),
+    'api-editar': passo(
+      'Editar precisa de duas coisas: qual meta (o id, no WHERE) e o valor novo (no SET). Os dois vão como parâmetros, na ordem dos ?. Sem o WHERE, todas as metas ganhariam o nome novo. Mostrar todas depois prova que só uma mudou.',
+      'import sqlite3\n\nconn = sqlite3.connect(":memory:")\nconn.execute("CREATE TABLE metas (id INTEGER PRIMARY KEY, nome TEXT)")\nconn.executemany("INSERT INTO metas (nome) VALUES (?)", [("Ler",), ("Correr",)])\n\ndef editar_meta(id_meta, nome_novo):\n    conn.execute("UPDATE metas SET nome = ? WHERE id = ?", (nome_novo, id_meta))\n    conn.commit()\n\neditar_meta(2, "Caminhar")\nprint(conn.execute("SELECT * FROM metas").fetchall())',
+      '',
+      '[(1, \'Ler\'), (2, \'Caminhar\')]',
+    ),
+    'construcao-3': passo(
+      'DELETE FROM ... WHERE id = ? apaga só a linha daquele id. O cuidado é o mesmo do UPDATE: sem o WHERE, a tabela inteira fica vazia. Os ids que ficaram não mudam.',
+      'import sqlite3\n\nconn = sqlite3.connect(":memory:")\nconn.execute("CREATE TABLE metas (id INTEGER PRIMARY KEY, nome TEXT)")\nconn.executemany("INSERT INTO metas (nome) VALUES (?)", [("Ler",), ("Correr",), ("Dormir cedo",)])\n\ndef remover_meta(id_meta):\n    conn.execute("DELETE FROM metas WHERE id = ?", (id_meta,))\n    conn.commit()\n\nremover_meta(2)\nprint(conn.execute("SELECT * FROM metas").fetchall())',
+      '',
+      '[(1, \'Ler\'), (3, \'Dormir cedo\')]',
+    ),
+    'construcao-4': passo(
+      'Uma rota liga um endereço a uma função: quando alguém abre /metas/1 no navegador, o FastAPI chama a função e devolve o resultado como JSON. O {id_meta} no endereço vira o parâmetro da função. Isso roda no seu computador, não no navegador do PyCampus: instale com pip install "fastapi[standard]", salve como main.py e rode fastapi dev main.py.',
+      'from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get("/metas/{id_meta}")\ndef ler_meta(id_meta: int):\n    return {"id": id_meta, "nome": "Ler 10 páginas"}',
+      '',
+      '{"id":1,"nome":"Ler 10 páginas"}',
+      { local: 'No computador, rode fastapi dev main.py e abra http://127.0.0.1:8000/metas/1 no navegador' },
+    ),
+    'construcao-5': passo(
+      'Cada rota chama a função que você já testou: a rota não refaz a regra, só recebe o pedido e devolve a resposta. Quando a função recusa com ValueError, a rota transforma isso num erro HTTP, com HTTPException e status 400, para quem chamou entender o que houve.',
+      'from fastapi import FastAPI, HTTPException\n\napp = FastAPI()\nmetas = []\n\ndef criar_meta(nome):\n    if not nome.strip():\n        raise ValueError("O nome não pode ficar vazio.")\n    meta = {"id": len(metas) + 1, "nome": nome}\n    metas.append(meta)\n    return meta\n\n@app.post("/metas")\ndef rota_criar(nome: str):\n    try:\n        return criar_meta(nome)\n    except ValueError as erro:\n        raise HTTPException(status_code=400, detail=str(erro))',
+      '',
+      '{"detail":"O nome não pode ficar vazio."}',
+      { local: 'No computador, rode fastapi dev main.py, abra http://127.0.0.1:8000/docs, escolha POST /metas e envie um nome só com espaços' },
+    ),
+  },
+  'qualidade-projeto': {
+    'qualidade-extrair-exemplo': passo(
+      'Uma regra dentro de uma função fica fácil de testar: ela recebe os valores e devolve o resultado com return, sem input e sem print dentro. O print fica fora, em quem chamou. Assim a mesma regra serve para qualquer valor.',
+      'def valor_do_frete(peso, preco_por_kg):\n    return peso * preco_por_kg\n\nprint(valor_do_frete(3, 5.0))\nprint(valor_do_frete(10, 5.0))',
+      '',
+      '15.0\n50.0',
+    ),
+    'construcao-1': passo(
+      'No seu programa, procure uma conta ou decisão que hoje está misturada com input e print. Mova só essa regra para uma função: os valores entram como parâmetros e o resultado sai no return. O input e o print continuam do lado de fora.',
+      'def frete_gratis(total):\n    return total >= 200\n\ntotal = 250\nif frete_gratis(total):\n    print("Frete grátis")\nelse:\n    print("Frete pago")',
+      '',
+      'Frete grátis',
+    ),
+    'construcao-2': passo(
+      'assert confere uma afirmação: se ela for verdadeira, nada acontece; se for falsa, o programa para com AssertionError. Um teste é isso: chamar a função com um valor conhecido e afirmar o resultado esperado. Troque o esperado de propósito uma vez para ver a falha acontecer.',
+      'def valor_do_frete(peso, preco_por_kg):\n    return peso * preco_por_kg\n\nassert valor_do_frete(3, 5.0) == 15.0\nprint("O teste passou.")',
+      '',
+      'O teste passou.',
+    ),
+    'construcao-3': passo(
+      'Um bom conjunto de testes olha três lugares: o caso comum, o limite (bem na fronteira da regra) e uma entrada inválida. Nos limites é onde os erros aparecem: se o frete grátis vale a partir de 200, testar exatamente 200 mostra se você usou >= ou >.',
+      'def frete_gratis(total):\n    if total < 0:\n        raise ValueError("O total não pode ser negativo.")\n    return total >= 200\n\nassert frete_gratis(250) is True\nassert frete_gratis(200) is True\ntry:\n    frete_gratis(-5)\n    print("Deveria ter recusado")\nexcept ValueError:\n    print("Entrada inválida recusada.")\nprint("Comum e limite passaram.")',
+      '',
+      'Entrada inválida recusada.\nComum e limite passaram.',
+    ),
+    'qualidade-nomear-testes': passo(
+      'Colocar cada assert numa função com nome deixa claro o que ele confere. O nome começa com test_, que é a convenção das ferramentas de teste. A função só roda quando é chamada, então chame as duas no fim.',
+      'def frete_gratis(total):\n    return total >= 200\n\ndef test_caso_comum():\n    assert frete_gratis(250) is True\n\ndef test_limite():\n    assert frete_gratis(200) is True\n\ntest_caso_comum()\ntest_limite()\nprint("Os dois testes passaram.")',
+      '',
+      'Os dois testes passaram.',
+    ),
+    'construcao-4': passo(
+      'Com vários testes em funções, você roda todos de uma vez chamando cada um no fim do arquivo. Se nenhum assert falhar, a mensagem final aparece; se um falhar, o programa para naquele teste e mostra qual foi.',
+      'def frete_gratis(total):\n    return total >= 200\n\ndef test_caso_comum():\n    assert frete_gratis(250) is True\n\ndef test_limite():\n    assert frete_gratis(200) is True\n\ndef test_abaixo():\n    assert frete_gratis(199.99) is False\n\nfor teste in [test_caso_comum, test_limite, test_abaixo]:\n    teste()\n    print("ok:", teste.__name__)\nprint("Todos os testes passaram.")',
+      '',
+      'ok: test_caso_comum\nok: test_limite\nok: test_abaixo\nTodos os testes passaram.',
+    ),
+    'construcao-5': passo(
+      'Anotações de tipo dizem o que cada função espera e devolve: total: float e -> bool. Elas não mudam o resultado, mas ajudam quem lê. Separar cálculo, leitura e apresentação em funções diferentes deixa cada parte fácil de testar e trocar.',
+      'def frete_gratis(total: float) -> bool:\n    return total >= 200\n\ndef mostrar(total: float) -> None:\n    print("Frete grátis" if frete_gratis(total) else "Frete pago")\n\nmostrar(250.0)\nmostrar(80.0)',
+      '',
+      'Frete grátis\nFrete pago',
+    ),
+  },
+  final: {
+    'construcao-1': passo(
+      'Todo sistema começa com uma pessoa e um problema, antes de qualquer código. Escreva quem vai usar, o que atrapalha a vida dela e cinco coisas que a primeira versão precisa fazer. Pequeno e real é melhor do que grande e vago.',
+      '# Quem: eu, estudando para a prova\n# Problema: esqueço como me senti nos dias de estudo\n# A primeira versão precisa:\n# 1. registrar o humor do dia (1 a 5)\n# 2. recusar valores fora de 1 a 5\n# 3. listar os registros\n# 4. mostrar a média da semana\n# 5. guardar os dados num banco\nprint("Plano escrito.")',
+      '',
+      'Plano escrito.',
+    ),
+    'final-uma-entrada': passo(
+      'Comece pela menor informação do plano. Uma linha recebe com input, outra mostra o que chegou. Se for número, converta numa linha separada: assim, se der erro, você sabe se foi na leitura ou na conversão.',
+      'texto = input("Humor de hoje (1 a 5): ")\nhumor = int(texto)\nprint("Recebi:", humor)',
+      '4',
+      'Humor de hoje (1 a 5): Recebi: 4',
+    ),
+    'final-uma-regra': passo(
+      'Escreva a regra em português antes do if: "o humor tem de estar entre 1 e 5". O if testa o caso de recusa e o else fica com o caminho normal. Mensagens diferentes nos dois lados mostram qual caminho rodou.',
+      'humor = int(input("Humor de hoje (1 a 5): "))\nif humor < 1 or humor > 5:\n    print("Use um número de 1 a 5.")\nelse:\n    print("Humor registrado:", humor)',
+      '9',
+      'Humor de hoje (1 a 5): Use um número de 1 a 5.',
+    ),
+    'construcao-2': passo(
+      'Uma ação completa tem quatro partes: receber, conferir, fazer e responder. Aqui a ação é registrar o humor numa lista em memória. Uma coisa por vez, e só então a próxima.',
+      'registros = []\n\ndef registrar(humor):\n    if humor < 1 or humor > 5:\n        return "Use um número de 1 a 5."\n    registros.append(humor)\n    return f"Registrado. Você tem {len(registros)} registro(s)."\n\nprint(registrar(4))\nprint(registrar(7))\nprint(registrar(3))',
+      '',
+      'Registrado. Você tem 1 registro(s).\nUse um número de 1 a 5.\nRegistrado. Você tem 2 registro(s).',
+    ),
+    'final-modelar-tabela': passo(
+      'Antes de gravar, desenhe a tabela: quais colunas e o tipo de cada uma. Um id inteiro como chave primária costuma ser a primeira coluna. CREATE TABLE IF NOT EXISTS cria a tabela vazia, sem erro se ela já existir.',
+      'import sqlite3\n\n# Colunas: id (INTEGER, chave), dia (TEXT), humor (INTEGER)\nconn = sqlite3.connect(":memory:")\nconn.execute("CREATE TABLE IF NOT EXISTS humores (id INTEGER PRIMARY KEY, dia TEXT, humor INTEGER)")\nprint([coluna[1] for coluna in conn.execute("PRAGMA table_info(humores)")])',
+      '',
+      '[\'id\', \'dia\', \'humor\']',
+    ),
+    'construcao-3': passo(
+      'A lista em memória vira a tabela: o append vira um INSERT com ?, e a listagem vira um SELECT. No navegador, o banco vale só enquanto o programa roda; para guardar de verdade, rode no computador com um arquivo .db.',
+      'import sqlite3\n\nconn = sqlite3.connect(":memory:")\nconn.execute("CREATE TABLE humores (id INTEGER PRIMARY KEY, dia TEXT, humor INTEGER)")\nconn.execute("INSERT INTO humores (dia, humor) VALUES (?, ?)", ("segunda", 4))\nconn.execute("INSERT INTO humores (dia, humor) VALUES (?, ?)", ("terça", 3))\nconn.commit()\nfor linha in conn.execute("SELECT dia, humor FROM humores").fetchall():\n    print(linha)',
+      '',
+      '(\'segunda\', 4)\n(\'terça\', 3)',
+    ),
+    'final-funcao-testada': passo(
+      'Tire a regra do meio do input e coloque numa função que recebe valores e devolve o resultado. Aí um assert confere um caso conhecido em uma linha, sem ninguém precisar digitar nada.',
+      'def humor_valido(humor):\n    return 1 <= humor <= 5\n\nassert humor_valido(3) is True\nassert humor_valido(0) is False\nprint("A regra passou nos testes.")',
+      '',
+      'A regra passou nos testes.',
+    ),
+    'construcao-4': passo(
+      'Confiável é o programa que não quebra com uma entrada ruim. Se a pessoa digita "bom" no lugar de um número, int() dá ValueError; try e except capturam isso e mostram uma mensagem que ela entende, em vez de um erro.',
+      'def ler_humor(texto):\n    try:\n        humor = int(texto)\n    except ValueError:\n        return "Digite um número, por exemplo 4."\n    if not 1 <= humor <= 5:\n        return "Use um número de 1 a 5."\n    return f"Humor {humor} registrado."\n\nprint(ler_humor("4"))\nprint(ler_humor("bom"))\nprint(ler_humor("8"))',
+      '',
+      'Humor 4 registrado.\nDigite um número, por exemplo 4.\nUse um número de 1 a 5.',
+    ),
+    'construcao-5': passo(
+      'Entregar é mostrar que funciona e dizer como usar. O README explica o propósito, como instalar e rodar, os testes que você fez de verdade e o que o programa ainda não faz. Registre só o que você testou.',
+      'criterios = ["registrar humor", "recusar fora de 1 a 5", "listar registros", "média da semana", "guardar no banco"]\nfor numero, criterio in enumerate(criterios, start=1):\n    print(f"{numero}. {criterio}: testado")',
+      '',
+      '1. registrar humor: testado\n2. recusar fora de 1 a 5: testado\n3. listar registros: testado\n4. média da semana: testado\n5. guardar no banco: testado',
+    ),
+  },
+  banco: {
+    'banco-conta-simples': passo(
+      'Uma classe é o molde; cada objeto criado com ela é uma coisa de verdade. __init__ roda sozinho quando o objeto nasce e recebe os dados. self é o próprio objeto: self.dono = dono guarda o nome dentro dele. Para ler depois, use o objeto e um ponto.',
+      'class Cofrinho:\n    def __init__(self, dono):\n        self.dono = dono\n\nmeu = Cofrinho("Bia")\nprint(meu.dono)',
+      '',
+      'Bia',
+    ),
+    'construcao-1': passo(
+      'Nem todo dado vem de fora. Todo cofrinho nasce vazio, então o __init__ já guarda o saldo como 0 e o histórico como uma lista vazia. Os colchetes criam uma lista nova para cada cofrinho. O saldo fica em centavos, número inteiro, para as contas não errarem na casa decimal.',
+      'class Cofrinho:\n    def __init__(self, dono):\n        self.dono = dono\n        self.centavos = 0\n        self.historico = []\n\nmeu = Cofrinho("Bia")\nprint(meu.centavos, meu.historico)',
+      '',
+      '0 []',
+    ),
+    'banco-guarda-simples': passo(
+      'Um método é uma função dentro da classe; o primeiro parâmetro é sempre self. A regra vem primeiro: se o valor não for positivo, return False recusa e a função para ali. Se passou, soma ao saldo e devolve True. Quem chama sabe pelo True ou False se deu certo.',
+      'class Cofrinho:\n    def __init__(self, dono):\n        self.dono = dono\n        self.centavos = 0\n        self.historico = []\n\n    def guardar(self, valor):\n        if valor <= 0:\n            return False\n        self.centavos += valor\n        return True\n\nmeu = Cofrinho("Bia")\nprint(meu.guardar(500))\nprint(meu.guardar(-100))\nprint(meu.centavos)',
+      '',
+      'True\nFalse\n500',
+    ),
+    'construcao-2': passo(
+      'O registro no histórico entra no caminho que aceitou, junto da soma. Assim, um valor recusado volta no return False antes de chegar ao append e não deixa rastro. A f-string monta o texto com o valor: f"guardou {valor}".',
+      'class Cofrinho:\n    def __init__(self, dono):\n        self.dono = dono\n        self.centavos = 0\n        self.historico = []\n\n    def guardar(self, valor):\n        if valor <= 0:\n            return False\n        self.centavos += valor\n        self.historico.append(f"guardou {valor}")\n        return True\n\nmeu = Cofrinho("Bia")\nmeu.guardar(500)\nmeu.guardar(-100)\nprint(meu.historico)',
+      '',
+      '[\'guardou 500\']',
+    ),
+    'banco-duas-regras': passo(
+      'Um método pode só responder, sem mudar nada. pode_tirar devolve True quando as duas regras valem ao mesmo tempo: o valor é positivo e cabe no saldo. and exige as duas; se qualquer uma falhar, a resposta é False.',
+      'class Cofrinho:\n    def __init__(self, dono):\n        self.dono = dono\n        self.centavos = 500\n\n    def pode_tirar(self, valor):\n        return valor > 0 and valor <= self.centavos\n\nmeu = Cofrinho("Bia")\nprint(meu.pode_tirar(200))\nprint(meu.pode_tirar(900))\nprint(meu.pode_tirar(-5))',
+      '',
+      'True\nFalse\nFalse',
+    ),
+    'construcao-3': passo(
+      'tirar reaproveita pode_tirar em vez de repetir as regras: self.pode_tirar(valor) chama o outro método do mesmo objeto. if not ... quer dizer "se não pode". Só depois de passar pela regra o saldo diminui e o histórico registra.',
+      'class Cofrinho:\n    def __init__(self, dono):\n        self.dono = dono\n        self.centavos = 500\n        self.historico = []\n\n    def pode_tirar(self, valor):\n        return valor > 0 and valor <= self.centavos\n\n    def tirar(self, valor):\n        if not self.pode_tirar(valor):\n            return False\n        self.centavos -= valor\n        self.historico.append(f"tirou {valor}")\n        return True\n\nmeu = Cofrinho("Bia")\nprint(meu.tirar(900))\nprint(meu.tirar(200))\nprint(meu.centavos, meu.historico)',
+      '',
+      'False\nTrue\n300 [\'tirou 200\']',
+    ),
+    'banco-outra-conta': passo(
+      'Um método pode receber outro objeto como parâmetro. Dentro dele, self é este cofrinho e outro é o que chegou. O ponto funciona igual nos dois: self.dono e outro.dono.',
+      'class Cofrinho:\n    def __init__(self, dono):\n        self.dono = dono\n\n    def mesmo_dono(self, outro):\n        return self.dono == outro.dono\n\na = Cofrinho("Bia")\nb = Cofrinho("Bia")\nc = Cofrinho("Caio")\nprint(a.mesmo_dono(b))\nprint(a.mesmo_dono(c))',
+      '',
+      'True\nFalse',
+    ),
+    'construcao-4': passo(
+      'Passar dinheiro de um cofrinho para outro junta o que você já tem: primeiro confere se este pode tirar; se não pode, recusa antes de mexer em qualquer saldo. Se pode, tira daqui e usa o guardar do destino, sem refazer as regras.',
+      'class Cofrinho:\n    def __init__(self, dono):\n        self.dono = dono\n        self.centavos = 0\n\n    def guardar(self, valor):\n        if valor <= 0:\n            return False\n        self.centavos += valor\n        return True\n\n    def pode_tirar(self, valor):\n        return valor > 0 and valor <= self.centavos\n\n    def passar(self, destino, valor):\n        if not self.pode_tirar(valor):\n            return False\n        self.centavos -= valor\n        destino.guardar(valor)\n        return True\n\na = Cofrinho("Bia")\nb = Cofrinho("Caio")\na.guardar(1000)\nprint(a.passar(b, 5000))\nprint(a.passar(b, 300))\nprint(a.centavos, b.centavos)',
+      '',
+      'False\nTrue\n700 300',
+    ),
+    'banco-mostrar-reais': passo(
+      'O programa conta em centavos, número inteiro, para não errar; a pessoa lê em reais. Por isso a divisão por 100 acontece só no print, na hora de mostrar: {centavos / 100:.2f}. A variável continua em centavos para as próximas contas.',
+      'centavos = 1250\nprint(f"R$ {centavos / 100:.2f}")\nprint(centavos)',
+      '',
+      'R$ 12.50\n1250',
+    ),
+    'construcao-5': passo(
+      'Para apresentar, percorra o histórico com for e mostre uma linha por movimento. A demonstração deve provar cada regra: um valor aceito, um recusado e uma passagem entre dois cofrinhos.',
+      'historico = ["guardou 1000", "tirou 300", "passou 200 para Caio"]\nfor movimento in historico:\n    print(movimento)',
+      '',
+      'guardou 1000\ntirou 300\npassou 200 para Caio',
+    ),
+  },
+  estoque: {
+    'estoque-memoria': passo(
+      'São quatro ações: abrir o banco, criar a tabela, inserir uma linha e ler de volta. ":memory:" cria um banco que só existe enquanto o programa roda. fetchone devolve a primeira linha encontrada, como uma tupla.',
+      'import sqlite3\n\nconn = sqlite3.connect(":memory:")\nconn.execute("CREATE TABLE lanches (id INTEGER PRIMARY KEY, nome TEXT, quantidade INTEGER)")\nconn.execute("INSERT INTO lanches (nome, quantidade) VALUES (\'Pão\', 10)")\nprint(conn.execute("SELECT * FROM lanches").fetchone())',
+      '',
+      '(1, \'Pão\', 10)',
+    ),
+    'construcao-1': passo(
+      'Com um nome de arquivo no lugar de ":memory:", o banco fica guardado e sobrevive ao fim do programa. Por isso a tabela pode já existir na segunda execução: CREATE TABLE IF NOT EXISTS só cria quando ela ainda não existe, e não dá erro.',
+      'import sqlite3\n\nconn = sqlite3.connect("lanches.db")\nconn.execute("CREATE TABLE IF NOT EXISTS lanches (id INTEGER PRIMARY KEY, nome TEXT, quantidade INTEGER)")\nconn.execute("CREATE TABLE IF NOT EXISTS lanches (id INTEGER PRIMARY KEY, nome TEXT, quantidade INTEGER)")\nprint("A tabela está pronta, mesmo pedindo duas vezes.")',
+      '',
+      'A tabela está pronta, mesmo pedindo duas vezes.',
+    ),
+    'estoque-gravar-de-verdade': passo(
+      'commit grava de vez o que foi feito. Sem ele, ao fechar a conexão, o SQLite descarta a mudança. O teste é fechar, abrir o arquivo de novo e procurar: se o lanche está lá, ele foi gravado.',
+      'import sqlite3\n\nconn = sqlite3.connect("lanches.db")\nconn.execute("CREATE TABLE IF NOT EXISTS lanches (id INTEGER PRIMARY KEY, nome TEXT, quantidade INTEGER)")\nconn.execute("INSERT INTO lanches (nome, quantidade) VALUES (\'Pão\', 10)")\nconn.commit()\nconn.close()\n\nconn = sqlite3.connect("lanches.db")\nprint(conn.execute("SELECT nome, quantidade FROM lanches").fetchone())',
+      '',
+      '(\'Pão\', 10)',
+    ),
+    'construcao-2': passo(
+      'Os valores não vão escritos dentro do texto do SQL. Cada ? marca um lugar, e os valores vão separados, numa tupla, como segundo argumento do execute. Isso protege o banco contra injeção de SQL, que é alguém digitar um comando no lugar de um dado.',
+      'import sqlite3\n\nconn = sqlite3.connect(":memory:")\nconn.execute("CREATE TABLE lanches (id INTEGER PRIMARY KEY, nome TEXT, quantidade INTEGER)")\nnome = "Suco"\nquantidade = 5\nconn.execute("INSERT INTO lanches (nome, quantidade) VALUES (?, ?)", (nome, quantidade))\nconn.commit()\nprint(conn.execute("SELECT nome, quantidade FROM lanches").fetchone())',
+      '',
+      '(\'Suco\', 5)',
+    ),
+    'estoque-ler-varias': passo(
+      'fetchone devolve uma linha; fetchall devolve a lista com todas. Como é uma lista, dá para percorrer com for e mostrar uma linha por lanche.',
+      'import sqlite3\n\nconn = sqlite3.connect(":memory:")\nconn.execute("CREATE TABLE lanches (id INTEGER PRIMARY KEY, nome TEXT, quantidade INTEGER)")\nconn.execute("INSERT INTO lanches (nome, quantidade) VALUES (?, ?)", ("Pão", 10))\nconn.execute("INSERT INTO lanches (nome, quantidade) VALUES (?, ?)", ("Suco", 5))\nfor linha in conn.execute("SELECT * FROM lanches").fetchall():\n    print(linha)',
+      '',
+      '(1, \'Pão\', 10)\n(2, \'Suco\', 5)',
+    ),
+    'estoque-calcular-antes': passo(
+      'Primeiro leia, depois calcule, e só depois pense em gravar. fetchone devolve uma tupla, mesmo com uma coluna só: o valor fica na posição [0]. A conta é feita em Python, numa variável.',
+      'import sqlite3\n\nconn = sqlite3.connect(":memory:")\nconn.execute("CREATE TABLE lanches (id INTEGER PRIMARY KEY, nome TEXT, quantidade INTEGER)")\nconn.execute("INSERT INTO lanches (nome, quantidade) VALUES (?, ?)", ("Pão", 10))\natual = conn.execute("SELECT quantidade FROM lanches WHERE id = ?", (1,)).fetchone()[0]\nnovo = atual + 2\nprint(atual, novo)',
+      '',
+      '10 12',
+    ),
+    'construcao-3': passo(
+      'A regra entra depois de calcular e antes de gravar: se o novo valor ficaria negativo, recuse e não grave. Se passou, UPDATE ... SET quantidade = ? WHERE id = ? grava o novo valor só naquele lanche, com os valores como parâmetros.',
+      'import sqlite3\n\nconn = sqlite3.connect(":memory:")\nconn.execute("CREATE TABLE lanches (id INTEGER PRIMARY KEY, nome TEXT, quantidade INTEGER)")\nconn.execute("INSERT INTO lanches (nome, quantidade) VALUES (?, ?)", ("Pão", 10))\n\ndef movimentar(conn, id_lanche, mudanca):\n    atual = conn.execute("SELECT quantidade FROM lanches WHERE id = ?", (id_lanche,)).fetchone()[0]\n    novo = atual + mudanca\n    if novo < 0:\n        print("Recusado: ficaria", novo)\n        return False\n    conn.execute("UPDATE lanches SET quantidade = ? WHERE id = ?", (novo, id_lanche))\n    conn.commit()\n    return True\n\nmovimentar(conn, 1, -15)\nmovimentar(conn, 1, -4)\nprint(conn.execute("SELECT quantidade FROM lanches").fetchone()[0])',
+      '',
+      'Recusado: ficaria -5\n6',
+    ),
+    'construcao-4': passo(
+      'Um relatório escolhe as colunas no SELECT e mostra uma linha por lanche. No for, cada linha é uma tupla, e dá para separar as três colunas em três nomes: for id_lanche, nome, quantidade in ....',
+      'import sqlite3\n\nconn = sqlite3.connect(":memory:")\nconn.execute("CREATE TABLE lanches (id INTEGER PRIMARY KEY, nome TEXT, quantidade INTEGER)")\nconn.execute("INSERT INTO lanches (nome, quantidade) VALUES (?, ?)", ("Pão", 10))\nconn.execute("INSERT INTO lanches (nome, quantidade) VALUES (?, ?)", ("Suco", 5))\nfor id_lanche, nome, quantidade in conn.execute("SELECT id, nome, quantidade FROM lanches").fetchall():\n    print(f"{id_lanche} - {nome}: {quantidade}")',
+      '',
+      '1 - Pão: 10\n2 - Suco: 5',
+    ),
+    'construcao-5': passo(
+      'Para provar que os dados sobrevivem, grave, feche a conexão com close(), abra o mesmo arquivo de novo e só então mostre o relatório. Se os lanches aparecem, eles estavam no arquivo, e não só na memória do programa.',
+      'import sqlite3\n\nconn = sqlite3.connect("lanches.db")\nconn.execute("DROP TABLE IF EXISTS lanches")\nconn.execute("CREATE TABLE lanches (id INTEGER PRIMARY KEY, nome TEXT, quantidade INTEGER)")\nconn.execute("INSERT INTO lanches (nome, quantidade) VALUES (?, ?)", ("Pão", 10))\nconn.commit()\nconn.close()\n\nconn = sqlite3.connect("lanches.db")\nfor linha in conn.execute("SELECT * FROM lanches").fetchall():\n    print(linha)',
+      '',
+      '(1, \'Pão\', 10)',
+    ),
+  },
   calculadora: {
     valores: passo(
       'Uma variável é um nome que guarda um valor. O sinal = guarda o valor da direita no nome da esquerda. Cada informação ganha o seu nome, uma por linha. Números com casas decimais usam ponto: 3000.0. print mostra o valor guardado.',

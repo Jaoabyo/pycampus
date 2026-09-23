@@ -1,5 +1,11 @@
 # Verificação da entrega
 
+## "Como fazer" nos 70 passos dos 8 projetos · 23/09/2026
+
+- Todos os passos da Formação (calculadora, quiz, tarefas, conta digital, estoque, API, qualidade e projeto final) ganharam a ideia explicada e um exemplo pequeno em outro assunto (mercado, filmes, cofrinho, lanches, metas, frete, diário de humor), com a entrada digitada e a saída que aparece.
+- `check-project-ensino`: **68 exemplos executados no Pyodide**, cada um num Python novo (os do estoque gravam em arquivo); a saída mostrada é a real, preenchida a partir da medição, nunca escrita de cabeça. Os 2 passos de rota FastAPI rodam no computador e dizem como: comando, endereço e o que aparece.
+- O teste exige "Como fazer" em todos os passos dos 8 projetos. `npm test`: 381 testes.
+
 ## "Como fazer" nos passos dos projetos, começando pelo quiz (relatado pelo estudante) · 23/09/2026
 
 - O estudante, sobre o quiz: "não especifica direito, é algo muito raso e não explica nada". Medido nos 8 projetos: nos 70 passos, o campo que deveria explicar o porquê era cópia do enunciado; nenhum passo tinha exemplo de código; 63 não conferiam resultado.
