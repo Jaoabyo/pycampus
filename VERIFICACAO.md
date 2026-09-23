@@ -1,5 +1,13 @@
 # Verificação da entrega
 
+## Aula e entrega uma etapa por vez (relatado pelo estudante) · 23/09/2026
+
+- O estudante: "tem muita coisa nas telas em vez de só a atividade passo a passo". A aula mostrava guia, degraus, código do professor, desafio, Lumi, revisão e registro de uma vez, com dois editores, em 3.653 px de altura.
+- Agora cada aula da faculdade tem cinco etapas (Aprender, Construir, Professor, Desafio, Revisar), com "Etapa N de 5" no topo e Voltar/Próxima no fim; só a etapa atual aparece. A primeira etapa tem 1.057 px e nenhum editor. Os miniprojetos continuam numa página só. A mensagem de acerto do desafio diz para ir à etapa Revisar.
+- Na entrega, enquanto o reforço não termina, só ele aparece, com "Ir para o trabalho"; depois, um botão reabre. Antes: reforço e trabalho juntos, com dois editores.
+- O editor dos degraus se chamava "grafico.py" em qualquer aula; agora é "degraus.py".
+- `npm test`: 379 testes; check-faculdade, jornada do iniciante (ajustadas para as etapas), entregas e recompensas aprovadas; 390 px sem rolagem.
+
 ## Ajuda de erro para classes, com os nomes do código (medido no histórico do estudante) · 23/09/2026
 
 - O backup mostrou 95 execuções com erro, 94 delas em classes e objetos (aula de Classes, miniprojeto do contador de visitas, biblioteca), sempre os mesmos enganos: método sem self (14 vezes), método chamado na lista em vez do objeto, a classe Pessoa usada no lugar do objeto pessoa1, método que a classe não tem, nome usado antes de ser criado. A ajuda genérica por tipo não apontava nenhuma dessas causas.

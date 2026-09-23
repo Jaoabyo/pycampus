@@ -231,9 +231,9 @@ assert.equal(
   aulasDaFaculdade.length,
 );
 await page.locator('.faculdade-mapa-aula').first().click();
-await page
-  .getByText('Ampliar: conceitos e exemplo completo do material')
-  .click();
+// A aula é uma etapa por vez: o código do professor fica na etapa "Professor", já aberto.
+await page.locator('.aula-etapas button').filter({ hasText: 'Professor' }).click();
+await page.getByText('Ampliar: conceitos e exemplo completo do material').waitFor();
 // Executar exige um palpite antes: prever a saída é o exercício de leitura de código.
 const executarExemplo = page.getByRole('button', { name: 'Executar exemplo', exact: true });
 assert.equal(await executarExemplo.isDisabled(), true, 'o exemplo só roda depois do palpite');

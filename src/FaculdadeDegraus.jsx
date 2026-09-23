@@ -88,7 +88,7 @@ ${sonda}` : codigo;
         imagens={python.imagens}
         success={python.success}
         celebrate={celebrar}
-        filename={`${aulaId}-grafico.py`}
+        filename={`${aulaId}-degraus.py`}
         runLabel="Executar e conferir"
         emptyOutput="Escreva o degrau no editor e execute. O gráfico aparece aqui, e a conferência logo abaixo."
       />

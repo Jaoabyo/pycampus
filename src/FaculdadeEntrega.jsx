@@ -110,6 +110,11 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
   // null = ainda não houve execução conferida nesta sessão. Diferente de lista vazia, que
   // significaria "conferi e não achei nada" — aqui o certo é não afirmar nada.
   const [conferencias, setConferencias] = useState(null);
+  // Enquanto o reforço não termina, a tela mostra só ele: reforço e trabalho juntos davam dois
+  // editores e a entrega inteira na mesma página, e o estudante disse que era coisa demais.
+  const reforco = entrega ? degrausDaFaculdade[entrega.id] : null;
+  const [mostrarReforco, setMostrarReforco] = useState(() => Boolean(reforco
+    && (state.faculdade?.degraus?.[entrega.id]?.feitos || 0) < reforco.degraus.length));
   // O exemplo é editável: trocar um valor e ver o efeito é o que o passo pede.
   const [exemploEditavel, setExemploEditavel] = useState('');
 
@@ -404,13 +409,23 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
         </div>
       </header>
 
-      {degrausDaFaculdade[entrega.id] && (
-        <details className="entrega-reforco" open={!state.faculdade?.degraus?.[entrega.id] || (state.faculdade.degraus[entrega.id].feitos || 0) < degrausDaFaculdade[entrega.id].degraus.length}>
-          <summary>Reforço: monte a biblioteca em {degrausDaFaculdade[entrega.id].degraus.length} degraus antes do trabalho</summary>
+      {reforco && mostrarReforco && (
+        <section className="entrega-reforco">
           <FaculdadeDegraus aulaId={entrega.id} state={state} update={update} />
-        </details>
+          <div className="button-row">
+            <button className="button primary" onClick={() => { setMostrarReforco(false); irAoTopo(); }}>
+              Ir para o trabalho <Icon name="ArrowRight" size={16} />
+            </button>
+          </div>
+        </section>
+      )}
+      {reforco && !mostrarReforco && (
+        <button className="button outline entrega-reforco-abrir" onClick={() => { setMostrarReforco(true); irAoTopo(); }}>
+          <Icon name="Footprints" size={16} /> Abrir o reforço: a biblioteca em {reforco.degraus.length} degraus
+        </button>
       )}
 
+      {!mostrarReforco && (<>
       <nav className="entrega-fases" aria-label="Fases da entrega">
         {FASES.map((fase) => {
           const passos = entrega.passos.filter((passo) => passo.fase === fase.id);
@@ -781,6 +796,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
           </section>
         </aside>
       </div>
+      </>)}
     </div>
   );
 }

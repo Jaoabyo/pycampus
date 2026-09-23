@@ -26,6 +26,7 @@ import Mentor from './Mentor.jsx';
 import FaculdadeGuia from './FaculdadeGuia.jsx';
 import NovidadesDoCodigo from './FaculdadeNovidades.jsx';
 import FaculdadeDegraus from './FaculdadeDegraus.jsx';
+import { EtapasDaAula, NavegacaoDasEtapas } from './FaculdadeEtapas.jsx';
 import { pontesDasAulas } from './faculdade-pontes.js';
 import ExercicioDaFaculdade from './FaculdadeExercicio.jsx';
 import FaculdadeRevisao from './FaculdadeRevisao.jsx';
@@ -593,6 +594,12 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
   const [tentativas, setTentativas] = useState(0);
   const [celebrar, setCelebrar] = useState(0);
   const [requisitosPendentes, setRequisitosPendentes] = useState([]);
+  // Uma etapa por vez: guia, degraus, código do professor, desafio e revisão apareciam juntos,
+  // com dois editores na mesma tela. Os miniprojetos (aula.guia) continuam numa página só.
+  const passoAPasso = !aula.guia;
+  const [etapa, setEtapa] = useState(() => (feita ? 3 : 0));
+  const mostra = (n) => !passoAPasso || etapa === n;
+  const irParaEtapa = (n) => { setEtapa(n); irAoTopo(); };
   const unidade = unidades.find((item) => item.id === aula.unidade);
   const codigo = guardado ?? aula.starter;
   const python = usePython({
@@ -635,7 +642,7 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
         !resultado.ok
           ? 'Vamos ler o erro. A ajuda abaixo indica por onde começar.'
           : bate
-            ? 'Saída correta. Agora responda à revisão para registrar a aula.'
+            ? (passoAPasso ? 'Saída correta. Agora clique em Próxima: Revisar e responda à pergunta para registrar a aula.' : 'Saída correta. Agora responda à revisão para registrar a aula.')
             : bateSaida
               ? 'A saída bateu, mas o código ainda não demonstra a lógica pedida. Veja o item abaixo.'
               : 'A saída ficou diferente da esperada. Compare linha a linha.',
@@ -684,6 +691,8 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
         </div>
       </div>
 
+      {passoAPasso && <EtapasDaAula etapa={etapa} onIr={irParaEtapa} />}
+
       {aula.roteiro && (
         <section className="card faculdade-passo">
           <h2>Seu roteiro de construção</h2>
@@ -705,15 +714,15 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
           <FaculdadeGuia ensino={ensino} />
         </details>
       ) : (
-        <FaculdadeGuia ensino={ensino} />
+        mostra(0) && <FaculdadeGuia ensino={ensino} />
       )}
 
-      {!aula.guia && (
+      {!aula.guia && mostra(1) && (
         <FaculdadeDegraus aulaId={aula.id} state={state} update={update} />
       )}
 
-      {!aula.guia && (
-        <details className="card faculdade-passo">
+      {!aula.guia && mostra(2) && (
+        <details className="card faculdade-passo" open>
           <summary>Ampliar: conceitos e exemplo completo do material</summary>
           <div className="step-head">
             <span className="icon-tile purple">
@@ -794,6 +803,7 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
         </details>
       )}
 
+      {mostra(3) && (
       <section className="card faculdade-passo">
         <div className="step-head">
           <span className="icon-tile orange">
@@ -869,7 +879,9 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
           }}
         />
       </section>
+      )}
 
+      {mostra(4) && (<>
       <section className="card review faculdade-passo">
         <div className="step-head">
           <span className="icon-tile teal">
@@ -971,11 +983,17 @@ function AulaDaFaculdade({ aula, state, update, voltar, feita }) {
         </p>
       </div>
 
-      <div className="button-row">
-        <button className="button outline" onClick={voltar}>
-          <Icon name="ArrowLeft" size={16} /> Todas as aulas da faculdade
-        </button>
-      </div>
+      </>)}
+
+      {passoAPasso ? (
+        <NavegacaoDasEtapas etapa={etapa} onIr={irParaEtapa} voltar={voltar} />
+      ) : (
+        <div className="button-row">
+          <button className="button outline" onClick={voltar}>
+            <Icon name="ArrowLeft" size={16} /> Todas as aulas da faculdade
+          </button>
+        </div>
+      )}
     </>
   );
 }

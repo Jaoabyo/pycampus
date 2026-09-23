@@ -182,4 +182,14 @@
 .faculdade-degrau{margin-bottom:14px}.faculdade-degrau h3{margin:0 0 6px}
 .faculdade-degrau-fim{display:flex;gap:10px;align-items:flex-start;margin-bottom:14px;padding:12px 14px;border-radius:10px;background:#e7f5ef;color:#24604f}.faculdade-degrau-fim p{margin:0}
 .faculdade-degrau-ok{color:#2f8d72;font-weight:600}
-.entrega-reforco{margin:0 0 18px}.entrega-reforco>summary{cursor:pointer;padding:12px 16px;border:1px solid #e3dafa;border-radius:12px;background:#faf8ff;color:#4f3a99;font-weight:700}.entrega-reforco[open]>summary{margin-bottom:12px}
+.entrega-reforco{margin:0 0 18px}.entrega-reforco-abrir{margin:0 0 18px}
+.aula-etapas{margin:0 0 18px;padding:14px 16px;border:1px solid #e6e1ef;border-radius:12px;background:#fff}
+.aula-etapas-onde{margin:0 0 10px;color:#5f6070;font-size:14px}
+.aula-etapas ol{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.aula-etapas button{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid #e6e1ef;border-radius:999px;background:#fff;color:#6b6780;font:inherit;font-size:13px;cursor:pointer}
+.aula-etapas button span{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#f1eef8;font-size:11px;font-weight:800}
+.aula-etapas button.atual{border-color:#8f6ff0;background:#f5f1ff;color:#4f3a99;font-weight:700}
+.aula-etapas button.atual span{background:#7a5ae0;color:#fff}
+.aula-etapas button.feita{color:#2f8d72;border-color:#bfe3d6}
+.aula-etapas button.feita span{background:#e7f5ef;color:#2f8d72}
+.aula-etapas-navegacao{justify-content:space-between;margin-top:6px}

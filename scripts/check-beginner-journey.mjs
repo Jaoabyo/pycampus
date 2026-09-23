@@ -112,6 +112,8 @@ assert.equal(
   await page.getByRole('heading', { name: /Qual tipo input/ }).count(),
   0,
 );
+// A aula é uma etapa por vez: o desafio fica na etapa Desafio, e a revisão na etapa Revisar.
+await page.locator('.aula-etapas button').filter({ hasText: 'Desafio' }).click();
 const desafio = page.locator('section').filter({
   has: page.getByRole('heading', { name: 'Agora você', exact: true }),
 });
@@ -122,8 +124,9 @@ await desafio
   .getByRole('button', { name: 'Executar código', exact: true })
   .click();
 await page
-  .getByText('Saída correta. Agora responda à revisão para registrar a aula.')
+  .getByText(/Saída correta. Agora clique em Próxima: Revisar/)
   .waitFor({ timeout: 120000 });
+await page.getByRole('button', { name: /Próxima: Revisar/ }).click();
 // A certa não fica mais sempre em A: as alternativas giram. Escolhe-se pelo texto certo.
 await page.getByRole('radio', { name: ensinoDaFaculdade.u1a1.revisao.opcoes[ensinoDaFaculdade.u1a1.revisao.resposta] }).check();
 await page.getByRole('button', { name: 'Registrar esta aula' }).click();
