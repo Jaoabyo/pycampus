@@ -102,7 +102,8 @@ export function criarNotebookColab({ entrega, trabalho, estudante = {} }) {
   const salvo = normalizarTrabalhoDaEntrega(trabalho, entrega);
   const nome = escaparHtml(rotulo(estudante.nome, 'Estudante'));
   const identificacao = escaparHtml(rotulo(estudante.identificacao, 'Preencher antes do envio'));
-  const listaTestes = entrega.testesOrientados.map((item) => `- [ ] ${item}`).join('\n');
+  // Caixinhas vazias ([ ]) faziam o notebook parecer não testado para quem corrige.
+  const listaTestes = entrega.testesOrientados.map((item) => `- ${item}`).join('\n');
   const objetivos = entrega.criterios.map(({ descricao }) => `- ${descricao}`).join('\n');
   const resultado = entrega.ambienteEntrega === 'colab'
     ? salvo.saidaExterna

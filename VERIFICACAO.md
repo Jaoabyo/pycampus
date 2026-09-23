@@ -1,5 +1,12 @@
 # Verificação da entrega
 
+## Correção do mediador na Unidade 1: o None da lista vazia (nota 85) · 23/09/2026
+
+- O mediador descontou: "a função não trata adequadamente o caso em que a lista de notas está vazia, retornando apenas None. Seria interessante adicionar uma verificação no código principal". A causa estava no PyCampus: o passo ensinava return None e parava ali, e a própria solução de referência fazia print(f"{media:.1f}") sem conferir.
+- O passo da função agora ensina conferir no código principal (if media is None) e cita a correção do mediador; um critério novo exige esse if fora das funções (reprova o código entregue, aprova o corrigido); a solução de referência foi corrigida.
+- O notebook exportado mostrava os testes planejados como caixinhas vazias "[ ]", parecendo não feitos para quem corrige; agora é uma lista simples.
+- `npm test`: 379 testes; entregas aprovadas.
+
 ## Aula e entrega uma etapa por vez (relatado pelo estudante) · 23/09/2026
 
 - O estudante: "tem muita coisa nas telas em vez de só a atividade passo a passo". A aula mostrava guia, degraus, código do professor, desafio, Lumi, revisão e registro de uma vez, com dois editores, em 3.653 px de altura.

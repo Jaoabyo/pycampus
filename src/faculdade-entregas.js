@@ -149,6 +149,19 @@ const stringEmChamada = ({ executavel, strings }, chamada, conteudo) => strings.
   return chamada.test(antes) && conteudo.test(item.conteudo);
 });
 
+// O código fora de def: o que roda de verdade no programa principal.
+const foraDasFuncoes = (executavel) => {
+  const saida = [];
+  let dentro = null;
+  for (const linha of String(executavel).split('\n')) {
+    const recuo = linha.length - linha.trimStart().length;
+    if (dentro !== null && linha.trim() && recuo <= dentro) dentro = null;
+    if (dentro === null && /^\s*def\s/.test(linha)) { dentro = recuo; continue; }
+    if (dentro === null) saida.push(linha);
+  }
+  return saida.join('\n');
+};
+
 const criterioTexto = (id, descricao, campo, minimo = 30) => ({
   id,
   descricao,
@@ -234,9 +247,9 @@ const passosU1 = [
   ),
   passo(
     'u1-construir-funcao', 'construir', 'Separe o cálculo em uma função',
-    'Uma função dá nome à regra e devolve um resultado com return. Assim o cálculo pode ser testado com listas diferentes.',
-    'def calcular_media(notas):\n    return sum(notas) / len(notas)',
-    'Crie calcular_media e use o valor devolvido fora da função.',
+    'Uma função dá nome à regra e devolve um resultado com return. Assim o cálculo pode ser testado com listas diferentes. Se calcular_media devolve None para a lista vazia, o código principal precisa conferir antes de usar a média: if media is None pergunta se veio "nada". Foi isso que o mediador cobrou na correção desta entrega.',
+    'media = calcular_media(notas)\nif media is None:\n    print("Nenhuma nota cadastrada.")\nelse:\n    print("Media:", media)',
+    'Crie calcular_media, use o valor devolvido fora da função e trate o None da lista vazia no código principal.',
   ),
   passo(
     'u1-construir-situacao', 'construir', 'Decida a situação pelo limite sete',
@@ -510,6 +523,11 @@ export const entregasDaFaculdade = [
       criterioCodigo('funcao-media', 'calcular a média em uma função com retorno', /def\s+calcular_media\s*\([\s\S]*(?:sum\s*\(|\bfor\b)[\s\S]*return/),
       criterioCodigo('lista-vazia', 'tratar a lista vazia antes da divisão', /if\s+(?:not\s+notas|len\s*\(\s*notas\s*\)\s*==\s*0)/),
       criterioCodigo('limite-sete', 'decidir aprovação com média maior ou igual a 7', />=\s*7/),
+      // O mediador da faculdade descontou exatamente isto: a função devolvia None para a lista
+      // vazia, e o código principal usava o resultado sem conferir.
+      criterioEstrutural('vazio-no-principal', 'conferir no código principal o None da lista vazia antes de usar a média', (analise) => (
+        /\bis\s+(?:not\s+)?None\b|\bif\s+not\s+\w+|\bif\s+\w+\s*:/.test(foraDasFuncoes(analise.executavel))
+      )),
       // O roteiro é literal: "Exibir as notas inseridas, a média e a situação do aluno". Um
       // relatório que mostra só a média e a situação atende dois terços do que foi pedido.
       // A análise apaga o conteúdo das strings para ninguém fingir código dentro de texto — mas
