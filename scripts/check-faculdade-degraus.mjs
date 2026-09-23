@@ -421,6 +421,64 @@ casosComportamento.forEach(([t, id, codigo, devePassar, motivo], i) => {
   if (!certo) falhas.push(`${t} ${id} #${i}: esperava ${devePassar ? 'aprovar' : `reprovar com "${motivo}"`}, veio ${JSON.stringify(conferencia)} · sonda ${JSON.stringify(sonda)?.slice(0, 500)}`);
 });
 
+// Reforço da biblioteca, incluindo o código real do estudante (função de cadastro dentro da classe).
+const bibClasse = 'class Livro:\n    def __init__(self, titulo, autor, genero, quantidade_disponivel):\n        self.titulo = titulo\n        self.autor = autor\n        self.genero = genero\n        self.quantidade_disponivel = quantidade_disponivel\n';
+const bb2 = `${bibClasse}\nmeu_livro = Livro("Dom Casmurro", "Machado de Assis", "Romance", 3)\nprint(meu_livro.titulo)\n`;
+const bb3 = `${bb2}livros = []\nlivros.append(meu_livro)\nlivros.append(Livro("Sapiens", "Yuval Harari", "História", 5))\n`;
+const cad = '\ndef cadastrar_livro(livros, titulo, autor, genero, quantidade_disponivel):\n    livros.append(Livro(titulo, autor, genero, quantidade_disponivel))\n\ncadastrar_livro(livros, "A Hora da Estrela", "Clarice Lispector", "Romance", 2)\ncadastrar_livro(livros, "Cosmos", "Carl Sagan", "Ciência", 1)\n';
+const bb4 = `${bb3}${cad}`;
+const bb5 = `${bb4}\ndef listar_livros(livros):\n    for livro in livros:\n        print(livro.titulo, "-", livro.autor, "-", livro.genero, "-", livro.quantidade_disponivel)\n\nlistar_livros(livros)\n`;
+const busca = (dentro) => `\ndef buscar_livro(livros, titulo_buscado):\n    for livro in livros:\n        if livro.titulo.lower() == titulo_buscado.lower():\n            return livro\n${dentro ? '        return None\n' : '    return None\n'}`;
+const bb6 = `${bb5}${busca(false)}`;
+const bb7 = `${bb6}\ndef contar_por_genero(livros):\n    contagem = {}\n    for livro in livros:\n        contagem[livro.genero] = contagem.get(livro.genero, 0) + 1\n    return contagem\n\ncontagem = contar_por_genero(livros)\nprint(contagem)\n`;
+const codigoDoBackup = 'class Livro:\n    def __init__(self, titulo, autor, genero, quantidade_disponivel):\n        self.titulo = titulo\n        self.autor = autor\n        self.genero = genero\n        self.quantidade_disponivel = quantidade_disponivel\n\n    def casdastro_livro(livros, titulo, autor, genero, quantidade_disponivel):\n        livros.append(Livro(titulo, autor, genero, quantidade_disponivel))\n        for livro in livros:\n           print(livro.titulo, "-", livro.autor, "-", livro.genero, "-", livro.quantidade_disponive)\nlivros = []\n';
+const casosBiblioteca = [
+  ['classe', bibClasse, true],
+  ['classe', bibClasse.replace('self.quantidade_disponivel = quantidade_disponivel', 'self.quantidade_disponive = quantidade_disponivel'), false, 'Sobra quantidade_disponive'],
+  ['objeto', bb2, true],
+  ['catalogo', bb3, true],
+  ['catalogo', `${bb2}livros = []\nlivros.append(meu_livro)\n`, false, 'O catálogo tem 1 livro'],
+  ['cadastrar', bb4, true],
+  ['cadastrar', `${bb3}\n`.replace('class Livro:\n', 'class Livro:\n    def cadastrar_livro(livros, titulo, autor, genero, quantidade_disponivel):\n        livros.append(Livro(titulo, autor, genero, quantidade_disponivel))\n\n'), false, 'está com recuo, dentro da classe'],
+  // O código de verdade do backup do estudante: tem de receber a explicação do recuo, com o nome dele.
+  ['cadastrar', `${codigoDoBackup}meu_livro = Livro("Dom Casmurro", "Machado de Assis", "Romance", 3)
+`, false, 'casdastro_livro está com recuo'],
+  ['listar', bb5, true],
+  ['listar', `${bb4}\ndef listar_livros(livros):\n    for livro in livros:\n        print(livro.titulo, livro.quantidade_disponive)\n`, false, 'deu erro'],
+  ['buscar', bb6, true],
+  ['buscar', `${bb5}${busca(true)}`, false, 'não achou'],
+  ['contar', bb7, true],
+  ['grafico', `${bb7}\nimport matplotlib.pyplot as plt\n\nplt.bar(contagem.keys(), contagem.values())\nplt.title("Livros por gênero")\nplt.close()\n`, true],
+  ['grafico', `${bb7}\nimport matplotlib.pyplot as plt\n\nplt.bar(contagem.keys(), contagem.values())\nplt.close()\n`, false, 'sem título'],
+];
+const bib = degrausDaFaculdade['entrega-u2'];
+const resultadosBib = await rodarNoMesmoWorker(casosBiblioteca.map(([id, codigo]) => `${codigo}\n${bib.sonda(codigo, bib.degraus.find((d) => d.id === id))}`));
+casosBiblioteca.forEach(([id, codigo, devePassar, motivo], i) => {
+  const r = resultadosBib[i];
+  const { saida, sonda } = separarSonda(r.output);
+  if (saida.includes('__PYCAMPUS') || saida.includes('_pc_')) falhas.push(`biblioteca ${id} #${i}: a sonda vazou para a saída`);
+  const conferencia = r.ok ? bib.degraus.find((d) => d.id === id).conferir({ graficos: r.graficos, codigo, saida, banco: sonda, sonda }) : { ok: false, motivo: `erro ao executar: ${r.output.slice(-200)}` };
+  const certo = conferencia.ok === devePassar && (devePassar || conferencia.motivo.includes(motivo));
+  if (!certo) falhas.push(`biblioteca ${id} #${i}: esperava ${devePassar ? 'aprovar' : `reprovar com "${motivo}"`}, veio ${JSON.stringify(conferencia)} · sonda ${JSON.stringify(sonda)?.slice(0, 500)}`);
+});
+
+// As conferências da entrega da biblioteca: a solução de referência passa em todas, e o código
+// do backup do estudante é barrado no cadastro com a explicação do recuo.
+const { programaComConferencias, lerConferencias } = await import('../src/faculdade-conferencias.js');
+const { entregasDaFaculdade } = await import('../src/faculdade-entregas.js');
+const { solucoesEntregasFaculdade } = await import('../tests/faculdade-entregas-reference.js');
+const entregaU2 = entregasDaFaculdade.find(({ id }) => id === 'entrega-u2');
+const [refU2, backupU2] = await rodarNoMesmoWorker([
+  programaComConferencias(solucoesEntregasFaculdade['entrega-u2'], entregaU2.conferencias),
+  programaComConferencias(codigoDoBackup, entregaU2.conferencias),
+]);
+const confRef = lerConferencias(refU2.output).resultados || [];
+if (confRef.length !== entregaU2.conferencias.length || !confRef.every(({ ok }) => ok)) falhas.push(`entrega-u2: a solução de referência não passou nas conferências: ${JSON.stringify(confRef)}`);
+const confBackup = lerConferencias(backupU2.output).resultados || [];
+const foraDaClasse = confBackup.find(({ id }) => id === 'cadastro-fora-da-classe');
+if (foraDaClasse?.ok !== false || !/casdastro_livro está com recuo dentro da classe/.test(foraDaClasse?.detalhe || '')) falhas.push(`entrega-u2: o código do backup deveria ser barrado explicando o recuo: ${JSON.stringify(foraDaClasse)}`);
+if (confBackup.find(({ id }) => id === 'busca-acha')?.ok !== false) falhas.push('entrega-u2: sem buscar_livro, a busca não pode conferir');
+
 // Cada execução devolve só o gráfico dela: o worker reaproveitado não pode somar figuras antigas.
 for (const [i, r] of resultados.entries()) {
   if (r.ok && r.graficos.length > 1) falhas.push(`caso #${i}: ${r.graficos.length} figuras numa execução de uma figura só`);
@@ -434,4 +492,4 @@ if (falhas.length) {
   process.exit(1);
 }
 assert.ok(resultados.length === casos.length);
-console.log(`Degraus aprovados: ${casos.length + casosSql.length + casosVariaveis.length + casosU2.length + casosComportamento.length} programas executados no Pyodide; certos aprovam, errados reprovam pelo motivo certo.`);
+console.log(`Degraus aprovados: ${casos.length + casosSql.length + casosVariaveis.length + casosU2.length + casosComportamento.length + casosBiblioteca.length + 2} programas executados no Pyodide; certos aprovam, errados reprovam pelo motivo certo.`);

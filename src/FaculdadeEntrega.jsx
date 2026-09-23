@@ -27,6 +27,8 @@ import {
   situacaoDasConferencias,
 } from './faculdade-conferencias.js';
 import NovidadesDoCodigo from './FaculdadeNovidades.jsx';
+import FaculdadeDegraus from './FaculdadeDegraus.jsx';
+import { degrausDaFaculdade } from './faculdade-degraus.js';
 import { pontesDasEntregas } from './faculdade-pontes.js';
 import './faculdade.css';
 import './faculdade-entrega.css';
@@ -173,6 +175,13 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
   // Executar não é aprovar. O programa roda junto das conferências da entrega, que chamam o
   // que o estudante escreveu com valores conhecidos: sem isso, um código que devolve 2.25 onde
   // a média é 7.5 terminava com "Deu certo!" só por não ter levantado exceção.
+  // Só as conferências dos passos até o atual: quem está no cadastro não pode ver "reprovado"
+  // por causa da busca, que ainda nem foi pedida.
+  const atePassoAtual = (resultados) => (Array.isArray(resultados) ? resultados.filter(({ id }) => {
+    const passoDaConferencia = (entrega.conferencias || []).find((item) => item.id === id)?.passo;
+    const indice = entrega.passos.findIndex((item) => item.id === passoDaConferencia);
+    return indice < 0 || indice <= passoIndice;
+  }) : resultados);
   const executar = () => {
     setMensagem('');
     setConferencias(null);
@@ -184,7 +193,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
         return;
       }
       salvar({ saida, executadaEm: localDate(), imagens: resultado.imagens || [] });
-      if (situacaoDasConferencias(resultados) === 'reprovada') {
+      if (situacaoDasConferencias(atePassoAtual(resultados)) === 'reprovada') {
         setMensagem('O programa rodou, mas o resultado não confere. Leia abaixo o que foi observado e compare com o que deveria sair.');
         return;
       }
@@ -394,6 +403,13 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
         </div>
       </header>
 
+      {degrausDaFaculdade[entrega.id] && (
+        <details className="entrega-reforco" open={!state.faculdade?.degraus?.[entrega.id] || (state.faculdade.degraus[entrega.id].feitos || 0) < degrausDaFaculdade[entrega.id].degraus.length}>
+          <summary>Reforço: monte a biblioteca em {degrausDaFaculdade[entrega.id].degraus.length} degraus antes do trabalho</summary>
+          <FaculdadeDegraus aulaId={entrega.id} state={state} update={update} />
+        </details>
+      )}
+
       <nav className="entrega-fases" aria-label="Fases da entrega">
         {FASES.map((fase) => {
           const passos = entrega.passos.filter((passo) => passo.fase === fase.id);
@@ -497,7 +513,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                 output={python.output || trabalho.saida}
                 imagens={python.imagens?.length ? python.imagens : trabalho.imagens}
                 success={python.success}
-                celebrate={celebrar && situacaoDasConferencias(conferencias) !== 'reprovada' ? celebrar : 0}
+                celebrate={celebrar && situacaoDasConferencias(atePassoAtual(conferencias)) !== 'reprovada' ? celebrar : 0}
                 inputRequest={python.inputRequest}
                 onReply={python.reply}
                 filename={`${entrega.id}.py`}
@@ -505,16 +521,16 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                 runLabel={entrega.ambienteEntrega === 'colab' ? 'Execute no Colab' : 'Executar código'}
                 emptyOutput="Execute o código para registrar uma saída real."
               />
-              {Array.isArray(conferencias) && conferencias.length > 0 && (
+              {Array.isArray(atePassoAtual(conferencias)) && atePassoAtual(conferencias).length > 0 && (
                 <div
-                  className={`entrega-conferencias ${situacaoDasConferencias(conferencias) === 'aprovada' ? 'aprovada' : 'reprovada'}`}
+                  className={`entrega-conferencias ${situacaoDasConferencias(atePassoAtual(conferencias)) === 'aprovada' ? 'aprovada' : 'reprovada'}`}
                   role="status"
                 >
                   <div className="entrega-section-head">
                     <div>
                       <div className="eyebrow">CONFERÊNCIA DO RESULTADO</div>
                       <h3>
-                        {conferencias.filter(({ ok }) => ok).length} de {conferencias.length} conferem
+                        {atePassoAtual(conferencias).filter(({ ok }) => ok).length} de {atePassoAtual(conferencias).length} conferem
                       </h3>
                     </div>
                   </div>
@@ -523,7 +539,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                     prova que a conta está certa — isto prova.
                   </p>
                   <ul>
-                    {conferencias.map(({ id, descricao, ok, detalhe }) => (
+                    {atePassoAtual(conferencias).map(({ id, descricao, ok, detalhe }) => (
                       <li key={id} className={ok ? 'confere' : 'falha'}>
                         <Icon name={ok ? 'CheckCircle2' : 'TriangleAlert'} size={17} aria-hidden="true" />
                         <div>

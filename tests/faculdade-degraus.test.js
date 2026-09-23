@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { degrausDaFaculdade, separarSonda, MARCA_DA_SONDA } from '../src/faculdade-degraus.js';
 import { normalizarDegraus, MAXIMO_DE_DEGRAUS } from '../src/faculdade-degraus-estado.js';
 import { aulasDaFaculdade } from '../src/faculdade.js';
+import { entregasDaFaculdade } from '../src/faculdade-entregas.js';
 
 test('a linha da sonda sai da saída que o estudante vê', () => {
   const { saida, sonda } = separarSonda(`pronto\n\n${MARCA_DA_SONDA}{"conexoes": 1}\n`);
@@ -26,7 +27,7 @@ test('o progresso salvo dos degraus volta limpo de um backup', () => {
 });
 
 test('cada trilha de degraus pertence a uma aula e cada degrau ensina, mostra e pede', () => {
-  const ids = new Set(aulasDaFaculdade.map(({ id }) => id));
+  const ids = new Set([...aulasDaFaculdade, ...entregasDaFaculdade].map(({ id }) => id));
   for (const [aulaId, trilha] of Object.entries(degrausDaFaculdade)) {
     assert.ok(ids.has(aulaId), aulaId);
     assert.ok(trilha.degraus.length <= MAXIMO_DE_DEGRAUS, `${aulaId}: degraus demais para o que o progresso guarda`);

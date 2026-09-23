@@ -3,9 +3,10 @@
 // sete trilhas junto, o que estourou o limite de tamanho do carregamento inicial. Aqui só se
 // valida a forma; quem sabe quantos degraus cada trilha tem é a tela, que limita o número ao abrir.
 import { aulasDaFaculdade } from './faculdade.js';
+import { entregasDaFaculdade } from './faculdade-entregas.js';
 
 export const MAXIMO_DE_DEGRAUS = 50;
-const aulas = new Set(aulasDaFaculdade.map(({ id }) => id));
+const aulas = new Set([...aulasDaFaculdade, ...entregasDaFaculdade].map(({ id }) => id));
 
 // Guardado por aula: quantos degraus já foram vencidos e o código em que o estudante parou.
 export const normalizarDegraus = (entrada) => {

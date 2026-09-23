@@ -1475,4 +1475,136 @@ export const degrausDaFaculdade = {
       },
     ],
   },
+  // Reforço pedido pelo estudante: "o sistema de biblioteca está muito complexo, não consegui
+  // pegar o conteúdo que preciso saber para construir". O código dele tinha a função de
+  // cadastro com recuo dentro da classe, virando método do Livro. Cada degrau aqui constrói
+  // uma peça do trabalho e chama o que ele escreveu para conferir.
+  'entrega-u2': {
+    titulo: 'Reforço: monte a biblioteca, uma peça por vez',
+    introducao: 'O trabalho junta classe, lista, funções, dicionário e gráfico. Aqui cada peça vem sozinha, com a explicação, e só depois a próxima. A conferência chama o seu código com livros de teste e confere o que ele faz. No fim, você tem o sistema inteiro do roteiro.',
+    inicial: '',
+    sonda: (codigo, degrau) => sondaDeChamadas(degrau.chamadas.map(([expr]) => expr)),
+    conclusao: 'Você montou o sistema de biblioteca inteiro: a classe Livro com os quatro atributos do roteiro, o catálogo, as funções de cadastrar, listar e buscar, a contagem por gênero e o gráfico. Copie este código para o editor da entrega: ele já cumpre o que o roteiro pede.',
+    degraus: [
+      {
+        id: 'classe',
+        titulo: 'O molde: a classe Livro',
+        ensina: 'A classe é o molde de um livro: diz quais dados todo livro tem. O roteiro pede quatro: título, autor, gênero e quantidade disponível. __init__ roda sozinho quando um livro é criado e recebe esses dados; self é o próprio livro, e self.titulo = titulo guarda o título dentro dele. Os nomes precisam estar escritos iguais em todas as linhas.',
+        exemplo: 'class Livro:\n    def __init__(self, titulo, autor, genero, quantidade_disponivel):\n        self.titulo = titulo\n        self.autor = autor\n        self.genero = genero\n        self.quantidade_disponivel = quantidade_disponivel',
+        pedido: 'Crie a classe Livro com os quatro atributos do roteiro.',
+        chamadas: [['vars(Livro("Teste", "Autora", "Drama", 2))', { titulo: 'Teste', autor: 'Autora', genero: 'Drama', quantidade_disponivel: 2 }]],
+        conferir: ({ sonda }) => {
+          const c = chamada(sonda, degrausDaFaculdade['entrega-u2'].degraus[0].chamadas[0][0]);
+          if (!c?.ok) return falta(/NameError/.test(c?.erro || '') ? 'Ainda não há uma classe chamada Livro.' : `Criei um Livro de teste e deu erro: ${c?.erro}. Confira se o __init__ recebe os quatro dados.`);
+          const esperados = ['titulo', 'autor', 'genero', 'quantidade_disponivel'];
+          const faltam = esperados.filter((n) => !(n in (c.valor || {})));
+          const sobram = Object.keys(c.valor || {}).filter((n) => !esperados.includes(n));
+          if (faltam.length || sobram.length) return falta(`O livro guardou ${Object.keys(c.valor || {}).join(', ') || 'nada'}. ${faltam.length ? `Falta ${faltam.join(', ')}.` : ''} ${sobram.length ? `Sobra ${sobram.join(', ')}: confira se o nome está escrito igual nos dois lados do =.` : ''}`.replace(/\s+/g, ' ').trim());
+          return conferirChamadas(sonda, degrausDaFaculdade['entrega-u2'].degraus[0].chamadas, 'Livro');
+        },
+      },
+      {
+        id: 'objeto',
+        titulo: 'Um livro de verdade',
+        ensina: 'Com o molde pronto, Livro(...) fabrica um livro, com os dados na mesma ordem do __init__. O resultado vai para uma variável. Para ler um dado dele, use ponto: meu_livro.titulo.',
+        exemplo: 'meu_livro = Livro("Dom Casmurro", "Machado de Assis", "Romance", 3)\nprint(meu_livro.titulo)',
+        pedido: 'Crie meu_livro com Dom Casmurro, de Machado de Assis, Romance, 3 exemplares, e mostre o título.',
+        chamadas: [['meu_livro.titulo', 'Dom Casmurro'], ['meu_livro.quantidade_disponivel', 3]],
+        conferir: ({ sonda }) => conferirChamadas(sonda, degrausDaFaculdade['entrega-u2'].degraus[1].chamadas, 'meu_livro'),
+      },
+      {
+        id: 'catalogo',
+        titulo: 'O catálogo: uma lista de livros',
+        ensina: 'A biblioteca tem muitos livros, então eles vão numa lista: livros = [] começa o catálogo vazio, e append coloca um livro no fim sem apagar os outros. Cada item da lista é um objeto Livro inteiro.',
+        exemplo: 'livros = []\nlivros.append(meu_livro)\nlivros.append(Livro("Sapiens", "Yuval Harari", "História", 5))',
+        pedido: 'Comece o catálogo livros e coloque nele meu_livro e mais um livro de outro gênero.',
+        chamadas: [['len(livros)', 2], ['len(set(l.genero for l in livros))', 2]],
+        conferir: ({ sonda }) => {
+          const c = chamada(sonda, 'len(livros)');
+          if (c?.ok && c.valor !== 2) return falta(`O catálogo tem ${c.valor} livro(s); o pedido é 2. Confira os append.`);
+          return conferirChamadas(sonda, degrausDaFaculdade['entrega-u2'].degraus[2].chamadas, 'livros');
+        },
+      },
+      {
+        id: 'cadastrar',
+        titulo: 'A função de cadastro, fora da classe',
+        ensina: 'Uma função evita repetir a criação de livros. Ela fica FORA da classe, começando na margem, sem recuo: se ficar com recuo dentro da classe, vira um método do Livro e não funciona como cadastro. Ela recebe a lista e os dados, cria o Livro e usa append. Não precisa de return: ela muda a lista que recebeu.',
+        exemplo: 'def cadastrar_livro(livros, titulo, autor, genero, quantidade_disponivel):\n    livros.append(Livro(titulo, autor, genero, quantidade_disponivel))\n\ncadastrar_livro(livros, "A Hora da Estrela", "Clarice Lispector", "Romance", 2)\ncadastrar_livro(livros, "Cosmos", "Carl Sagan", "Ciência", 1)',
+        pedido: 'Crie a função cadastrar_livro fora da classe e cadastre mais dois livros com ela, somando quatro no catálogo.',
+        chamadas: [
+          ['callable(globals().get("cadastrar_livro"))', true],
+          ['[n for n, f in vars(Livro).items() if callable(f) and not n.startswith("__") and f.__code__.co_varnames[:1] != ("self",)]', []],
+          ['(lambda teste: (cadastrar_livro(teste, "T", "A", "G", 1), [type(l).__name__ for l in teste])[1])([])', ['Livro']],
+          ['len(livros)', 4],
+        ],
+        conferir: ({ sonda }) => {
+          const existe = chamada(sonda, 'callable(globals().get("cadastrar_livro"))');
+          // Um def dentro da classe cujo primeiro parâmetro não é self é uma função que caiu lá por engano
+          // (o do estudante se chamava casdastro_livro e começava por livros).
+          const dentro = chamada(sonda, '[n for n, f in vars(Livro).items() if callable(f) and not n.startswith("__") and f.__code__.co_varnames[:1] != ("self",)]');
+          const nomeDentro = Array.isArray(dentro?.valor) ? dentro.valor[0] : null;
+          if (existe?.valor !== true) return falta(nomeDentro ? `A ${nomeDentro} está com recuo, dentro da classe Livro: assim ela vira um método do livro. Apague o recuo para o def começar na margem, fora da classe, e chame a função de cadastrar_livro.` : 'Não encontrei a função cadastrar_livro.');
+          if (nomeDentro) return falta(`Ainda existe um ${nomeDentro} com recuo dentro da classe Livro. Tire de lá: o cadastro fica só na função cadastrar_livro, fora da classe.`);
+          return conferirChamadas(sonda, degrausDaFaculdade['entrega-u2'].degraus[3].chamadas.slice(2), 'cadastrar_livro');
+        },
+      },
+      {
+        id: 'listar',
+        titulo: 'Listar o catálogo',
+        ensina: 'Listar é mostrar cada livro: for livro in livros pega um de cada vez, e o print lê os atributos com ponto. Aqui print é o certo, porque o trabalho da função é mostrar. Já o cadastro muda a lista e a busca devolve um livro com return. Confira cada nome de atributo: um quantidade_disponive sem o l dá AttributeError.',
+        exemplo: 'def listar_livros(livros):\n    for livro in livros:\n        print(livro.titulo, "-", livro.autor, "-", livro.genero, "-", livro.quantidade_disponivel)\n\nlistar_livros(livros)',
+        pedido: 'Crie a função listar_livros, que mostra título, autor, gênero e quantidade de cada livro, e liste o catálogo.',
+        chamadas: [['listar_livros([Livro("Teste", "Autora", "Drama", 7)])', null]],
+        conferir: ({ sonda }) => {
+          const c = chamada(sonda, 'listar_livros([Livro("Teste", "Autora", "Drama", 7)])');
+          if (!c?.ok) return falta(/NameError/.test(c?.erro || '') ? 'Não encontrei a função listar_livros.' : `Listei um livro de teste e deu erro: ${c?.erro}. Confira os nomes dos atributos no print.`);
+          const faltando = ['Teste', 'Autora', 'Drama', '7'].filter((t) => !c.imprimiu.includes(t));
+          return faltando.length ? falta(`Listei um livro de teste e não apareceu ${faltando.join(', ')}. O print precisa mostrar os quatro dados de cada livro.`) : aprovado();
+        },
+      },
+      {
+        id: 'buscar',
+        titulo: 'Buscar pelo título',
+        ensina: 'A busca percorre o catálogo e compara os títulos com lower(), que deixa tudo minúsculo: assim "dom casmurro" acha "Dom Casmurro". Achou, devolve o livro com return, e a função para ali. O return None fica DEPOIS do for, sem recuo a mais: se ficar dentro do for, a função desiste já no primeiro livro.',
+        exemplo: 'def buscar_livro(livros, titulo_buscado):\n    for livro in livros:\n        if livro.titulo.lower() == titulo_buscado.lower():\n            return livro\n    return None\n\nachado = buscar_livro(livros, "dom casmurro")\nprint(achado.titulo if achado else "não encontrado")',
+        pedido: 'Crie a função buscar_livro, que devolve o livro com aquele título, sem diferença de maiúsculas, ou None.',
+        chamadas: [
+          ['(lambda t: (cadastrar_livro(t, "Cosmos", "Carl Sagan", "Ciência", 1), cadastrar_livro(t, "Dom Casmurro", "Machado de Assis", "Romance", 3), getattr(buscar_livro(t, "dom casmurro"), "titulo", None))[2])([])', 'Dom Casmurro'],
+          ['(lambda t: (cadastrar_livro(t, "Cosmos", "Carl Sagan", "Ciência", 1), buscar_livro(t, "Livro que não existe"))[1])([])', null],
+        ],
+        conferir: ({ sonda }) => {
+          const [achar, ausente] = degrausDaFaculdade['entrega-u2'].degraus[5].chamadas;
+          const c = chamada(sonda, achar[0]);
+          if (!c?.ok) return falta(/NameError/.test(c?.erro || '') ? 'Não encontrei a função buscar_livro.' : `Busquei e deu erro: ${c?.erro}.`);
+          if (c.valor !== 'Dom Casmurro') return falta('Busquei "dom casmurro" num catálogo em que ele é o segundo livro, e não achou. Confira o lower() nos dois lados e se o return None está depois do for, e não dentro dele.');
+          const a = chamada(sonda, ausente[0]);
+          return a?.ok && a.valor === null ? aprovado() : falta('Busquei um título que não existe e a função não devolveu None. Termine com return None, depois do for.');
+        },
+      },
+      {
+        id: 'contar',
+        titulo: 'Contar por gênero',
+        ensina: 'Um dicionário guarda uma contagem por gênero: o gênero é a chave e o número de livros é o valor. contagem.get(genero, 0) devolve o valor atual, ou 0 quando o gênero ainda não apareceu; somar 1 registra o livro.',
+        exemplo: 'def contar_por_genero(livros):\n    contagem = {}\n    for livro in livros:\n        contagem[livro.genero] = contagem.get(livro.genero, 0) + 1\n    return contagem\n\ncontagem = contar_por_genero(livros)\nprint(contagem)',
+        pedido: 'Crie a função contar_por_genero, que devolve o dicionário com quantos livros há de cada gênero, e guarde o resultado do catálogo em contagem.',
+        chamadas: [['contar_por_genero([Livro("A", "x", "Romance", 1), Livro("B", "y", "Romance", 1), Livro("C", "z", "Drama", 1)])', { Romance: 2, Drama: 1 }]],
+        conferir: ({ sonda }) => conferirChamadas(sonda, degrausDaFaculdade['entrega-u2'].degraus[6].chamadas, 'contar_por_genero'),
+      },
+      {
+        id: 'grafico',
+        titulo: 'O gráfico dos gêneros',
+        ensina: 'O gráfico usa o dicionário direto: contagem.keys() são os gêneros, que vão embaixo das barras, e contagem.values() são as quantidades, que viram as alturas. O import do Matplotlib pode ficar no topo do código. Termine com plt.close().',
+        exemplo: 'import matplotlib.pyplot as plt\n\nplt.bar(contagem.keys(), contagem.values())\nplt.title("Livros por gênero")\nplt.close()',
+        pedido: 'Desenhe as barras com a quantidade de livros por gênero e ponha um título.',
+        chamadas: [['list(contar_por_genero(livros).values())', null]],
+        conferir: ({ sonda, graficos }) => {
+          const c = chamada(sonda, 'list(contar_por_genero(livros).values())');
+          if (!c?.ok) return falta(`Não consegui contar o catálogo: ${c?.erro}.`);
+          const eixo = todosEixos(graficos).find((e) => mesmosValores(e.barras, c.valor));
+          if (!eixo) return falta(todosEixos(graficos).length ? 'As barras não batem com a contagem do catálogo. Use contagem.keys() e contagem.values() no plt.bar.' : 'Nenhum gráfico apareceu. Confira o import matplotlib.pyplot as plt e o plt.bar(...).');
+          return eixo.titulo.trim() ? aprovado() : falta('O gráfico está certo, mas sem título. Use plt.title("...").');
+        },
+      },
+    ],
+  },
 };

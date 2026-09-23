@@ -598,6 +598,46 @@ export const entregasDaFaculdade = [
     preRequisitos: ['u2a1', 'u2a2', 'u2a3', 'u2a4'],
     codigoInicial: 'class Livro:\n    def __init__(self, titulo, autor, genero, quantidade_disponivel):\n        self.titulo = titulo\n        self.autor = autor\n        self.genero = genero\n        self.quantidade_disponivel = quantidade_disponivel\n\nlivros = []\n',
     testesOrientados: ['cadastro de quatro livros', 'busca com maiúsculas diferentes', 'busca inexistente', 'dois livros no mesmo gênero'],
+    // O estudante marcou "busca" como construída sem ter nenhuma busca no código: sem conferência,
+    // bastava o código ter mudado. Cada passo de construir agora chama o que ele escreveu.
+    contrato: 'cadastrar_livro(livros, titulo, autor, genero, quantidade_disponivel) põe um Livro novo na lista. buscar_livro(livros, titulo) devolve o Livro com esse título, sem diferença de maiúsculas, ou None. contagem é um dicionário com o número de livros de cada gênero.',
+    conferencias: [
+      conferencia('cadastro-fora-da-classe', 'a função cadastrar_livro existe fora da classe', 'u2-construir-cadastro',
+        'ok = callable(globals().get("cadastrar_livro"))\n'
+        + 'dentro = [n for n, f in vars(globals().get("Livro", object)).items() if callable(f) and not n.startswith("__") and getattr(getattr(f, "__code__", None), "co_varnames", ("self",))[:1] != ("self",)]\n'
+        + 'detalhe = "cadastrar_livro foi encontrada" if ok else (("%s está com recuo dentro da classe Livro, e aí vira um método do livro; tire o recuo para ela começar na margem e chame-a de cadastrar_livro" % dentro[0]) if dentro else "não encontrei a função cadastrar_livro")\n'),
+      conferencia('cadastro-poe-livro', 'cadastrar_livro põe um Livro com os quatro dados na lista', 'u2-construir-cadastro',
+        'teste = []\n'
+        +         'cadastrar_livro(teste, "Teste", "Autora", "Drama", 2)\n'
+        +         'livro = teste[0] if teste else None\n'
+        +         'ok = len(teste) == 1 and type(livro).__name__ == "Livro" and getattr(livro, "titulo", None) == "Teste" and getattr(livro, "quantidade_disponivel", None) == 2\n'
+        +         'detalhe = "a lista ficou com %d item(ns); atributos do primeiro: %s" % (len(teste), sorted(vars(livro)) if livro is not None and hasattr(livro, "__dict__") else "nenhum")\n'),
+      conferencia('cadastro-quatro', 'há pelo menos quatro livros cadastrados em livros', 'u2-construir-cadastro',
+        'catalogo = globals().get("livros")\n'
+        +         'ok = isinstance(catalogo, list) and len(catalogo) >= 4 and all(type(l).__name__ == "Livro" for l in catalogo)\n'
+        +         'detalhe = "livros tem %d item(ns)" % (len(catalogo) if isinstance(catalogo, list) else 0)\n'),
+      conferencia('busca-acha', 'buscar_livro acha o livro sem diferença de maiúsculas', 'u2-construir-busca',
+        'teste = []\n'
+        +         'cadastrar_livro(teste, "Cosmos", "Carl Sagan", "Ciencia", 1)\n'
+        +         'cadastrar_livro(teste, "Dom Casmurro", "Machado de Assis", "Romance", 3)\n'
+        +         'achado = buscar_livro(teste, "dom casmurro")\n'
+        +         'ok = getattr(achado, "titulo", None) == "Dom Casmurro"\n'
+        +         'detalhe = "buscar_livro(livros, \\"dom casmurro\\") devolveu %r; ele é o segundo da lista, então o return None só pode vir depois do for" % (getattr(achado, "titulo", achado),)\n'),
+      conferencia('busca-ausente', 'buscar_livro devolve None quando não acha', 'u2-construir-busca',
+        'teste = []\n'
+        +         'cadastrar_livro(teste, "Cosmos", "Carl Sagan", "Ciencia", 1)\n'
+        +         'achado = buscar_livro(teste, "Livro que nao existe")\n'
+        +         'ok = achado is None\n'
+        +         'detalhe = "buscar_livro com um título ausente devolveu %r; o esperado é None" % (getattr(achado, "titulo", achado),)\n'),
+      conferencia('contagem-generos', 'contagem tem o número de livros de cada gênero', 'u2-construir-generos',
+        'catalogo = globals().get("livros") or []\n'
+        +         'contagem_real = {}\n'
+        +         'for l in catalogo:\n'
+        +         '    contagem_real[l.genero] = contagem_real.get(l.genero, 0) + 1\n'
+        +         'feita = globals().get("contagem")\n'
+        +         'ok = isinstance(feita, dict) and feita == contagem_real and len(catalogo) > 0\n'
+        +         'detalhe = "contagem ficou %r; pelos livros cadastrados o certo é %r" % (feita, contagem_real)\n'),
+    ],
     entregaveis: ['notebook Colab com classe, funções, testes e gráfico', 'relatório PDF com resultado e explicação'],
     criterios: [
       // O roteiro nomeia os quatro atributos: título, autor, gênero e quantidade disponível.

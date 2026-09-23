@@ -229,3 +229,30 @@ export function novidadesDaAulaInteira(degrausDaFaculdade, solucoes = {}) {
     return { id: aula.id, degraus, desafio };
   });
 }
+
+// A trilha de reforço de uma entrega vem depois das aulas da unidade: conta como visto o que
+// os guias, as pontes e os degraus dessas aulas ensinaram, e cada degrau dela só pode usar
+// isso, o que degraus anteriores mostraram ou o que o próprio texto explica.
+export function novidadesDaTrilhaDaEntrega(trilha, unidade, degrausDaFaculdade) {
+  const ordem = { u1: 1, u2: 2, u3: 3, u4: 4 };
+  const termosVistos = new Set();
+  const textos = [];
+  for (const aula of aulasDaFaculdade.filter((a) => ordem[a.unidade] <= ordem[unidade])) {
+    const guia = ensinadoNoGuia(ensinoDaFaculdade[aula.id]);
+    guia.termos.forEach(t => termosVistos.add(t));
+    textos.push(guia.texto);
+    for (const ponte of pontesDasAulas[aula.id] || []) { ponte.termos.forEach(t => termosVistos.add(t)); textos.push(ponte.explicacao); }
+    for (const degrau of degrausDaFaculdade[aula.id]?.degraus || []) {
+      termosDoCodigo(degrau.exemplo).forEach(t => termosVistos.add(t));
+      textos.push(degrau.ensina);
+    }
+  }
+  const criados = new Set();
+  return trilha.degraus.map((degrau) => {
+    const texto = `${textos.join('\n')}\n${degrau.ensina}\n${degrau.pedido}`;
+    const medida = medir({ codigo: degrau.exemplo, criados, termosVistos, texto });
+    nomesCriados(separar(degrau.exemplo).python).forEach(n => criados.add(n));
+    textos.push(degrau.ensina);
+    return { id: degrau.id, semExplicacao: medida.semPonte };
+  });
+}

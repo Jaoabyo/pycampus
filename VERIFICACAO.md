@@ -1,5 +1,12 @@
 # Verificação da entrega
 
+## Reforço da biblioteca e conferência nos passos da entrega da Unidade 2 (relatado pelo estudante) · 23/09/2026
+
+- O estudante: "o sistema de biblioteca está muito complexo, não consegui pegar o conteúdo que preciso saber para construir". No backup dele: a função de cadastro (casdastro_livro) estava com recuo dentro da classe Livro, virando método; quantidade_disponive sem o l; cadastrar e listar na mesma função; nenhuma chamada. E o passo "busca" aparecia concluído sem busca nenhuma no código.
+- Causa do passo falso: passos de construir sem conferência aceitavam qualquer código com mais de 30 caracteres. A entrega da biblioteca ganhou seis conferências que chamam o código: cadastrar_livro fora da classe (reconhece um def sem self dentro da classe e cita o nome do estudante), cadastro que põe um Livro com os quatro dados, quatro livros no catálogo, busca que acha sem diferença de maiúsculas no segundo livro da lista, busca ausente devolvendo None, contagem por gênero igual à dos livros cadastrados. A tela mostra só as conferências até o passo atual, para o cadastro não aparecer reprovado por causa da busca.
+- Reforço: a biblioteca em oito degraus no topo da entrega (classe, objeto, catálogo, cadastro fora da classe, listagem, busca, contagem, gráfico), conferidos chamando o código. O degrau do cadastro explica o recuo; o da busca explica o return None depois do for. Medido pelo teste de que nada aparece sem explicação antes.
+- `check-faculdade-degraus`: **204 programas no Pyodide**, incluindo o código real do backup, barrado com "A casdastro_livro está com recuo, dentro da classe Livro"; a solução de referência passa nas seis conferências. Entregas, recompensas e check-faculdade aprovados; `npm test`: **367 testes**; pacote inicial 181,5 kB. Na tela real: reforço aberto, degrau aponta quantidade_disponive, conferência do cadastro mostra só os três itens do passo.
+
 ## As 16 aulas com degraus, e nada sem explicação antes · 23/09/2026
 
 - Pedido do estudante: "quero completo todas, garantir que nada passe sem antes explicar". Agora as 16 aulas têm trilha de degraus (Unidade 1: tipos e divisões, condicionais, repetições, funções; sequências; Unidade 4: web, lógica de app, testes, machine learning com NumPy).

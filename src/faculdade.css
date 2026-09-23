@@ -182,3 +182,4 @@
 .faculdade-degrau{margin-bottom:14px}.faculdade-degrau h3{margin:0 0 6px}
 .faculdade-degrau-fim{display:flex;gap:10px;align-items:flex-start;margin-bottom:14px;padding:12px 14px;border-radius:10px;background:#e7f5ef;color:#24604f}.faculdade-degrau-fim p{margin:0}
 .faculdade-degrau-ok{color:#2f8d72;font-weight:600}
+.entrega-reforco{margin:0 0 18px}.entrega-reforco>summary{cursor:pointer;padding:12px 16px;border:1px solid #e3dafa;border-radius:12px;background:#faf8ff;color:#4f3a99;font-weight:700}.entrega-reforco[open]>summary{margin-bottom:12px}

@@ -65,3 +65,11 @@ test('todas as aulas da faculdade têm degraus, e nada neles nem no desafio apar
     assert.deepEqual(aula.desafio, [], `${aula.id}: o desafio exige algo que a aula não ensinou`);
   }
 });
+
+test('o reforço da biblioteca também não usa nada sem explicar antes', async () => {
+  const { degrausDaFaculdade } = await import('../src/faculdade-degraus.js');
+  const { novidadesDaTrilhaDaEntrega } = await import('../src/faculdade-novidades.js');
+  for (const degrau of novidadesDaTrilhaDaEntrega(degrausDaFaculdade['entrega-u2'], 'u2', degrausDaFaculdade)) {
+    assert.deepEqual(degrau.semExplicacao, [], `entrega-u2/${degrau.id}: usa algo não ensinado antes`);
+  }
+});
