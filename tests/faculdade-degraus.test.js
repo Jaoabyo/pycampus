@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { degrausDaFaculdade, normalizarDegraus, separarSonda, MARCA_DA_SONDA } from '../src/faculdade-degraus.js';
+import { degrausDaFaculdade, separarSonda, MARCA_DA_SONDA } from '../src/faculdade-degraus.js';
+import { normalizarDegraus, MAXIMO_DE_DEGRAUS } from '../src/faculdade-degraus-estado.js';
 import { aulasDaFaculdade } from '../src/faculdade.js';
 
 test('a linha da sonda sai da saída que o estudante vê', () => {
@@ -17,10 +18,10 @@ test('o progresso salvo dos degraus volta limpo de um backup', () => {
     u3a1: { feitos: -3, codigo: 42 },
     inventada: { feitos: 1, codigo: 'a' },
   });
-  assert.equal(limpo.u2a4.feitos, degrausDaFaculdade.u2a4.degraus.length);
+  assert.equal(limpo.u2a4.feitos, MAXIMO_DE_DEGRAUS);
   assert.equal(limpo.u2a4.codigo.length, 20000);
   assert.equal(limpo.u3a1.feitos, 0);
-  assert.equal(limpo.u3a1.codigo, degrausDaFaculdade.u3a1.inicial);
+  assert.equal(limpo.u3a1.codigo, undefined);
   assert.ok(!('inventada' in limpo));
 });
 
@@ -28,6 +29,7 @@ test('cada trilha de degraus pertence a uma aula e cada degrau ensina, mostra e 
   const ids = new Set(aulasDaFaculdade.map(({ id }) => id));
   for (const [aulaId, trilha] of Object.entries(degrausDaFaculdade)) {
     assert.ok(ids.has(aulaId), aulaId);
+    assert.ok(trilha.degraus.length <= MAXIMO_DE_DEGRAUS, `${aulaId}: degraus demais para o que o progresso guarda`);
     assert.ok(trilha.conclusao?.length > 40, `${aulaId}: conclusão`);
     assert.equal(new Set(trilha.degraus.map(({ id }) => id)).size, trilha.degraus.length, `${aulaId}: ids repetidos`);
     for (const degrau of trilha.degraus) {

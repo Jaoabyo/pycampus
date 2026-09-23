@@ -778,15 +778,3 @@ export const degrausDaFaculdade = {
     ],
   },
 };
-
-// Guardado por aula: quantos degraus já foram vencidos e o código em que o estudante parou.
-export const normalizarDegraus = (entrada) => {
-  const saida = {};
-  for (const [aulaId, trilha] of Object.entries(degrausDaFaculdade)) {
-    const salvo = entrada?.[aulaId];
-    if (!salvo || typeof salvo !== 'object') continue;
-    const feitos = Number.isInteger(salvo.feitos) ? Math.max(0, Math.min(trilha.degraus.length, salvo.feitos)) : 0;
-    saida[aulaId] = { feitos, codigo: typeof salvo.codigo === 'string' ? salvo.codigo.slice(0, 20000) : trilha.inicial };
-  }
-  return saida;
-};

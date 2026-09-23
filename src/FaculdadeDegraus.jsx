@@ -13,7 +13,7 @@ import './faculdade.css';
 export default function FaculdadeDegraus({ aulaId, state, update }) {
   const trilha = degrausDaFaculdade[aulaId];
   const salvo = state.faculdade?.degraus?.[aulaId];
-  const feitos = salvo?.feitos || 0;
+  const feitos = Math.min(salvo?.feitos || 0, trilha?.degraus.length || 0);
   const codigo = salvo?.codigo ?? trilha?.inicial ?? '';
   const [resultado, setResultado] = useState(null);
   const [celebrar, setCelebrar] = useState(0);
