@@ -301,7 +301,7 @@ export const aulasDaFaculdade = [
       'cursor.execute("SELECT * FROM Produtos")',
       'print("Depois do DELETE:", cursor.fetchall())',
       'conn.close()'].join('\n'),
-    'A tabela Contatos já está criada e aberta. Insira o contato Maria com o e-mail maria@email.com usando parâmetros com ?, confirme com commit e mostre o resultado de SELECT * FROM Contatos.',
+    'A tabela Contatos já está criada e aberta. O id dela tem AUTOINCREMENT: o SQLite numera sozinho, então o INSERT não informa o id. Insira o contato Maria com o e-mail maria@email.com usando parâmetros com ?, confirme com commit e mostre o resultado de SELECT * FROM Contatos.',
     ['import sqlite3',
       'conn = sqlite3.connect(":memory:")',
       'cursor = conn.cursor()',

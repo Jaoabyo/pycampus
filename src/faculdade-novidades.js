@@ -110,7 +110,8 @@ export function termosDoCodigo(codigo, criadosAntes = new Set()) {
 // Um termo conta como ensinado quando aparece no código de um guia, ou é nomeado na
 // explicação de um trecho. Nomear na explicação é o mínimo: o guia tem de ter falado dele.
 const TERMO_NA_EXPLICACAO = (termo, texto) => {
-  const nome = termo.replace(/^SQL /, '').replace(/^\./, '').replace(/[()=]$/g, '').replace(/\(\)$/, '');
+  // "type()" vira "type": a explicação escreve type(valor), e o nome da função é o que conta.
+  const nome = termo.replace(/^SQL /, '').replace(/^\./, '').replace(/\(\)$/, '').replace(/=$/, '');
   if (termo === 'f-string') return /\bf-string|\bf antes das aspas/i.test(texto);
   return new RegExp(`(?<![\\w])${nome.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w])`).test(texto);
 };
@@ -186,5 +187,45 @@ export function novidadesDasEntregas(entregas) {
       return { id: passo.id, titulo: passo.titulo, ...medida };
     });
     return { id: entrega.id, passos };
+  });
+}
+
+// A garantia completa, na ordem em que a tela mostra cada aula: guia, degraus, código do
+// professor (com as pontes) e desafio. Cada degrau só pode usar o que já foi ensinado antes,
+// num guia, num degrau anterior ou numa aula anterior, ou o que o texto do próprio degrau
+// explica. A solução de referência do desafio só pode usar o que a aula inteira ensinou.
+// O código do professor continua medido sem contar os degraus da mesma aula, porque o
+// estudante pode abri-lo antes de fazê-los: por isso as pontes dele continuam necessárias.
+export function novidadesDaAulaInteira(degrausDaFaculdade, solucoes = {}) {
+  const termosVistos = new Set();
+  const textos = [];
+  return aulasDaFaculdade.map((aula) => {
+    const guia = ensinadoNoGuia(ensinoDaFaculdade[aula.id]);
+    guia.termos.forEach(t => termosVistos.add(t));
+    textos.push(guia.texto);
+    const antesDosDegraus = new Set(termosVistos);
+    const textoAntes = textos.join('\n');
+
+    const trilha = degrausDaFaculdade[aula.id];
+    const criados = new Set();
+    const degraus = (trilha?.degraus || []).map((degrau) => {
+      const texto = `${textos.join('\n')}\n${degrau.ensina}\n${degrau.pedido}`;
+      const medida = medir({ codigo: `${trilha.inicial || ''}\n${degrau.exemplo}`, criados, termosVistos, texto });
+      nomesCriados(separar(`${trilha.inicial || ''}\n${degrau.exemplo}`).python).forEach(n => criados.add(n));
+      textos.push(degrau.ensina);
+      return { id: degrau.id, semExplicacao: medida.semPonte };
+    });
+
+    // O professor, medido como se os degraus não tivessem sido feitos.
+    const vistosProfessor = new Set(antesDosDegraus);
+    medir({ codigo: aula.exemplo, termosVistos: vistosProfessor, texto: textoAntes, pontes: pontesDasAulas[aula.id] });
+    vistosProfessor.forEach(t => termosVistos.add(t));
+    for (const ponte of pontesDasAulas[aula.id] || []) textos.push(ponte.explicacao);
+
+    const solucao = solucoes[aula.id];
+    const desafio = solucao
+      ? medir({ codigo: solucao, termosVistos: new Set(termosVistos), texto: `${textos.join('\n')}\n${aula.desafio}` }).semPonte
+      : null;
+    return { id: aula.id, degraus, desafio };
   });
 }

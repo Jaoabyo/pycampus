@@ -1,5 +1,14 @@
 # Verificação da entrega
 
+## As 16 aulas com degraus, e nada sem explicação antes · 23/09/2026
+
+- Pedido do estudante: "quero completo todas, garantir que nada passe sem antes explicar". Agora as 16 aulas têm trilha de degraus (Unidade 1: tipos e divisões, condicionais, repetições, funções; sequências; Unidade 4: web, lógica de app, testes, machine learning com NumPy).
+- Na Unidade 1 dá para "acertar" com print("Adulto") sem if. Duas sondas novas testam o comportamento: uma roda o código de novo, escondido, com outros valores (idade 8, 18, 60; outras listas), e a outra chama as funções do estudante com entradas novas (saudacao("Bia"), calcular_media([10, 5])). Uma função que mostra com print em vez de devolver com return é reprovada com a explicação do None.
+- A garantia virou teste: `novidadesDaAulaInteira` mede, na ordem da tela, cada degrau e a solução de referência de cada desafio; nada pode usar o que não foi ensinado antes ou explicado no próprio texto. Ela achou quatro lacunas, corrigidas: import numpy as np, import matplotlib.pyplot as plt, abs() e AUTOINCREMENT no desafio de SQL. Conferido apagando uma explicação: o teste acusa.
+- O medidor tinha um defeito: não reconhecia type(valor) numa explicação como a função type explicada. Corrigido; nenhuma ponte sobrou.
+- Um while falso, com os números escritos direto, passava porque a variação procurava linhas soltas que o degrau do range também mostrava. As variações agora exigem a sequência inteira e em ordem.
+- `check-faculdade-degraus`: **187 programas no Pyodide**. `check-faculdade`: 100 programas (o teste passou a mirar o editor do exemplo dentro do Ampliar, porque os degraus vêm antes). Entregas, preparo e recompensas aprovados. `npm test`: **366 testes**; build; pacote inicial 180,6 kB. Na tela real: if fixo reprovado pedindo if e else, print no lugar de return reprovado, chamadas escondidas não aparecem na saída, 390 px sem rolagem.
+
 ## Degraus em sete aulas e revisão de todo o texto da faculdade · 23/09/2026
 
 - Pedido do estudante: "avalie todo conteúdo da faculdade e garanta tudo operacional, de qualidade e explicado bonito assim". Medido: só 2 das 16 aulas tinham degraus; o maior salto entre guia e código do professor estava em Classes (24 linhas), Visualização (28), pandas (17 e 19) e Conjuntos/dicionários/NumPy (21).

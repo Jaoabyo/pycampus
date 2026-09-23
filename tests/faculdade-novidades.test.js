@@ -53,3 +53,15 @@ test('as pontes apontam para aulas e passos que existem, com texto que se susten
     assert.doesNotMatch(ponte.explicacao, /—/, ponte.mostra);
   }
 });
+
+test('todas as aulas da faculdade têm degraus, e nada neles nem no desafio aparece sem explicação antes', async () => {
+  const { degrausDaFaculdade } = await import('../src/faculdade-degraus.js');
+  const { solucoesDaFaculdade } = await import('./faculdade-reference.js');
+  const { novidadesDaAulaInteira } = await import('../src/faculdade-novidades.js');
+  for (const aula of novidadesDaAulaInteira(degrausDaFaculdade, solucoesDaFaculdade)) {
+    assert.ok(aula.degraus.length >= 3, `${aula.id}: sem trilha de degraus`);
+    for (const degrau of aula.degraus) assert.deepEqual(degrau.semExplicacao, [], `${aula.id}/${degrau.id}: usa algo não ensinado antes`);
+    assert.ok(aula.desafio !== null, `${aula.id}: sem solução de referência para medir o desafio`);
+    assert.deepEqual(aula.desafio, [], `${aula.id}: o desafio exige algo que a aula não ensinou`);
+  }
+});

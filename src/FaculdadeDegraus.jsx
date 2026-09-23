@@ -36,8 +36,10 @@ export default function FaculdadeDegraus({ aulaId, state, update }) {
   const executar = () => {
     setResultado(null);
     // A sonda vai depois do código, para o número de linha de um erro continuar sendo o do estudante.
-    const programa = trilha.sonda ? `${codigo}
-${trilha.sonda}` : codigo;
+    // A sonda pode depender do degrau: as variações e as chamadas mudam de um para outro.
+    const sonda = typeof trilha.sonda === 'function' ? trilha.sonda(codigo, atual) : trilha.sonda;
+    const programa = sonda ? `${codigo}
+${sonda}` : codigo;
     python.run(programa, '', (resultado) => {
       if (!resultado.ok) { setResultado({ ok: false, erro: true }); return; }
       const { saida, sonda } = separarSonda(resultado.output);

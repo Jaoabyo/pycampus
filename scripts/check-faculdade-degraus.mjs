@@ -278,6 +278,149 @@ casosU2.forEach(([t, id, codigo, devePassar, motivo], i) => {
   if (!certo) falhas.push(`${t} ${id} #${i}: esperava ${devePassar ? 'aprovar' : `reprovar com "${motivo}"`}, veio ${JSON.stringify(conferencia)} · sonda ${JSON.stringify(sonda)?.slice(0, 700)}`);
 });
 
+// Unidades 1 e 4 e sequências: conferidas por variações do código e por chamadas às funções.
+// [trilha, degrau, código, deve passar?, trecho esperado no motivo]
+const sondaDe = (t, id, codigo) => {
+  const trilhaAlvo = degrausDaFaculdade[t];
+  const degrau = trilhaAlvo.degraus.find((d) => d.id === id);
+  return typeof trilhaAlvo.sonda === 'function' ? trilhaAlvo.sonda(codigo, degrau) : trilhaAlvo.sonda;
+};
+const uv1 = 'nome = "Ana"\nidade = 20\n';
+const uv2 = `${uv1}altura = 1.65\nprint(type(idade))\nprint(type(altura))\n`;
+const uv3 = `${uv2}nota_texto = "7.5"\nnota = float(nota_texto)\n`;
+const uv4 = `${uv3}media = (nota + 8.5) / 2\nprint(f"Media: {media}")\n`;
+const R = degrausDaFaculdade.r1.inicial;
+const k1 = `${R}if idade >= 18:\n    print("Maior de idade")\nelse:\n    print("Menor de idade")\n`;
+const k2 = `${k1}if idade < 12:\n    print("Criança")\nelif idade < 18:\n    print("Adolescente")\nelse:\n    print("Adulto")\n`;
+const k3 = `${k2}if idade >= 12 and tem_ingresso:\n    print("Pode entrar")\nelse:\n    print("Não pode entrar")\n`;
+const k4 = `${k3}if idade < 18 or idade >= 60:\n    print("Meia-entrada")\nelse:\n    print("Inteira")\n`;
+const N = degrausDaFaculdade.r2.inicial;
+const n1 = `${N}total = 0\nfor nota in notas:\n    total += nota\nprint(total)\n`;
+const n2 = `${n1}for i in range(1, 6):\n    print(i)\n`;
+const n3 = `${n2}contador = 3\nwhile contador > 0:\n    print(contador)\n    contador -= 1\nprint("Fim!")\n`;
+const n4 = `${n3}valores = [8, 6, 3, 9, 2]\nfor v in valores:\n    if v < 5:\n        print("Achei", v)\n        break\n`;
+const f1 = 'def saudacao(nome):\n    return f"Olá, {nome}!"\n\nprint(saudacao("Ana"))\n';
+const f2 = `${f1}def soma(a, b):\n    return a + b\n`;
+const f3 = `${f2}def calcular_media(notas):\n    return sum(notas) / len(notas)\n`;
+const f4 = `${f3}def aumento(salario, taxa=10):\n    return salario + salario * taxa / 100\n`;
+const q1 = 'compras = ["arroz", "feijão", "café"]\nprint(compras[0])\nprint(compras[-1])\n';
+const q2 = `${q1}compras[1] = "macarrão"\ncompras.append("leite")\n`;
+const q3 = `${q2}dias = ("seg", "ter", "qua")\nprint(len(dias))\n`;
+const q4 = `${q3}texto = "Explorando Python"\nprint(texto[:5])\nprint(texto.count("o"))\n`;
+const q5 = `${q4}for posicao, dia in enumerate(dias):\n    print(posicao, dia)\n`;
+const w1 = 'camadas = {\n    "front-end": ["HTML", "CSS", "JavaScript"],\n    "back-end": ["Python", "Flask", "Django"],\n}\n';
+const w2 = `${w1}ferramenta = camadas["front-end"][0]\nprint(ferramenta)\n`;
+const w3 = `${w2}camadas["back-end"].append("FastAPI")\n`;
+const m1 = 'interface = {"framework": "KivyMD", "abas": ["Inicio", "Calculadora", "Historico"]}\n';
+const m2 = `${m1}for numero, aba in enumerate(interface["abas"], start=1):\n    print(f"Aba {numero}: {aba}")\n`;
+const m3 = `${m2}def ao_tocar(aba):\n    return f"Abrindo {aba}"\n`;
+const t1 = 'def dobro(numero):\n    return numero * 2\n\nassert dobro(4) == 8\nassert dobro(0) == 0\nprint("Tudo certo")\n';
+const triplo = (esperado) => `def triplo(numero):\n    """Devolve o triplo do número.\n\n    >>> triplo(2)\n    ${esperado}\n    """\n    return numero * 3\n\nimport doctest\ndoctest.run_docstring_examples(triplo, globals())\n`;
+const t2 = `${t1}${triplo(6)}`;
+const testes = (terceiro) => `import unittest\n\nclass TestDobro(unittest.TestCase):\n    def test_positivo(self):\n        self.assertEqual(dobro(4), 8)\n\n    def test_zero(self):\n        self.assertEqual(dobro(0), 0)\n${terceiro}`;
+const AA = degrausDaFaculdade.u4a4.inicial;
+const aa1 = `${AA}meses = np.array([1, 2, 3, 4])\nvendas = np.array([100, 120, 140, 160])\n`;
+const aa2 = `${aa1}coeficientes = np.polyfit(meses, vendas, 1)\nprint(coeficientes)\n`;
+const aa3 = `${aa2}previsao = np.polyval(coeficientes, 5)\nprint("Previsao:", round(float(previsao)))\n`;
+const casosComportamento = [
+  ['u1a1', 'variaveis', uv1, true],
+  ['u1a1', 'variaveis', 'nome = "Ana"\nidade = "20"\n', false, 'ficou como texto'],
+  ['u1a1', 'tipos', uv2, true],
+  ['u1a1', 'tipos', `${uv1}altura = "1,65"\nprint(type(idade))\nprint(type(altura))\n`, false, 'altura ficou como texto'],
+  ['u1a1', 'converter', uv3, true],
+  ['u1a1', 'converter', `${uv2}nota_texto = "7.5"\nnota = nota_texto\n`, false, 'precisa ser o número 7.5'],
+  ['u1a1', 'conta', uv4, true],
+  ['u1a1', 'conta', `${uv3}media = nota + 8.5 / 2\nprint(f"Media: {media}")\n`, false, '11.75'],
+  ['u1a1', 'divisoes', `${uv4}print(7 / 2)\nprint(7 // 2)\nprint(7 % 2)\n`, true],
+  ['u1a1', 'divisoes', `${uv4}print(3.5)\nprint(3)\nprint(1)\n`, false, 'Use as operações de verdade'],
+  ['r1', 'if-else', k1, true],
+  ['r1', 'if-else', `${R}print("Menor de idade")\n`, false, 'Escreva a decisão com if e else'],
+  ['r1', 'if-else', k1.replace('idade >= 18', 'idade > 18'), false, 'Testei com idade 18'],
+  ['r1', 'if-else', k1.replace('idade = 15', 'idade=15'), false, 'Mantenha a linha'],
+  ['r1', 'elif', k2, true],
+  ['r1', 'elif', `${k1}if idade < 18:\n    print("Adolescente")\nelif idade < 12:\n    print("Criança")\nelse:\n    print("Adulto")\n`, false, 'Testei com idade 8'],
+  ['r1', 'and', k3, true],
+  ['r1', 'and', `${k2}if idade >= 12 and idade > 0:\n    print("Pode entrar")\nelse:\n    print("Não pode entrar")\n`, false, 'sem ingresso'],
+  ['r1', 'or', k4, true],
+  ['r1', 'or', k4.replace('idade >= 60', 'idade > 60'), false, 'Testei com idade 60'],
+  ['r1', 'not', `${k4}if not tem_ingresso:\n    print("Compre o ingresso")\nelse:\n    print("Boa sessão")\n`, true],
+  ['r2', 'for-soma', n1, true],
+  ['r2', 'for-soma', n1.replace('total += nota', 'total =+ nota'), false, 'não apareceu 24'],
+  ['r2', 'for-soma', `${N}for nota in notas:\n    pass\nprint(24)\n`, false, 'as notas 1, 2, 3 e 4'],
+  ['r2', 'range', n2, true],
+  ['r2', 'range', `${n1}for i in range(1, 5):\n    print(i)\n`, false, 'precisa ter 1, 2, 3, 4 e 5'],
+  ['r2', 'range', `${n1}for i in range(1, 7):\n    print(i)\n`, false, 'Apareceu o 6'],
+  ['r2', 'while', n3, true],
+  ['r2', 'while', `${n2}contador = 3\nwhile False:\n    pass\nprint(3)\nprint(2)\nprint(1)\nprint("Fim!")\n`, false, 'Testei com contador 5'],
+  ['r2', 'break', n4, true],
+  ['r2', 'break', `${n3}valores = [8, 6, 3, 9, 2]\nfor v in valores:\n    if v < 5:\n        print("Achei", v)\n    break\n`, false, 'não apareceu Achei 3'],
+  ['r2', 'continue', `${n4}for v in valores:\n    if v < 5:\n        continue\n    print(v)\n`, true],
+  ['r2', 'continue', `${n4}for v in valores:\n    continue\nprint(8)\nprint(6)\nprint(9)\n`, false, 'os valores 70, 4 e 50'],
+  ['r3', 'def-return', f1, true],
+  ['r3', 'def-return', 'def saudacao(nome):\n    print(f"Olá, {nome}!")\n\nsaudacao("Ana")\n', false, 'devolveu None'],
+  ['r3', 'def-return', 'def saudar(nome):\n    return f"Olá, {nome}!"\n', false, 'Não encontrei saudacao'],
+  ['r3', 'def-return', 'def saudacao(nome):\n    return "Olá, Ana!"\n', false, 'devolveu "Olá, Ana!"'],
+  ['r3', 'dois-parametros', f2, true],
+  ['r3', 'dois-parametros', `${f1}def soma(a, b):\n    return a - b\n`, false, 'soma(2, 3) e ela devolveu -1'],
+  ['r3', 'media', f3, true],
+  ['r3', 'media', `${f2}def calcular_media(notas):\n    return sum(notas) / 3\n`, false, 'calcular_media([10, 5])'],
+  ['r3', 'padrao', f4, true],
+  ['r3', 'padrao', `${f3}def aumento(salario, taxa):\n    return salario + salario * taxa / 100\n`, false, 'deu erro'],
+  ['r3', 'lambda', `${f4}quadrado = lambda x: x * x\n`, true],
+  ['r3', 'lambda', `${f4}def quadrado(x):\n    return x * x\n`, false, 'Crie quadrado com lambda'],
+  ['u2a1', 'posicoes', q1, true],
+  ['u2a1', 'posicoes', 'compras = ["arroz", "feijão", "café"]\nprint(compras[0])\nprint(compras[2])\n', false, 'posição negativa'],
+  ['u2a1', 'mudar-lista', q2, true],
+  ['u2a1', 'mudar-lista', `${q1}compras[2] = "macarrão"\ncompras.append("leite")\n`, false, 'O feijão está na posição 1'],
+  ['u2a1', 'tupla', q3, true],
+  ['u2a1', 'tupla', `${q2}dias = ["seg", "ter", "qua"]\nprint(len(dias))\n`, false, 'ficou como lista'],
+  ['u2a1', 'fatiar', q4, true],
+  ['u2a1', 'fatiar', q4.replace('texto[:5]', 'texto[0:5]'), true],
+  ['u2a1', 'fatiar', q4.replace('texto[:5]', 'texto[:4]'), false, 'Fatie com texto[:5]'],
+  ['u2a1', 'enumerate', q5, true],
+  ['u2a1', 'compreensao', `${q5}precos = [10, 20, 30]\ncom_desconto = [p * 0.9 for p in precos]\n`, true],
+  ['u2a1', 'compreensao', `${q5}precos = [10, 20, 30]\ncom_desconto = [p - 0.9 for p in precos]\n`, false, 'multiplique por 0.9'],
+  ['r4', 'dicionario-de-listas', w1, true],
+  ['r4', 'dicionario-de-listas', 'camadas = {"front-end": ["HTML", "CSS", "JavaScript"], "back-end": ["Python", "Flask"]}\n', false, 'devolveu'],
+  ['r4', 'dois-colchetes', w2, true],
+  ['r4', 'dois-colchetes', `${w1}ferramenta = "HTML"\n`, false, 'Pegue o item pelo dicionário'],
+  ['r4', 'append', w3, true],
+  ['r4', 'append', `${w2}camadas["front-end"].append("FastAPI")\n`, false, 'devolveu'],
+  ['r4', 'percorrer-camadas', `${w3}for camada, ferramentas in camadas.items():\n    print(camada, len(ferramentas))\n`, true],
+  ['u4a2', 'dados-da-tela', m1, true],
+  ['u4a2', 'enumerate', m2, true],
+  ['u4a2', 'enumerate', `${m1}for numero, aba in enumerate(interface["abas"]):\n    print(f"Aba {numero}: {aba}")\n`, false, 'começou em 0'],
+  ['u4a2', 'ao-tocar', m3, true],
+  ['u4a2', 'ao-tocar', `${m2}def ao_tocar(aba):\n    print(f"Abrindo {aba}")\n`, false, 'devolveu None'],
+  ['u4a2', 'classe-do-app', `${m3}class CalculadoraApp:\n    def build(self):\n        return interface["abas"][0]\n`, true],
+  ['u4a2', 'classe-do-app', `${m3}class CalculadoraApp:\n    def build(self):\n        return "Calculadora"\n`, false, 'devolveu "Calculadora"'],
+  ['u4a3', 'assert', t1, true],
+  ['u4a3', 'assert', 'def dobro(numero):\n    return numero * 2\n\nassert dobro(4) == 8\n', false, 'pelo menos dois'],
+  ['u4a3', 'assert', t1.replace('numero * 2', 'numero * 3'), false, 'erro ao executar'],
+  ['u4a3', 'doctest', t2, true],
+  ['u4a3', 'doctest', `${t1}${triplo(7)}`, false, 'não bate'],
+  ['u4a3', 'doctest', `${t1}def triplo(numero):\n    return numero * 3\n`, false, 'ainda não tem um exemplo'],
+  ['u4a3', 'unittest', `${t2}${testes('\n    def test_negativo(self):\n        self.assertEqual(dobro(-2), -4)\n')}`, true],
+  ['u4a3', 'unittest', `${t2}${testes('')}`, false, 'tem 2 testes'],
+  ['u4a3', 'unittest', `${t2}${testes('\n    def test_negativo(self):\n        self.assertEqual(dobro(-2), 4)\n')}`, false, '1 teste falhou'],
+  ['u4a4', 'dados', aa1, true],
+  ['u4a4', 'treinar', aa2, true],
+  ['u4a4', 'treinar', `${aa1}coeficientes = np.polyfit(vendas, meses, 1)\n`, false, 'devolveu'],
+  ['u4a4', 'prever', aa3, true],
+  ['u4a4', 'prever', `${aa2}previsao = np.polyval(coeficientes, 4)\n`, false, 'devolveu 160'],
+  ['u4a4', 'treino-teste', `${aa3}coef_treino = np.polyfit(meses[:3], vendas[:3], 1)\nerro = abs(np.polyval(coef_treino, 4) - vendas[3])\nprint("Erro no teste:", round(float(erro), 2))\n`, true],
+  ['u4a4', 'treino-teste', `${aa3}coef_treino = np.polyfit(meses, vendas, 1)\nerro = abs(np.polyval(coef_treino, 4) - vendas[3])\n`, false, 'Treine só com os três'],
+];
+const resultadosComportamento = await rodarNoMesmoWorker(casosComportamento.map(([t, id, codigo]) => `${codigo}\n${sondaDe(t, id, codigo)}`));
+casosComportamento.forEach(([t, id, codigo, devePassar, motivo], i) => {
+  const r = resultadosComportamento[i];
+  const { saida, sonda } = separarSonda(r.output);
+  if (saida.includes('__PYCAMPUS') || saida.includes('_pc_')) falhas.push(`${t} ${id} #${i}: a sonda vazou para a saída`);
+  const conferencia = r.ok ? degrausDaFaculdade[t].degraus.find((d) => d.id === id).conferir({ graficos: r.graficos, codigo, saida, banco: sonda, sonda }) : { ok: false, motivo: `erro ao executar: ${r.output.slice(-200)}` };
+  const certo = conferencia.ok === devePassar && (devePassar || conferencia.motivo.includes(motivo));
+  if (!certo) falhas.push(`${t} ${id} #${i}: esperava ${devePassar ? 'aprovar' : `reprovar com "${motivo}"`}, veio ${JSON.stringify(conferencia)} · sonda ${JSON.stringify(sonda)?.slice(0, 500)}`);
+});
+
 // Cada execução devolve só o gráfico dela: o worker reaproveitado não pode somar figuras antigas.
 for (const [i, r] of resultados.entries()) {
   if (r.ok && r.graficos.length > 1) falhas.push(`caso #${i}: ${r.graficos.length} figuras numa execução de uma figura só`);
@@ -291,4 +434,4 @@ if (falhas.length) {
   process.exit(1);
 }
 assert.ok(resultados.length === casos.length);
-console.log(`Degraus aprovados: ${casos.length + casosSql.length + casosVariaveis.length + casosU2.length} programas executados no Pyodide; certos aprovam, errados reprovam pelo motivo certo.`);
+console.log(`Degraus aprovados: ${casos.length + casosSql.length + casosVariaveis.length + casosU2.length + casosComportamento.length} programas executados no Pyodide; certos aprovam, errados reprovam pelo motivo certo.`);

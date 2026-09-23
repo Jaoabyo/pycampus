@@ -240,7 +240,10 @@ assert.equal(await executarExemplo.isDisabled(), true, 'o exemplo só roda depoi
 await page.getByLabel(/o que este código vai mostrar/).first().fill('um palpite qualquer');
 await executarExemplo.click();
 await page.locator('.previsao-veredito').first().waitFor({ timeout: 120000 });
+// O editor do exemplo é o de dentro do "Ampliar": os degraus vêm antes e têm editor próprio.
 await page
+  .locator('details')
+  .filter({ hasText: 'Ampliar: conceitos e exemplo completo do material' })
   .locator('.code-workspace')
   .first()
   .getByText('✓ Executado')
