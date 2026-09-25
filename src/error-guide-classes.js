@@ -67,8 +67,54 @@ const guia = (title, meaning, steps) => ({ title, meaning, steps });
 const EM_PORTUGUES = { list: 'lista', dict: 'dicionário', str: 'texto', int: 'número inteiro', float: 'número', tuple: 'tupla', set: 'conjunto', NoneType: 'None' };
 const tipoLegivel = (t) => EM_PORTUGUES[t] || t;
 
+// Recuo: 23 dos 54 erros dele no quiz foram IndentationError, e a ajuda só dizia "use quatro
+// espaços". Aqui a linha é medida: quantos espaços ela tem e quais níveis o código já usa.
+function diagnosticoDeRecuo(msg, codigo, linhaDoErro) {
+  const linhas = String(codigo || '').split('\n');
+  const alvo = linhas[(linhaDoErro || 0) - 1];
+  if (alvo === undefined) return null;
+  const espacos = (l) => l.length - l.trimStart().length;
+  const anteriores = linhas.slice(0, linhaDoErro - 1).filter((l) => l.trim() && !l.trim().startsWith('#'));
+  const acima = anteriores[anteriores.length - 1];
+  const n = espacos(alvo);
+  if (/\t/.test(alvo.slice(0, n))) {
+    return guia('Esta linha usa Tab misturado com espaços',
+      `A linha ${linhaDoErro} começa com Tab, e o resto do código usa espaços. Para o Python, os dois não se misturam.`,
+      [`Apague o começo da linha ${linhaDoErro} e recue de novo só com espaços, de 4 em 4.`]);
+  }
+  if (/unindent does not match/.test(msg)) {
+    // Como o Python faz: uma pilha dos recuos abertos. Ao voltar, a linha tem de cair num recuo
+    // que ainda está aberto, e não em qualquer recuo que apareceu antes.
+    const pilha = [0];
+    for (const linha of anteriores) {
+      const r = espacos(linha);
+      if (r > pilha[pilha.length - 1]) pilha.push(r);
+      else while (pilha.length > 1 && r < pilha[pilha.length - 1]) pilha.pop();
+    }
+    const plural = (v) => `${v} ${v === 1 ? 'espaço' : 'espaços'}`;
+    return guia(`A linha ${linhaDoErro} tem ${plural(n)} e não se alinha com nenhum bloco aberto`,
+      `Ao voltar o recuo, a linha precisa ficar exatamente alinhada com um bloco que está aberto. Neste ponto, os blocos abertos usam ${lista(pilha.map(String))} espaços; ${n} não é nenhum deles.${pilha.some((v) => v % 4) ? ` Repare que ${lista(pilha.filter((v) => v % 4).map(String))} não é múltiplo de 4: alguma linha acima também ficou com recuo torto.` : ''}`,
+      [`Deixe a linha ${linhaDoErro} com ${lista(pilha.map(String))} espaços, conforme o bloco a que ela pertence.`, 'Se ela é o fim do programa, depois do laço, ela volta para 0 espaços.']);
+  }
+  if (/unexpected indent/.test(msg) && acima !== undefined) {
+    return guia(`A linha ${linhaDoErro} tem espaços a mais`,
+      `Ela tem ${n} espaços, mas a linha de cima não termina com dois-pontos. Só depois de uma linha que termina com : (if, for, while, def) a próxima pode ter mais recuo.`,
+      [`Deixe a linha ${linhaDoErro} com ${espacos(acima)} espaços, igual à de cima.`, 'Se ela devia estar dentro de um bloco, confira se a linha que abre o bloco termina com :.']);
+  }
+  if (/expected an indented block/.test(msg)) {
+    return guia('Faltou o recuo depois dos dois-pontos',
+      'A linha que termina com : abre um bloco, e a linha seguinte precisa ter 4 espaços a mais.',
+      [`Recue a linha ${linhaDoErro} em 4 espaços.`]);
+  }
+  return null;
+}
+
 export function diagnosticoDeClasses(tipo, mensagem, codigo, linhaDoErro) {
   const msg = String(mensagem || '');
+  if (tipo === 'IndentationError' || tipo === 'TabError') {
+    const recuo = diagnosticoDeRecuo(msg, codigo, linhaDoErro);
+    if (recuo) return recuo;
+  }
   const e = lerEstrutura(codigo);
   let m;
 

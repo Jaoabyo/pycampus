@@ -74,3 +74,18 @@ test('self fora da classe e sugestão do próprio Python', () => {
 test('um erro que não é de classe continua com a ajuda do tipo', () => {
   assert.equal(ajuda('ZeroDivisionError: division by zero', 'print(1 / 0)\n', 1).title, 'Divisão por zero');
 });
+
+// Recuo: os casos são os do quiz do estudante (23 dos 54 erros dele eram de recuo).
+test('recuo a mais: aponta a linha e o recuo da linha de cima', () => {
+  const codigo = 'pontos = 0\n    print(pontos)\n';
+  const r = ajuda('IndentationError: unexpected indent', codigo, 2);
+  assert.match(r.title, /A linha 2 tem espaços a mais/);
+  assert.match(r.steps[0], /com 0 espaços/);
+});
+
+test('recuo que não volta para um bloco aberto: diz quais blocos estão abertos', () => {
+  const codigo = 'jogar = "s"\nwhile jogar == "s":\n        pontos = 0\n        jogar = input("De novo? ")\n    print("fim de jogo")\n';
+  const r = ajuda('IndentationError: unindent does not match any outer indentation level', codigo, 5);
+  assert.match(r.title, /A linha 5 tem 4 espaços e não se alinha com nenhum bloco aberto/);
+  assert.match(r.meaning, /blocos abertos usam 0 e 8 espaços/);
+});
