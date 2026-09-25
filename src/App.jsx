@@ -1450,10 +1450,10 @@ export default function App() {
             </div>
             <div className="calendar-grid">
               {cells.map((d) => (
-                <button key={d} aria-label={`${dateLabel(d)}${state.activities[d]?.length ? ', atividade registrada' : ''}`} className={`${Number(d.slice(5, 7)) !== month.getMonth() + 1 ? 'outside' : ''} ${d === today ? 'today' : ''} ${d === selectedDate ? 'selected' : ''}`} onClick={() => setSelectedDate(d)}>
+                <button key={d} aria-label={`${dateLabel(d)}${state.activities[d]?.length ? ', atividade registrada' : ''}`} className={`${Number(d.slice(5, 7)) !== month.getMonth() + 1 ? 'outside' : ''} ${d === today ? 'today' : ''} ${d === selectedDate ? 'selected' : ''} ${state.activities[d]?.length ? 'studied' : ''}`} onClick={() => setSelectedDate(d)}>
                   <span>{Number(d.slice(8))}</span>
                   <div>
-                    {state.activities[d]?.length > 0 && <i className="activity-dot" />}
+                    {state.activities[d]?.length > 0 && <em className="activity-count">{state.activities[d].length}</em>}
                     {state.sessions.some((s) => s.date === d) && <i className="session-dot" />}
                   </div>
                 </button>
@@ -1461,7 +1461,7 @@ export default function App() {
             </div>
             <div className="calendar-legend">
               <span>
-                <i className="activity-dot" /> Atividade concluída
+                <i className="activity-swatch" /> Dia estudado (número de atividades)
               </span>
               <span>
                 <i className="session-dot" /> Estudo agendado
