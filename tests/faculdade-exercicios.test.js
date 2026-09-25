@@ -44,7 +44,7 @@ test('a alternativa correta não fica sempre na mesma posição', () => {
 // Confundir as duas coisas seria apresentar material de estudo como prova oficial.
 test('a procedência de cada banco fica declarada', () => {
   const recebidos = exerciciosDaFaculdade.filter(e => e.recebido);
-  assert.deepEqual(recebidos.map(e => e.unidade), ['u1', 'u2', 'u3']);
+  assert.deepEqual(recebidos.map(e => e.unidade), ['u1', 'u2', 'u3', 'u4']);
   for (const exercicio of exerciciosDaFaculdade) {
     assert.ok(exercicio.origem?.length > 10, `${exercicio.id} precisa dizer de onde veio`);
     assert.equal(exercicio.recebido, exercicio.origem.includes('recebido no AVA'),
@@ -95,4 +95,18 @@ test('o exercício da Unidade 3 mantém as questões e o gabarito recebidos', ()
   // A pergunta aponta para a terceira linha do exemplo: loc[[0, 20, 70]]. loc usa o rótulo.
   assert.ok(u3.questoes[1].codigo.includes("kind='bar'"));
   assert.ok(u3.questoes[3].codigo.includes("'A': 100"));
+});
+
+// As cinco questões da Unidade 4, recebidas no AVA em 25/09/2026.
+test('o exercício da Unidade 4 mantém as questões e o gabarito recebidos', () => {
+  const u4 = exercicioDaUnidade('u4');
+  assert.deepEqual(u4.questoes.map(questao => questao.id), ['u4q1', 'u4q2', 'u4q3', 'u4q4', 'u4q5']);
+  const marcada = questao => questao.opcoes[questao.resposta];
+  assert.match(marcada(u4.questoes[0]), /Material Design/);
+  assert.match(marcada(u4.questoes[1]), /Organizar os testes unitários/);
+  assert.match(marcada(u4.questoes[2]), /componentes prontos para uso e suporte a múltiplas plataformas/);
+  assert.match(marcada(u4.questoes[3]), /executado diretamente/);
+  assert.match(marcada(u4.questoes[4]), /Comunidade ativa/);
+  assert.ok(u4.questoes[1].codigo.includes('class TestAddition(unittest.TestCase):'));
+  assert.equal(u4.questoes[3].codigo, u4.questoes[1].codigo);
 });

@@ -7,13 +7,20 @@
 // múltipla escolha, então o formato é o certo — o que falta no AVA é saber por que a certa é
 // certa, e é isso que decide quando dois distratores parecem plausíveis.
 //
-// Procedência: as Unidades 1, 2 e 3 reproduzem as questões que o estudante recebeu no AVA. A
-// Unidade 4 foi escrita a partir da apostila, no mesmo formato, porque o exercício dela ainda
-// não foi aberto. O campo `recebido` separa os dois casos e a tela mostra essa
-// diferença: material de estudo não pode se passar por prova recebida.
+// Procedência: as quatro unidades reproduzem as questões que o estudante recebeu no AVA. A
+// Unidade 4 era escrita a partir da apostila até o exercício dela ser aberto. O campo
+// `recebido` separa os dois casos e a tela mostra essa diferença: material de estudo não pode
+// se passar por prova recebida.
 
 const q = (id, enunciado, opcoes, resposta, porque, codigo = null) =>
   ({ id, enunciado, opcoes, resposta, porque, codigo });
+
+// O código das questões 2 e 4 da Unidade 4, como aparece no AVA.
+const UNITTEST_DO_AVA = [
+  'import unittest', '', 'def add(a, b):', '    return a + b', '',
+  'class TestAddition(unittest.TestCase):', '    def test_add_positive_numbers(self):', '        self.assertEqual(add(2, 3), 5)', '',
+  '    def test_add_negative_numbers(self):', '        self.assertEqual(add(-2, -3), -5)', '',
+  "if __name__ == '__main__':", '    import unittest', "    unittest.main(argv=['first-arg-is-ignored'], exit=False)", '    print()'].join('\n');
 
 export const exerciciosDaFaculdade = [
   {
@@ -137,47 +144,49 @@ export const exerciciosDaFaculdade = [
 
   {
     id: 'ex-u4', unidade: 'u4', titulo: 'Exercício da Unidade 4',
-    origem: 'Escrito a partir da apostila da Unidade 4', recebido: false,
+    origem: 'Exercício de unidades · recebido no AVA', recebido: true,
     questoes: [
-      q('u4q1', 'Qual camada de uma aplicação web cuida da lógica, do processamento e do armazenamento de dados?',
-        ['O front-end, com HTML, CSS e JavaScript',
-          'A folha de estilo CSS',
-          'O navegador, que executa Python diretamente',
-          'O back-end, com linguagens como Python e frameworks como Django e Flask',
-          'A API, que substitui as duas camadas'], 3,
-        'O front-end é a interface com a qual a pessoa interage. O back-end fica no servidor e cuida da regra de negócio, do processamento e do banco de dados. A API não substitui camada nenhuma: ela é o contrato por onde as duas conversam. E o navegador não executa Python nativamente — é por isso que existe o Pyodide.'),
+      q('u4q1', 'Qual é o principal propósito do KivyMD em relação ao Kivy?',
+        ['Oferecer uma experiência exclusiva em dispositivos iOS',
+          'Substituir completamente o framework Kivy',
+          'Integrar os princípios de design do Material Design',
+          'Fornecer suporte exclusivo para dispositivos Android',
+          'Limitar as capacidades do Kivy'], 2,
+        'O KivyMD é uma extensão: ele roda em cima do Kivy e acrescenta os componentes com a aparência do Material Design, o padrão visual do Google. Por ser extensão, ele não substitui nem limita o Kivy. E nada nele é exclusivo de um sistema: os dois são multiplataforma.'),
 
-      q('u4q2', 'Qual é a função do MDTabs no KivyMD?',
-        ['Organizar o conteúdo em abas dentro da interface do aplicativo',
-          'Treinar um modelo de machine learning',
-          'Executar consultas SQL no celular',
-          'Compilar o aplicativo para Android',
-          'Criar gráficos de barras na tela'], 0,
-        'MDTabs separa conteúdos em abas para não sobrecarregar uma tela só — é organização de interface. KivyMD é a camada de Material Design sobre o Kivy, que por sua vez é o framework de interfaces multitouch. Nada disso treina modelo nem executa SQL.'),
+      q('u4q2', 'Qual é a principal função da classe TestAddition no exemplo apresentado?',
+        ['Definir a função add que realiza a soma de dois números',
+          'Organizar os testes unitários para a função add usando a estrutura do módulo unittest',
+          'Garantir que a função unittest.main() seja chamada explicitamente',
+          'Iniciar a execução do script quando importado como um módulo em outro script',
+          'Fornecer assertivas poderosas para verificar o comportamento esperado do código'], 1,
+        'TestAddition herda de unittest.TestCase e junta, num lugar só, os testes da função add: cada método que começa com test_ é um teste. A função add é definida fora da classe. O distrator que mais engana é o das assertivas: quem fornece o assertEqual é o TestCase, do unittest, não a classe que você escreveu.',
+        UNITTEST_DO_AVA),
 
-      q('u4q3', 'No unittest, por que os métodos de teste normalmente começam com test_?',
-        ['Porque é assim que o carregador os reconhece e executa automaticamente',
-          'Porque assertEqual só funciona com esse prefixo',
-          'Porque o prefixo transforma o método em variável global',
-          'Porque sem ele o método vira privado da classe',
-          'Porque o prefixo define a ordem de execução dos testes'], 0,
-        'O unittest descobre os testes pelo nome. Um método sem o prefixo test_ continua existindo na classe, mas nunca é executado pelo runner — e um teste que não roda dá a falsa impressão de que tudo passou. assertEqual funciona em qualquer método, e a ordem de execução é alfabética.'),
+      q('u4q3', 'Quais são as principais características do KivyMD?',
+        ['Uso exclusivo em dispositivos Android',
+          'Padrões de design próprios',
+          'Apenas componentes visuais básicos',
+          'Integração exclusiva com dispositivos iOS',
+          'Material Design, componentes prontos para uso e suporte a múltiplas plataformas'], 4,
+        'São as três do texto: segue o Material Design do Google, traz componentes prontos (botões, caixas de diálogo, cartões) e roda em Android, iOS, Windows, Linux e macOS. As erradas contradizem cada uma: o design não é próprio, e sim o do Google; os componentes vão além do básico; e nada é exclusivo de um sistema.'),
 
-      q('u4q4', 'Prever as vendas futuras a partir do histórico de meses e vendas é exemplo de qual tipo de aprendizado?',
-        ['Não supervisionado, porque não existe resposta conhecida',
-          'Por reforço, porque o modelo recebe recompensas a cada acerto',
-          'Supervisionado, porque o treino usa entradas acompanhadas das saídas corretas',
-          'Nenhum: previsão de vendas não é machine learning',
-          'Supervisionado e não supervisionado ao mesmo tempo'], 2,
-        'A marca do supervisionado é ter a resposta certa durante o treino: para cada mês, você já sabe quanto foi vendido. No não supervisionado não há rótulo e o algoritmo procura grupos sozinho, como no agrupamento de clientes por padrão de compra. No reforço, um agente aprende interagindo com um ambiente e recebendo recompensas.'),
+      q('u4q4', "O que indica a condição if __name__ == '__main__': no exemplo apresentado?",
+        ['Inicia a execução do script apenas se a função add for definida corretamente',
+          'Garante que a classe TestAddition seja executada apenas se o script for importado como um módulo em outro script',
+          'Inicia a execução do script apenas se a função unittest.main() for chamada explicitamente',
+          'Inicia a execução do script apenas se a classe TestAddition for definida corretamente',
+          'Garante que a suíte de testes seja executada apenas se o script for executado diretamente (não importado como módulo)'], 4,
+        'Quando você roda o arquivo direto, o Python dá a ele o nome __main__; quando outro arquivo o importa, o nome passa a ser o do módulo. Então o bloco só executa os testes no primeiro caso. A segunda alternativa é a armadilha: ela diz exatamente o contrário, importado em vez de executado diretamente.',
+        UNITTEST_DO_AVA),
 
-      q('u4q5', 'O que o módulo doctest faz?',
-        ['Executa os exemplos marcados com >>> na documentação e compara com o resultado escrito',
-          'Mede quanto tempo cada função leva para executar',
-          'Gera a documentação do projeto em HTML',
-          'Substitui o unittest em projetos grandes',
-          'Verifica se o código segue a PEP 8'], 0,
-        'O doctest lê as docstrings, encontra os blocos com o prompt >>> e executa cada um, comparando a saída real com a que está escrita ali. A vantagem é manter exemplo e código sincronizados: se a função mudar e o exemplo não, o teste falha. Ele não substitui o unittest — para projetos maiores, a apostila indica o unittest pela organização em classes e pelas assertions mais completas.')
+      q('u4q5', 'Quais são os benefícios mencionados para os desenvolvedores ao optarem por Python no desenvolvimento mobile?',
+        ['Compatibilidade exclusiva com Android',
+          'Desempenho superior em comparação com linguagens nativas',
+          'Limitações de acesso a recursos específicos do dispositivo',
+          'Comunidade ativa, vasta biblioteca de módulos e agilidade proporcionada pela linguagem',
+          'Redução da reutilização de código entre diferentes sistemas operacionais'], 3,
+        'A resposta repete os três benefícios do próprio enunciado: comunidade ativa, muitas bibliotecas e agilidade. As outras não são benefícios. Limitar o acesso ao aparelho e reutilizar menos código são desvantagens, e o Python costuma ser mais lento que as linguagens nativas, não mais rápido.')
     ]
   }
 ];
