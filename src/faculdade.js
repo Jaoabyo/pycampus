@@ -587,9 +587,12 @@ export const planoDeEstudosDaFaculdade = (state = {}, hoje = new Date()) => {
   // com o ritmo que caberia.
   const agendadas = new Set(dias.flatMap(dia => dia.aulas.map(aula => aula.id)));
   const foraDoPlano = pendentes.filter(aula => !agendadas.has(aula.id));
-  const ritmoNecessario = pendentes.length > 0 ? Math.ceil(pendentes.length / diasDeEstudo) : 0;
+  // Passado o fim do período de estudo, não há dia de aula para dividir o que falta: dividir por
+  // zero mostrava "faça Infinity aulas por dia". O que resta é dizer quais aulas faltam antes da prova.
+  const periodoEncerrado = diasDeEstudo === 0 && pendentes.length > 0 && diasRestantes > 0;
+  const ritmoNecessario = pendentes.length === 0 ? 0 : periodoEncerrado ? pendentes.length : Math.ceil(pendentes.length / diasDeEstudo);
   return {
-    diasRestantes, estudadas, dias, porDia, foraDoPlano, ritmoNecessario,
+    diasRestantes, estudadas, dias, porDia, foraDoPlano, ritmoNecessario, periodoEncerrado,
     hoje: dias.find(dia => dia.data === hojeIso) || dias[0],
   };
 };

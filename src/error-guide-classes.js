@@ -127,11 +127,80 @@ const colunasDasTabelas = (codigo) => {
   return tabelas;
 };
 
+// "Perhaps you forgot a comma?" não diz onde. No histórico do estudante foram 16 execuções
+// seguidas na aula de gráficos mudando plt, gca e o título, quando faltava só a vírgula entre
+// "Barras:" e len(...). Aqui a linha é quebrada em pedaços (textos, nomes, números, parênteses)
+// e procura-se o primeiro par de valores encostados sem vírgula entre eles.
+const PALAVRAS_DO_PYTHON = new Set(['and', 'or', 'not', 'in', 'is', 'if', 'else', 'elif', 'for', 'while', 'return', 'lambda',
+  'import', 'from', 'as', 'def', 'class', 'with', 'yield', 'del', 'pass', 'assert', 'global', 'raise', 'try', 'except',
+  'finally', 'await', 'async', 'break', 'continue', 'print']);
+const pedacosDaLinha = (linha) => {
+  const pedacos = [];
+  let i = 0;
+  while (i < linha.length) {
+    const c = linha[i];
+    if (c === '#') break;
+    if (/\s/.test(c)) { i += 1; continue; }
+    const prefixo = linha.slice(i).match(/^[fFrRbBuU]{0,2}(["'])/);
+    if (prefixo) {
+      const aspa = prefixo[1];
+      let fim = i + prefixo[0].length;
+      while (fim < linha.length && linha[fim] !== aspa) fim += linha[fim] === '\\' ? 2 : 1;
+      pedacos.push({ tipo: 'valor', inicio: i, fim: Math.min(fim + 1, linha.length) });
+      i = fim + 1;
+      continue;
+    }
+    const palavra = linha.slice(i).match(/^[A-Za-z_]\w*|^\d+(?:\.\d+)?/);
+    if (palavra) {
+      const texto = palavra[0];
+      pedacos.push({ tipo: PALAVRAS_DO_PYTHON.has(texto) ? 'palavra' : 'valor', inicio: i, fim: i + texto.length });
+      i += texto.length;
+      continue;
+    }
+    pedacos.push({ tipo: ')]}'.includes(c) ? 'fecha' : c, inicio: i, fim: i + 1 });
+    i += 1;
+  }
+  return pedacos;
+};
+
+function diagnosticoDaVirgula(codigo, linhaDoErro) {
+  const linhas = String(codigo || '').split('\n');
+  const linha = linhas[(linhaDoErro || 0) - 1];
+  if (!linha) return null;
+  const pedacos = pedacosDaLinha(linha);
+  // Um valor (ou o fim de um parêntese) encostado noutro valor: "Barras:" len(...), 3 4, x "a".
+  for (let i = 1; i < pedacos.length; i += 1) {
+    const [antes, depois] = [pedacos[i - 1], pedacos[i]];
+    if ((antes.tipo === 'valor' || antes.tipo === 'fecha') && depois.tipo === 'valor') {
+      const primeiro = linha.slice(antes.inicio, antes.fim);
+      const segundo = linha.slice(depois.inicio, depois.fim);
+      return guia(`Falta uma vírgula na linha ${linhaDoErro}, entre ${primeiro} e ${segundo}`,
+        `Dentro dos parênteses do print, e também numa lista ou num dicionário, cada item é separado do próximo por uma vírgula. Sem ela, o Python encontra ${primeiro} e ${segundo} encostados e não sabe o que fazer com os dois.`,
+        [`Coloque uma vírgula logo depois de ${primeiro}, antes de ${segundo}.`, 'Só a vírgula resolve. O resto da linha pode ficar como está.']);
+    }
+  }
+  // Um item por linha, num dicionário ou numa lista: a vírgula que falta é no fim desta linha.
+  const proxima = linhas.slice(linhaDoErro).find((l) => l.trim());
+  const ultimo = pedacos[pedacos.length - 1];
+  const primeiroDaProxima = proxima ? pedacosDaLinha(proxima)[0] : null;
+  if (ultimo && (ultimo.tipo === 'valor' || ultimo.tipo === 'fecha') && primeiroDaProxima?.tipo === 'valor') {
+    return guia(`Falta uma vírgula no fim da linha ${linhaDoErro}`,
+      'Num dicionário ou numa lista com um item por linha, cada item termina com vírgula, menos o último, em que ela é opcional. Sem a vírgula, o Python junta esta linha com a de baixo.',
+      [`Coloque uma vírgula no fim da linha ${linhaDoErro}, depois de ${linha.slice(ultimo.inicio, ultimo.fim)}.`, 'Confira as outras linhas do mesmo dicionário ou lista: cada uma termina com vírgula.']);
+  }
+  return null;
+}
+
 export function diagnosticoDeClasses(tipo, mensagem, codigo, linhaDoErro) {
   const msg = String(mensagem || '');
   if (tipo === 'IndentationError' || tipo === 'TabError') {
     const recuo = diagnosticoDeRecuo(msg, codigo, linhaDoErro);
     if (recuo) return recuo;
+  }
+
+  if (tipo === 'SyntaxError' && /Perhaps you forgot a comma\?/.test(msg)) {
+    const virgula = diagnosticoDaVirgula(codigo, linhaDoErro);
+    if (virgula) return virgula;
   }
 
   // media, situacao = calcular_media([]) quando a função devolve None para a lista vazia: o erro
@@ -148,6 +217,16 @@ export function diagnosticoDeClasses(tipo, mensagem, codigo, linhaDoErro) {
           `Confira antes de separar: if resultado is None: mostre um aviso. No else, separe: ${nomes.join(', ')} = resultado`,
           `Se ${funcao} não devia devolver None aqui, confira se todo caminho dela termina com um return.`]);
     }
+  }
+
+  // camadas["front-end", "back-end"]: a vírgula dentro do colchete faz uma dupla, e o dicionário
+  // procura uma chave igual à dupla. Do histórico do estudante na aula de web.
+  if (tipo === 'KeyError' && /^\((?:'[^']*'|"[^"]*")(?:,\s*(?:'[^']*'|"[^"]*"))+\)$/.test(msg)) {
+    const naLinha = String(codigo || '').split('\n')[(linhaDoErro || 0) - 1] || '';
+    const dicionario = naLinha.match(/(\w+)\s*\[[^\]]*,[^\]]*\]/)?.[1] || 'o dicionário';
+    return guia('Um colchete com vírgula procura uma chave só',
+      `${dicionario}[${msg.slice(1, -1)}] não pega as duas chaves. A vírgula junta os nomes numa dupla, e ${dicionario} procura uma chave igual a essa dupla, que não existe.`,
+      ['Consulte uma chave por vez, com um colchete para cada nome.', 'Para mostrar as duas numa linha, faça as duas consultas dentro do mesmo print, separadas por vírgula.']);
   }
 
   // O pandas avisa só KeyError: 'preco', no fim de um traceback longo de arquivos internos.

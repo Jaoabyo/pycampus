@@ -193,3 +193,16 @@ test('nenhuma aula é concluída colando a saída esperada em um print', () => {
       `${aula.id} aceitaria a saída colada sem demonstrar a lógica`);
   }
 });
+
+// Em 29/09 a tela dizia "faça Infinity aulas por dia até 27 de setembro": passado o fim do
+// período de estudo, o plano dividia as aulas que faltavam por zero dias de aula.
+test('depois do fim do período de estudo, o plano diz quantas aulas faltam, sem dividir por zero', () => {
+  const feitas = aulasDaFaculdade.slice(0, 14).map(aula => aula.id);
+  const plano = planoDeEstudosDaFaculdade({ faculdade: { feitas } }, new Date(2026, 8, 29));
+  assert.equal(plano.periodoEncerrado, true);
+  assert.equal(plano.ritmoNecessario, 2);
+  assert.ok(Number.isFinite(plano.ritmoNecessario));
+  assert.equal(plano.hoje.tipo, 'revisao');
+  const antes = planoDeEstudosDaFaculdade({ faculdade: { feitas } }, new Date(2026, 8, 25));
+  assert.equal(antes.periodoEncerrado, false);
+});

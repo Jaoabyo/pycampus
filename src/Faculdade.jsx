@@ -180,14 +180,18 @@ export default function Faculdade({
       >
         <div className="prova-plano-topo">
           <div>
-            <div className="eyebrow">PLANO ATÉ {porExtenso(FIM_DO_ESTUDO).toUpperCase()} · PROVA {porExtenso(DATA_PROVA).toUpperCase()}</div>
+            <div className="eyebrow">
+              {plano.periodoEncerrado ? '' : `PLANO ATÉ ${porExtenso(FIM_DO_ESTUDO).toUpperCase()} · `}PROVA {porExtenso(DATA_PROVA).toUpperCase()}
+            </div>
             <h3 id="titulo-plano-prova">Preparação para a prova presencial</h3>
             <p>
               {pendentes.length === 0
                 ? 'Conteúdo estudado. Agora revise os desafios sem olhar a resposta.'
-                : dias > 0
-                  ? `${dias} ${dias === 1 ? 'dia' : 'dias'} até a prova · faça ${ritmo} ${ritmo === 1 ? 'aula' : 'aulas'} por dia até ${porExtenso(FIM_DO_ESTUDO)} e use os dias seguintes para revisar.`
-                  : 'A data da prova chegou. Priorize os exercícios marcados pelo professor.'}
+                : dias > 0 && plano.periodoEncerrado
+                  ? `${dias} ${dias === 1 ? 'dia' : 'dias'} até a prova · ${pendentes.length === 1 ? 'falta 1 aula' : `faltam ${pendentes.length} aulas`}. Estude ${pendentes.length === 1 ? 'essa aula' : 'essas aulas'} com calma, e termine com a revisão rápida e o simulado.`
+                  : dias > 0
+                    ? `${dias} ${dias === 1 ? 'dia' : 'dias'} até a prova · faça ${ritmo} ${ritmo === 1 ? 'aula' : 'aulas'} por dia até ${porExtenso(FIM_DO_ESTUDO)} e use os dias seguintes para revisar.`
+                    : 'A data da prova chegou. Priorize os exercícios marcados pelo professor.'}
             </p>
           </div>
           <div
@@ -248,15 +252,31 @@ export default function Faculdade({
           <div>
             <div className="eyebrow">SEU PLANO DE HOJE</div>
             <h3 id="titulo-plano-hoje">
-              Duas aulas curtas, um passo de cada vez
+              {plano.periodoEncerrado
+                ? 'Terminar o que falta e revisar'
+                : plano.hoje.tipo === 'revisao' ? 'Dia de revisão' : 'Duas aulas curtas, um passo de cada vez'}
             </h3>
           </div>
         </div>
+        {plano.periodoEncerrado && (
+          <>
+            <p>O estudo no AVA fechou em {porExtenso(FIM_DO_ESTUDO)}, mas estas aulas ainda contam para a prova. Estude com calma:</p>
+            <div className="plano-hoje-lista">
+              {pendentes.map((aula) => (
+                <button className="plano-hoje-item" key={aula.id} onClick={() => abrir(aula)}>
+                  <span>{aula.titulo}</span>
+                  <Icon name="ArrowRight" size={16} />
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         {plano.hoje.tipo === 'revisao' ? (
           <>
             <p>
-              Hoje é dia de revisão. Comece pelo que você errou e depois treine no formato da
-              prova: múltipla escolha, com cronômetro.
+              {plano.periodoEncerrado
+                ? 'Depois das aulas, faça a revisão rápida e termine com um simulado no formato da prova: múltipla escolha, com cronômetro.'
+                : 'Hoje é dia de revisão. Comece pelo que você errou e depois treine no formato da prova: múltipla escolha, com cronômetro.'}
             </p>
             <div className="button-row">
               <button className="button primary" onClick={() => { irAoTopo(); setPreparo('rapida'); }}>
@@ -287,7 +307,7 @@ export default function Faculdade({
             </div>
           </>
         )}
-        {plano.foraDoPlano?.length > 0 && (
+        {plano.foraDoPlano?.length > 0 && !plano.periodoEncerrado && (
           <div className="info-note" role="status">
             <Icon name="TriangleAlert" size={18} />
             <p>

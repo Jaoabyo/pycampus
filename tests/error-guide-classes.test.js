@@ -119,3 +119,26 @@ test('separar o None de uma função: pede para conferir antes de separar, com o
   assert.equal(r.steps[0], 'Guarde o resultado inteiro primeiro: resultado = calcular_media(notas)');
   assert.match(r.steps[1], /if resultado is None/);
 });
+
+// "Perhaps you forgot a comma?" com os códigos de verdade do histórico: 16 execuções seguidas na
+// aula de gráficos, 4 na de web e uma no trabalho da biblioteca.
+test('vírgula esquecida: aponta entre quais dois pedaços ela falta', () => {
+  const msg = 'SyntaxError: invalid syntax. Perhaps you forgot a comma?';
+  const grafico = 'import matplotlib.pyplot as plt\nmesses = ["Jan", "Fev"]\nvendas = [120, 90]\nplt.bar(messes, vendas)\nplt.title("Vendas")\nprint("Barras:"  len(plt.gca().patches))\n';
+  const r = ajuda(msg, grafico, 6);
+  assert.equal(r.title, 'Falta uma vírgula na linha 6, entre "Barras:" e len');
+  assert.equal(r.steps[0], 'Coloque uma vírgula logo depois de "Barras:", antes de len.');
+  assert.match(ajuda(msg, 'achado = None\nprint("Busca 2 :" achado.titulo if achado else "Não encontrado")\n', 2).title, /entre "Busca 2 :" e achado/);
+  // Um item por linha num dicionário: a vírgula falta no fim da linha que o Python aponta.
+  const web = 'camadas = {\n"front-end": ["HTML"]\n"back-end": ["Flask"]\n}\nprint(camadas)\n';
+  const d = ajuda(msg, web, 2);
+  assert.equal(d.title, 'Falta uma vírgula no fim da linha 2');
+  assert.match(d.steps[0], /depois de \]/);
+});
+
+test('duas chaves num colchete só: explica que vira uma dupla', () => {
+  const codigo = 'camadas = {\n"front-end": ["HTML"],\n"back-end": ["Flask"]\n}\nprint(camadas["front-end", "back-end"])\n';
+  const r = ajuda("KeyError: ('front-end', 'back-end')", codigo, 5);
+  assert.equal(r.title, 'Um colchete com vírgula procura uma chave só');
+  assert.match(r.meaning, /^camadas\['front-end', 'back-end'\] não pega as duas chaves/);
+});
