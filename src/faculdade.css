@@ -193,3 +193,8 @@
 .aula-etapas button.feita{color:#2f8d72;border-color:#bfe3d6}
 .aula-etapas button.feita span{background:#e7f5ef;color:#2f8d72}
 .aula-etapas-navegacao{justify-content:space-between;margin-top:6px}
+
+/* O cartão de questão (exercício, revisão, simulado e revisão rápida) não tinha margem
+   interna: .card não traz padding, e o texto encostava na borda. */
+.exercicio-card { padding: 24px; }
+@media (max-width: 520px) { .exercicio-card { padding: 18px; } }

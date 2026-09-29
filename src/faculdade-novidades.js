@@ -256,3 +256,26 @@ export function novidadesDaTrilhaDaEntrega(trilha, unidade, degrausDaFaculdade) 
     return { id: degrau.id, semExplicacao: medida.semPonte };
   });
 }
+
+// O cartão "o que cai na prova" de cada aula vem depois da aula inteira: conta como visto o que
+// os guias, as pontes, os degraus e o exemplo do professor mostraram até ali, e o código do
+// cartão só pode usar isso ou o que o próprio cartão explica.
+export function novidadesDosResumos(resumos, degrausDaFaculdade) {
+  const termosVistos = new Set();
+  const textos = [];
+  return aulasDaFaculdade.map((aula) => {
+    const guia = ensinadoNoGuia(ensinoDaFaculdade[aula.id]);
+    guia.termos.forEach(t => termosVistos.add(t));
+    textos.push(guia.texto, ...aula.teoria);
+    for (const ponte of pontesDasAulas[aula.id] || []) { ponte.termos.forEach(t => termosVistos.add(t)); textos.push(ponte.explicacao); }
+    for (const degrau of degrausDaFaculdade[aula.id]?.degraus || []) {
+      termosDoCodigo(degrau.exemplo).forEach(t => termosVistos.add(t));
+      textos.push(degrau.ensina);
+    }
+    termosDoCodigo(aula.exemplo).forEach(t => termosVistos.add(t));
+    const resumo = resumos[aula.id];
+    if (!resumo) return { id: aula.id, semExplicacao: null };
+    const texto = `${textos.join('\n')}\n${resumo.frase}\n${resumo.naoConfunda.join('\n')}`;
+    return { id: aula.id, semExplicacao: medir({ codigo: resumo.codigo, criados: new Set(), termosVistos: new Set(termosVistos), texto }).semPonte };
+  });
+}

@@ -11,12 +11,13 @@ import {
 const HOJE = '2026-09-22';
 const sequencia = (...valores) => { let i = 0; return () => valores[i++ % valores.length]; };
 
-test('o banco reúne as 40 questões de múltipla escolha da faculdade, com a certa dentro da lista', () => {
-  assert.equal(questoesDaFaculdade.length, 40);
+test('o banco reúne as 65 questões de múltipla escolha da faculdade, com a certa dentro da lista', () => {
+  assert.equal(questoesDaFaculdade.length, 65);
   assert.equal(questoesDaFaculdade.filter((q) => q.tipo === 'ava').length, 20);
   assert.equal(questoesDaFaculdade.filter((q) => q.tipo === 'aula').length, 16);
   assert.equal(questoesDaFaculdade.filter((q) => q.tipo === 'projeto').length, 4);
-  assert.equal(new Set(questoesDaFaculdade.map((q) => q.id)).size, 40, 'ids únicos');
+  assert.equal(questoesDaFaculdade.filter((q) => q.tipo === 'treino').length, 25);
+  assert.equal(new Set(questoesDaFaculdade.map((q) => q.id)).size, 65, 'ids únicos');
   for (const q of questoesDaFaculdade) {
     assert.ok(q.resposta >= 0 && q.resposta < q.opcoes.length, `${q.id} aponta fora da lista`);
     assert.ok(String(q.porque).length > 40, `${q.id} precisa explicar por que a certa é certa`);
@@ -26,7 +27,7 @@ test('o banco reúne as 40 questões de múltipla escolha da faculdade, com a ce
 // Nas revisões das aulas a certa estava sempre em A, nas 16 aulas e nos 4 miniprojetos. Numa
 // prova de múltipla escolha isso treina marcar A sem ler.
 test('girar as alternativas preserva a certa e tira a letra A de ser sempre a resposta', () => {
-  const revisoes = questoesDaFaculdade.filter((q) => q.tipo !== 'ava');
+  const revisoes = questoesDaFaculdade.filter((q) => q.tipo === 'aula' || q.tipo === 'projeto');
   assert.ok(revisoes.every((q) => q.resposta === 0), 'premissa: nos dados a certa vem primeiro');
   const giradas = revisoes.map((q) => girarAlternativas(q));
   for (const [i, g] of giradas.entries()) {

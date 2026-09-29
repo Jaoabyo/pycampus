@@ -525,7 +525,7 @@ export const entregasDaFaculdade = [
       criterioCodigo('limite-sete', 'decidir aprovação com média maior ou igual a 7', />=\s*7/),
       // O mediador da faculdade descontou exatamente isto: a função devolvia None para a lista
       // vazia, e o código principal usava o resultado sem conferir.
-      criterioEstrutural('vazio-no-principal', 'conferir no código principal o None da lista vazia antes de usar a média', (analise) => (
+      criterioEstrutural('vazio-no-principal', 'fora da função, conferir se o resultado veio None (lista vazia) antes de mostrar a média', (analise) => (
         /\bis\s+(?:not\s+)?None\b|\bif\s+not\s+\w+|\bif\s+\w+\s*:/.test(foraDasFuncoes(analise.executavel))
       )),
       // O roteiro é literal: "Exibir as notas inseridas, a média e a situação do aluno". Um

@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readError } from '../src/error-guide.js';
+import { carregarDiagnosticos, readError } from '../src/error-guide.js';
+
+// No site, esta parte chega sob demanda depois do primeiro erro.
+await carregarDiagnosticos();
 
 // As mensagens são as que o estudante recebeu de verdade, tiradas do histórico dele.
 const pessoa = 'class Pessoa:\n    def __init__(self, nome, idade):\n        self.nome = nome\n        self.idade = idade\n\n    def cumprimentar(self):\n        return f"Ola, meu nome e {self.nome}."\n\n    def aniversario(self):\n        self.idade += 1\n\npessoa1 = Pessoa("Joao", 30)\n';
@@ -88,4 +91,20 @@ test('recuo que não volta para um bloco aberto: diz quais blocos estão abertos
   const r = ajuda('IndentationError: unindent does not match any outer indentation level', codigo, 5);
   assert.match(r.title, /A linha 5 tem 4 espaços e não se alinha com nenhum bloco aberto/);
   assert.match(r.meaning, /blocos abertos usam 0 e 8 espaços/);
+});
+
+// A mensagem de verdade do backup de 28/09: o pandas termina o traceback só com KeyError: 'preco'.
+test('coluna que não existe no DataFrame: diz quais colunas a tabela tem', () => {
+  const codigo = 'import pandas as pd\nvendas = pd.DataFrame({"nome": ["A", "B", "C"], "receita": [120, 80, 150]})\n# Filtre com teste booleano e mostre a lista de nomes\n\nacima_de_100 = vendas[vendas["preco"] > 100]\nprint(acima_de_100)\n';
+  const saidaDoPandas = '  File "pandas/_libs/hashtable_class_helper.pxi", line 7089, in pandas._libs.hashtable.PyObjectHashTable.get_item\nKeyError: \'preco\'\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File "seu_codigo.py", line 5, in <module>\nKeyError: \'preco\'';
+  const r = readError(saidaDoPandas, codigo);
+  assert.equal(r.line, 5);
+  assert.match(r.title, /A coluna preco não existe em vendas/);
+  assert.match(r.meaning, /as colunas nome e receita/);
+  assert.match(r.steps[0], /"nome" e "receita"/);
+  // Grafia quase igual vira sugestão direta, e colunas criadas depois também contam.
+  const depois = 'import pandas as pd\ndados = {"nome": ["A"], "quantidade": [2], "receita": [10]}\nvendas = pd.DataFrame(dados)\nvendas["preco"] = vendas["receita"] / vendas["quantidade"]\nprint(vendas["prco"])\n';
+  assert.equal(ajuda("KeyError: 'prco'", depois, 5).steps[0], 'Troque "prco" por "preco".');
+  // Um dicionário comum continua com a ajuda geral de chave.
+  assert.equal(ajuda("KeyError: 'b'", 'd = {"a": 1}\nprint(d["b"])\n', 2).title, 'Essa chave não existe no dicionário');
 });

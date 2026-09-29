@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
-import { Icon, Progress } from './ui.jsx';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Icon, Progress, irAoTopo } from './ui.jsx';
 import { localDate } from './progress.js';
-import { girarAlternativas } from './faculdade-questoes.js';
+import { aulasDaFaculdade } from './faculdade.js';
+import { girarAlternativas, questoesDaAula } from './faculdade-questoes.js';
+import { resumosDaFaculdade } from './faculdade-resumo.js';
 import {
   filaDeRevisao,
   montarSimulado,
@@ -330,6 +332,150 @@ function Simulado({ state, update, voltar, trocarModo, abrirAula }) {
   );
 }
 
+// Revisão rápida para a prova: uma aula por vez, primeiro o cartão curto e depois as questões
+// daquela aula. As aulas ainda não estudadas vêm primeiro; as estudadas vêm depois, da mais
+// recente para a mais antiga, porque a mais antiga é a que já teve mais tempo de ser revista.
+function RevisaoRapida({ state, update, voltar, trocarModo, abrirAula }) {
+  const hoje = localDate();
+  const feitas = new Set(state.faculdade?.feitas || []);
+  // A ordem é fixada ao abrir: registrar uma aula no meio não pode mudar a aula da tela.
+  const [ordem] = useState(() => [
+    ...aulasDaFaculdade.filter((a) => !feitas.has(a.id)),
+    ...aulasDaFaculdade.filter((a) => feitas.has(a.id)).reverse(),
+  ]);
+  const [indice, setIndice] = useState(0);
+  // 0 é o cartão; de 1 até o total são as questões; depois disso, o resultado da aula.
+  const [etapa, setEtapa] = useState(0);
+  const [escolha, setEscolha] = useState(null);
+  const [acertos, setAcertos] = useState(0);
+  const aula = ordem[indice];
+  const resumo = resumosDaFaculdade[aula.id];
+  const questoes = useMemo(() => questoesDaAula(aula.id).map((q) => girarAlternativas(q, hoje)), [aula.id, hoje]);
+
+  const irPara = (n) => {
+    irAoTopo();
+    setIndice(n);
+    setEtapa(0);
+    setEscolha(null);
+    setAcertos(0);
+  };
+  const escolher = (opcao) => {
+    if (escolha !== null) return;
+    const questao = questoes[etapa - 1];
+    const certo = opcao === questao.resposta;
+    setEscolha(opcao);
+    if (certo) setAcertos((n) => n + 1);
+    update((s) => registrarResposta(s, questao.id, certo, hoje));
+  };
+  const proxima = () => {
+    setEscolha(null);
+    setEtapa((n) => n + 1);
+  };
+  const ultima = indice + 1 >= ordem.length;
+
+  const topo = (
+    <div className="resumo-topo">
+      <div className="eyebrow">AULA {indice + 1} DE {ordem.length}</div>
+      <label>
+        Ir para
+        <select value={indice} onChange={(e) => irPara(Number(e.target.value))}>
+          {ordem.map((a, i) => (
+            <option key={a.id} value={i}>{i + 1}. {a.titulo}{feitas.has(a.id) ? '' : ' (não estudada)'}</option>
+          ))}
+        </select>
+      </label>
+    </div>
+  );
+
+  if (etapa === 0) {
+    return (
+      <section className="card resumo-cartao">
+        {topo}
+        <div className="eyebrow questao-origem">
+          {NOMES_DAS_UNIDADES[aula.unidade]} · {feitas.has(aula.id) ? 'aula estudada' : 'aula ainda não estudada'}
+        </div>
+        <h2>{aula.titulo}</h2>
+        <p className="resumo-frase">{resumo.frase}</p>
+        <h3>Não confunda</h3>
+        <ul className="resumo-lista">
+          {resumo.naoConfunda.map((item) => <li key={item}>{item}</li>)}
+        </ul>
+        <h3>Código que cai</h3>
+        <pre className="example-code">{resumo.codigo}</pre>
+        <div className="resumo-saida">
+          <span>Saída</span>
+          <pre>{resumo.saida}</pre>
+        </div>
+        <div className="exercicio-navegacao">
+          <button className="button outline" disabled={indice === 0} onClick={() => irPara(indice - 1)}>
+            <Icon name="ArrowLeft" size={16} /> Aula anterior
+          </button>
+          <button className="button primary" onClick={() => setEtapa(1)}>
+            Responder {questoes.length} questões <Icon name="ArrowRight" size={16} />
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (etapa > questoes.length) {
+    return (
+      <section className="card revisao-resultado">
+        {topo}
+        <h2>{acertos} de {questoes.length} certas em {aula.titulo}</h2>
+        <p>
+          {acertos === questoes.length
+            ? 'Essa aula está firme. As questões voltam daqui a alguns dias na revisão, para não esquecer.'
+            : 'As que você errou entram em "Revisar meus erros" e voltam hoje mesmo. Se quiser, releia o cartão antes de seguir.'}
+        </p>
+        <div className="button-row">
+          {ultima
+            ? <button className="button primary" onClick={() => trocarModo('simulado')}>Fazer o simulado <Icon name="ArrowRight" size={16} /></button>
+            : <button className="button primary" onClick={() => irPara(indice + 1)}>Próxima aula <Icon name="ArrowRight" size={16} /></button>}
+          <button className="button outline" onClick={() => { setEtapa(0); setAcertos(0); }}>Reler o cartão</button>
+          <button className="button outline" onClick={voltar}>Sair</button>
+        </div>
+      </section>
+    );
+  }
+
+  const questao = questoes[etapa - 1];
+  const respondida = escolha !== null;
+  const acertou = escolha === questao.resposta;
+  return (
+    <section className="card exercicio-card">
+      {topo}
+      <div className="exercicio-topo">
+        <div className="eyebrow">QUESTÃO {etapa} DE {questoes.length}</div>
+        <Progress value={((etapa - 1) / questoes.length) * 100} label={`Questão ${etapa} de ${questoes.length}`} />
+      </div>
+      <Enunciado questao={questao} />
+      <Alternativas questao={questao} escolhida={escolha} revelar={respondida} onEscolher={escolher} nome={`rapida-${questao.id}`} />
+      {respondida && (
+        <div className={`exercicio-porque ${acertou ? 'acertou' : 'errou'}`} role="status">
+          <strong>
+            <Icon name={acertou ? 'CheckCircle2' : 'TriangleAlert'} size={17} /> {acertou ? 'Isso mesmo.' : 'Ainda não.'}
+          </strong>
+          <p>{questao.porque}</p>
+          {!acertou && (
+            <button className="text-button" onClick={() => abrirAula(aula.id)}>
+              <Icon name="BookOpen" size={15} /> Abrir a aula completa
+            </button>
+          )}
+        </div>
+      )}
+      <div className="exercicio-navegacao">
+        <button className="button outline" onClick={() => { setEtapa(0); setEscolha(null); setAcertos(0); }}>
+          <Icon name="ArrowLeft" size={16} /> Voltar ao cartão
+        </button>
+        <button className="button primary" disabled={!respondida} onClick={proxima}>
+          {etapa >= questoes.length ? 'Ver resultado' : 'Próxima'} <Icon name="ArrowRight" size={16} />
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export default function FaculdadeRevisao({ modo, state, update, voltar, trocarModo, abrirAula }) {
   return (
     <>
@@ -339,12 +485,12 @@ export default function FaculdadeRevisao({ modo, state, update, voltar, trocarMo
       <div className="page-heading">
         <div>
           <div className="eyebrow">PREPARAÇÃO PARA A PROVA</div>
-          <h1>{modo === 'simulado' ? 'Simulado da prova' : 'Revisão dos seus erros'}</h1>
+          <h1>{{ simulado: 'Simulado da prova', rapida: 'Revisão rápida para a prova' }[modo] || 'Revisão dos seus erros'}</h1>
         </div>
       </div>
-      {modo === 'simulado'
-        ? <Simulado key="simulado" state={state} update={update} voltar={voltar} trocarModo={trocarModo} abrirAula={abrirAula} />
-        : <Revisao key="revisao" state={state} update={update} voltar={voltar} trocarModo={trocarModo} abrirAula={abrirAula} />}
+      {modo === 'rapida' && <RevisaoRapida key="rapida" state={state} update={update} voltar={voltar} trocarModo={trocarModo} abrirAula={abrirAula} />}
+      {modo === 'simulado' && <Simulado key="simulado" state={state} update={update} voltar={voltar} trocarModo={trocarModo} abrirAula={abrirAula} />}
+      {modo !== 'rapida' && modo !== 'simulado' && <Revisao key="revisao" state={state} update={update} voltar={voltar} trocarModo={trocarModo} abrirAula={abrirAula} />}
     </>
   );
 }

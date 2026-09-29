@@ -35,7 +35,8 @@
     "test:bundle": "node scripts/check-bundle-size.mjs",
     "auditar:ementa": "node scripts/auditar-ementa.mjs",
     "auditar:progressao-faculdade": "node scripts/auditar-progressao-faculdade.mjs",
-    "test:preparo-faculdade": "node scripts/check-faculdade-preparo.mjs"
+    "test:preparo-faculdade": "node scripts/check-faculdade-preparo.mjs",
+    "test:resumo-faculdade": "node scripts/check-faculdade-resumo.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",

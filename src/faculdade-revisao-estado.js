@@ -5,8 +5,8 @@
 // questões) não pode ir junto: o bundle inicial está a menos de 1 kB do limite. Aqui a
 // validação reconhece um id pelo formato; quem casa o id com a questão é faculdade-revisao.js.
 
-// u1q1…u4q5 (exercícios de unidade), aula:<id> e projeto:projeto-u1…u4.
-const ID_DE_QUESTAO = /^(u[1-4]q[1-5]|aula:[a-z0-9]{2,12}|projeto:projeto-u[1-4])$/;
+// u1q1…u4q5 (exercícios de unidade), aula:<id>, projeto:projeto-u1…u4 e treino:<aula>-<n>.
+const ID_DE_QUESTAO = /^(u[1-4]q[1-5]|aula:[a-z0-9]{2,12}|projeto:projeto-u[1-4]|treino:[a-z0-9]{2,6}-[1-9])$/;
 export const CAIXA_MAXIMA = 4;
 const LIMITE_DE_REGISTROS = 300;
 export const LIMITE_DE_SIMULADOS = 20;

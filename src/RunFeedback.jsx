@@ -1,5 +1,5 @@
-import { Fragment } from 'react';
-import { readError, readingSteps } from './error-guide.js';
+import { Fragment, useEffect, useState } from 'react';
+import { carregarDiagnosticos, diagnosticosCarregados, readError, readingSteps } from './error-guide.js';
 import { styleTips } from './style-tips.js';
 import './feedback.css';
 
@@ -22,6 +22,10 @@ export function OutputCompare({ actual, expected }) {
 }
 
 export function ErrorHelp({ output, code }) {
+  const [, setCarregado] = useState(diagnosticosCarregados);
+  useEffect(() => {
+    if (output && !diagnosticosCarregados()) carregarDiagnosticos().then(() => setCarregado(true));
+  }, [output]);
   const error = readError(output, code);
   if (!error) return null;
   return <section className="run-help run-help-error" role="note">

@@ -259,8 +259,11 @@ export default function Faculdade({
               prova: múltipla escolha, com cronômetro.
             </p>
             <div className="button-row">
-              <button className="button primary" onClick={() => { irAoTopo(); setPreparo('revisao'); }}>
-                Revisar meus erros <Icon name="ArrowRight" size={16} />
+              <button className="button primary" onClick={() => { irAoTopo(); setPreparo('rapida'); }}>
+                Revisão rápida <Icon name="ArrowRight" size={16} />
+              </button>
+              <button className="button outline" onClick={() => { irAoTopo(); setPreparo('revisao'); }}>
+                Revisar meus erros
               </button>
               <button className="button outline" onClick={() => { irAoTopo(); setPreparo('simulado'); }}>
                 Fazer um simulado
@@ -315,6 +318,14 @@ export default function Faculdade({
           guardada. O que você erra volta no dia certo de rever, até ficar firme.
         </p>
         <div className="preparo-prova-acoes">
+          <button className="preparo-rapida" onClick={() => { irAoTopo(); setPreparo('rapida'); }}>
+            <Icon name="Zap" size={20} />
+            <span>
+              <strong>Revisão rápida para a prova</strong>
+              <small>Uma aula por vez: o que cai, um código curto e 3 ou mais questões</small>
+            </span>
+            <Icon name="ArrowRight" size={16} />
+          </button>
           <button onClick={() => { irAoTopo(); setPreparo('revisao'); }}>
             <Icon name="RotateCcw" size={20} />
             <span>

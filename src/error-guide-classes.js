@@ -109,11 +109,45 @@ function diagnosticoDeRecuo(msg, codigo, linhaDoErro) {
   return null;
 }
 
+// As colunas de cada tabela do pandas criada no próprio código: as chaves do dicionário que vai
+// para pd.DataFrame, direto ou por uma variável, mais as criadas depois com tabela["nova"] = ...
+const colunasDasTabelas = (codigo) => {
+  const texto = String(codigo || '');
+  const chaves = (corpo) => [...corpo.matchAll(/["'](\w+)["']\s*:/g)].map((c) => c[1]);
+  const dicionarios = {};
+  for (const m of texto.matchAll(/^(\w+)\s*=\s*\{([\s\S]*?)\}/gm)) dicionarios[m[1]] = chaves(m[2]);
+  const tabelas = {};
+  for (const m of texto.matchAll(/^(\w+)\s*=\s*pd\.DataFrame\(\s*(?:\{([\s\S]*?)\}|(\w+))/gm)) {
+    const colunas = m[2] !== undefined ? chaves(m[2]) : dicionarios[m[3]];
+    if (colunas?.length) tabelas[m[1]] = colunas;
+  }
+  for (const m of texto.matchAll(/(\w+)\[\s*["'](\w+)["']\s*\]\s*=(?!=)/g)) {
+    if (tabelas[m[1]] && !tabelas[m[1]].includes(m[2])) tabelas[m[1]].push(m[2]);
+  }
+  return tabelas;
+};
+
 export function diagnosticoDeClasses(tipo, mensagem, codigo, linhaDoErro) {
   const msg = String(mensagem || '');
   if (tipo === 'IndentationError' || tipo === 'TabError') {
     const recuo = diagnosticoDeRecuo(msg, codigo, linhaDoErro);
     if (recuo) return recuo;
+  }
+
+  // O pandas avisa só KeyError: 'preco', no fim de um traceback longo de arquivos internos.
+  let coluna;
+  if (tipo === 'KeyError' && (coluna = msg.match(/^'(\w+)'$/))) {
+    const nome = coluna[1];
+    const naLinha = String(codigo || '').split('\n')[(linhaDoErro || 0) - 1] || '';
+    const semAColuna = Object.entries(colunasDasTabelas(codigo)).filter(([, c]) => !c.includes(nome));
+    const [tabela, colunas] = semAColuna.find(([t]) => new RegExp(`\\b${t}\\[`).test(naLinha)) || semAColuna[0] || [];
+    if (tabela) {
+      const parecida = colunas.find((c) => c.toLowerCase() === nome.toLowerCase() || distancia(c, nome) <= 2);
+      return guia(`A coluna ${nome} não existe em ${tabela}`,
+        `${tabela} tem ${colunas.length === 1 ? 'a coluna' : 'as colunas'} ${lista(colunas)}. O nome entre colchetes precisa ser igual a um deles, letra por letra. As linhas de pandas/_libs no meio da mensagem são de dentro do pandas: a que importa é a do seu código.`,
+        [parecida ? `Troque "${nome}" por "${parecida}".` : `Use um destes nomes: ${lista(colunas.map((c) => `"${c}"`))}.`,
+          `Para conferir as colunas, mostre print(${tabela}.columns).`]);
+    }
   }
   const e = lerEstrutura(codigo);
   let m;

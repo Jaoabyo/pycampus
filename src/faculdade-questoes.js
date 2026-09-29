@@ -7,6 +7,7 @@ import { aulasDaFaculdade } from './faculdade.js';
 import { ensinoDaFaculdade } from './faculdade-ensino.js';
 import { projetosDaFaculdade } from './faculdade-projetos.js';
 import { exerciciosDaFaculdade } from './faculdade-exercicios.js';
+import { questoesDeTreino, avaDaAula } from './faculdade-questoes-treino.js';
 
 export const questoesDaFaculdade = [
   ...exerciciosDaFaculdade.flatMap((exercicio) => exercicio.questoes.map((questao) => ({
@@ -49,10 +50,31 @@ export const questoesDaFaculdade = [
     porque: projeto.explicacao,
     voltarPara: projeto.id,
   })),
+  ...aulasDaFaculdade.flatMap((aula) => (questoesDeTreino[aula.id] || []).map((questao) => ({
+    id: questao.id,
+    unidade: aula.unidade,
+    tipo: 'treino',
+    origem: 'Treino no formato do AVA',
+    enunciado: questao.enunciado,
+    codigo: questao.codigo,
+    opcoes: questao.opcoes,
+    resposta: questao.resposta,
+    porque: questao.porque,
+    voltarPara: aula.id,
+  }))),
 ];
 
 const porId = new Map(questoesDaFaculdade.map((questao) => [questao.id, questao]));
 export const questaoDaFaculdade = (id) => porId.get(id) || null;
+
+// As questões de uma aula, para a revisão rápida: a revisão da própria aula, as do AVA sobre
+// aquele assunto e as de treino. As do AVA vêm logo depois da revisão, porque são as mais
+// parecidas com a prova.
+export const questoesDaAula = (aulaId) => [
+  `aula:${aulaId}`,
+  ...(avaDaAula[aulaId] || []),
+  ...(questoesDeTreino[aulaId] || []).map(({ id }) => id),
+].map(questaoDaFaculdade).filter(Boolean);
 
 // Hash curto e estável: a mesma questão sai sempre na mesma ordem para o mesmo sorteio.
 const hash = (texto) => {

@@ -1,4 +1,9 @@
-import { diagnosticoDeClasses } from './error-guide-classes.js';
+// A leitura com os nomes do próprio código (classes, recuo, colunas do pandas) é grande e só
+// serve depois de um erro. Ela chega sob demanda para não pesar no carregamento inicial do site;
+// até chegar, readError dá a ajuda geral do tipo.
+let diagnosticoDeClasses = null;
+export const diagnosticosCarregados = () => diagnosticoDeClasses !== null;
+export const carregarDiagnosticos = () => import('./error-guide-classes.js').then((modulo) => { diagnosticoDeClasses = modulo.diagnosticoDeClasses; });
 
 // Leitura de erro como habilidade ensinável: primeiro o método (última linha, tipo, número da linha),
 // depois um roteiro específico para o tipo que apareceu.
@@ -51,7 +56,7 @@ export function readError(output, code) {
   const numbers = [...output.matchAll(/line (\d+)/g)].map(m => Number(m[1]));
   if (andaimeIntacto(code)) return { type, message: match[2] || '', line: numbers.length ? numbers[numbers.length - 1] : null, ...GUIA_ANDAIME };
   // Erros de classes e nomes ganham a causa com os nomes do próprio código, antes da ajuda geral do tipo.
-  const especifico = diagnosticoDeClasses(type, match[2] || '', code, numbers.length ? numbers[numbers.length - 1] : null);
+  const especifico = diagnosticoDeClasses?.(type, match[2] || '', code, numbers.length ? numbers[numbers.length - 1] : null);
   if (especifico) return { type, message: match[2] || '', line: numbers.length ? numbers[numbers.length - 1] : null, ...especifico };
   const guide = type === 'SyntaxError' && /cannot assign to function call/.test(match[2] || '') ? { title: 'Separe a leitura e a conversão em duas linhas', meaning: 'Uma chamada como input() não pode ficar à esquerda de =.', steps: ['Primeira linha: texto = input("Quanto é sua despesa? ")', 'Segunda linha: despesa_1 = float(texto)', 'Terceira linha, se quiser mostrar: print(despesa_1)', 'Não junte as duas ações como despesa_1 = input() = float(despesa_1).'] } : guides[type] || fallback;
   return { type, message: match[2] || '', line: numbers.length ? numbers[numbers.length - 1] : null, ...guide };

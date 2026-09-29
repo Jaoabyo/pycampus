@@ -26,3 +26,17 @@
 /* No simulado o mapa de bolinhas fica logo acima do enunciado; sem este respiro o nome da
    unidade encostava nelas e parecia parte do mapa. */
 .questao-origem{margin-top:18px}
+.preparo-prova-acoes>button.preparo-rapida{grid-column:1/-1;border-color:#c8b2ec;background:#f7f2ff}
+.resumo-cartao{padding:26px}
+.resumo-cartao h2{margin:4px 0 10px}
+.resumo-cartao h3{margin:20px 0 8px;font-size:15px}
+.resumo-frase{font-size:16px;line-height:1.6;color:#3d2f4d;margin:0}
+.resumo-lista{margin:0;padding-left:20px;display:grid;gap:8px}
+.resumo-lista li{line-height:1.6;color:#3d2f4d}
+.resumo-saida{margin-top:8px;border:1px solid #d6ecdf;background:#f2faf5;border-radius:10px;padding:10px 14px}
+.resumo-saida>span{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#2f7a5c}
+.resumo-saida pre{margin:4px 0 0;white-space:pre-wrap;color:#1f4d3a}
+.resumo-topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #eee7f5}
+.resumo-topo label{display:flex;align-items:center;gap:8px;font-size:12px;color:#6b5f7a;min-width:0;max-width:100%}
+.resumo-topo select{min-width:0;max-width:260px;padding:6px 8px;border:1px solid #e3d8f4;border-radius:8px;background:#fff}
+.resumo-cartao .example-code{white-space:pre;overflow-x:auto}
