@@ -4,6 +4,7 @@ import { usePython } from './useTrackedPython.js';
 import CodeEditor from './CodeEditor.jsx';
 import { ErrorHelp } from './RunFeedback.jsx';
 import { degrausDaFaculdade, separarSonda } from './faculdade-degraus.js';
+import { outrosExemplos } from './faculdade-outros-exemplos.js';
 import './project-studio.css';
 import './faculdade.css';
 
@@ -75,6 +76,18 @@ ${sonda}` : codigo;
           <h3>Degrau {atualIndice + 1} de {trilha.degraus.length}: {atual.titulo}</h3>
           <p>{atual.ensina}</p>
           <pre className="example-code">{atual.exemplo}</pre>
+          {outrosExemplos[aulaId]?.[atual.id] && (
+            // key: ao passar de degrau, o outro exemplo volta fechado.
+            <details className="degrau-outro" key={atual.id}>
+              <summary>Não ficou claro? Veja a mesma ideia com outro exemplo</summary>
+              <p>{outrosExemplos[aulaId][atual.id].explica}</p>
+              <pre className="example-code">{outrosExemplos[aulaId][atual.id].codigo}</pre>
+              <div className="degrau-outro-saida">
+                <span>Saída</span>
+                <pre>{outrosExemplos[aulaId][atual.id].saida}</pre>
+              </div>
+            </details>
+          )}
           <p className="coach-task"><strong>Faça agora:</strong> {atual.pedido}</p>
         </div>
       )}

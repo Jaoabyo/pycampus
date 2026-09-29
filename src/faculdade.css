@@ -198,3 +198,13 @@
    interna: .card não traz padding, e o texto encostava na borda. */
 .exercicio-card { padding: 24px; }
 @media (max-width: 520px) { .exercicio-card { padding: 18px; } }
+
+/* "Ver a mesma ideia com outro exemplo", dentro do degrau: fechado até a pessoa pedir. */
+.degrau-outro { margin: 12px 0; border: 1px solid #e3d8f4; border-radius: 12px; background: #faf7ff; padding: 10px 14px; }
+.degrau-outro summary { cursor: pointer; font-weight: 700; color: #5b3fb0; font-size: 13px; }
+.degrau-outro[open] summary { margin-bottom: 8px; }
+.degrau-outro p { margin: 0 0 10px; line-height: 1.6; }
+.degrau-outro .example-code { white-space: pre; overflow-x: auto; }
+.degrau-outro-saida { margin-top: 8px; border: 1px solid #d6ecdf; background: #f2faf5; border-radius: 10px; padding: 8px 12px; }
+.degrau-outro-saida > span { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #2f7a5c; }
+.degrau-outro-saida pre { margin: 4px 0 0; white-space: pre-wrap; color: #1f4d3a; }

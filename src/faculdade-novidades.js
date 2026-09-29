@@ -279,3 +279,30 @@ export function novidadesDosResumos(resumos, degrausDaFaculdade) {
     return { id: aula.id, semExplicacao: medir({ codigo: resumo.codigo, criados: new Set(), termosVistos: new Set(termosVistos), texto }).semPonte };
   });
 }
+
+// O "outro exemplo" de cada degrau aparece junto do degrau: pode usar o que os guias, as pontes,
+// os degraus até ali e os exemplos do professor das aulas anteriores mostraram, ou o que a
+// própria explicação dele diz.
+export function novidadesDosOutrosExemplos(degrausDaFaculdade, outros) {
+  const termosVistos = new Set();
+  const textos = [];
+  const resultado = [];
+  for (const aula of aulasDaFaculdade) {
+    const guia = ensinadoNoGuia(ensinoDaFaculdade[aula.id]);
+    guia.termos.forEach(t => termosVistos.add(t));
+    textos.push(guia.texto);
+    const trilha = degrausDaFaculdade[aula.id];
+    for (const degrau of trilha?.degraus || []) {
+      termosDoCodigo(`${trilha.inicial || ''}\n${degrau.exemplo}`).forEach(t => termosVistos.add(t));
+      textos.push(degrau.ensina, degrau.pedido);
+      const exemplo = outros[aula.id]?.[degrau.id];
+      if (!exemplo) continue;
+      const texto = `${textos.join('\n')}\n${exemplo.explica}`;
+      resultado.push({ id: `${aula.id}/${degrau.id}`, semExplicacao: medir({ codigo: exemplo.codigo, criados: new Set(), termosVistos: new Set(termosVistos), texto }).semPonte });
+    }
+    for (const ponte of pontesDasAulas[aula.id] || []) { ponte.termos.forEach(t => termosVistos.add(t)); textos.push(ponte.explicacao); }
+    termosDoCodigo(aula.exemplo).forEach(t => termosVistos.add(t));
+    textos.push(...aula.teoria);
+  }
+  return resultado;
+}
