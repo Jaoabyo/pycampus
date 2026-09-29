@@ -134,6 +134,22 @@ export function diagnosticoDeClasses(tipo, mensagem, codigo, linhaDoErro) {
     if (recuo) return recuo;
   }
 
+  // media, situacao = calcular_media([]) quando a função devolve None para a lista vazia: o erro
+  // do estudante na entrega da U1, exatamente o caso que o mediador cobrou.
+  if (tipo === 'TypeError' && /^cannot unpack non-iterable NoneType object/.test(msg)) {
+    const naLinha = String(codigo || '').split('\n')[(linhaDoErro || 0) - 1] || '';
+    const partes = naLinha.match(/^\s*([\w\s,]+?)\s*=\s*(\w+)\s*\(/);
+    const nomes = partes ? partes[1].split(',').map((n) => n.trim()).filter(Boolean) : [];
+    const funcao = partes?.[2];
+    if (funcao && nomes.length > 1) {
+      return guia(`${funcao} devolveu None, e None não se separa em partes`,
+        `Na linha ${linhaDoErro}, o resultado de ${funcao} é separado em ${lista(nomes)}. Quando ${funcao} devolve None (por exemplo, com a lista vazia), não existem partes para separar, e o Python para.`,
+        [`Guarde o resultado inteiro primeiro: resultado = ${naLinha.slice(naLinha.indexOf(funcao)).trim()}`,
+          `Confira antes de separar: if resultado is None: mostre um aviso. No else, separe: ${nomes.join(', ')} = resultado`,
+          `Se ${funcao} não devia devolver None aqui, confira se todo caminho dela termina com um return.`]);
+    }
+  }
+
   // O pandas avisa só KeyError: 'preco', no fim de um traceback longo de arquivos internos.
   let coluna;
   if (tipo === 'KeyError' && (coluna = msg.match(/^'(\w+)'$/))) {

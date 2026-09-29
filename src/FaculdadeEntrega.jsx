@@ -526,7 +526,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                 busy={python.busy}
                 onRun={executar}
                 onStop={python.stop}
-                output={python.output || trabalho.saida}
+                output={python.output ? lerConferencias(python.output).saida : trabalho.saida}
                 imagens={python.imagens?.length ? python.imagens : trabalho.imagens}
                 success={python.success}
                 celebrate={celebrar && situacaoDasConferencias(atePassoAtual(conferencias)) !== 'reprovada' ? celebrar : 0}

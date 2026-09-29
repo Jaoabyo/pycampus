@@ -108,3 +108,14 @@ test('coluna que não existe no DataFrame: diz quais colunas a tabela tem', () =
   // Um dicionário comum continua com a ajuda geral de chave.
   assert.equal(ajuda("KeyError: 'b'", 'd = {"a": 1}\nprint(d["b"])\n', 2).title, 'Essa chave não existe no dicionário');
 });
+
+// O erro de verdade da entrega da U1 em 29/09: a função já devolvia None, mas o código de fora
+// separava o resultado sem conferir.
+test('separar o None de uma função: pede para conferir antes de separar, com os nomes do código', () => {
+  const codigo = 'notas = []\n\ndef calcular_media(notas):\n    if not notas:\n       return None\n    total = 0\n    for nota in notas:\n        total += nota\n    media = total / len(notas)\n    situacao = "Aprovado" if media >= 7 else "Reprovado"\n    return media, situacao, notas\nmedia, situacao, notas = calcular_media(notas)\n\nprint("Notas:",notas)\n';
+  const r = ajuda('TypeError: cannot unpack non-iterable NoneType object', codigo, 12);
+  assert.match(r.title, /calcular_media devolveu None/);
+  assert.match(r.meaning, /media, situacao e notas/);
+  assert.equal(r.steps[0], 'Guarde o resultado inteiro primeiro: resultado = calcular_media(notas)');
+  assert.match(r.steps[1], /if resultado is None/);
+});
