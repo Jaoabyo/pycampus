@@ -372,10 +372,10 @@ const passosU3 = [
     'Troque categoria por produto e explique como muda a pergunta respondida.',
   ),
   passo(
-    'u3-construir-sqlite', 'construir', 'Crie a base do roteiro, de forma reproduzível',
-    'Copie a tabela vendas1 e as quatorze vendas do roteiro. O roteiro escreve CREATE TABLE direto, mas rodar a célula duas vezes daria erro de tabela existente e duplicaria as vendas: por isso apague a tabela antes de criar. O resultado continua sendo o do professor.',
+    'u3-construir-sqlite', 'construir', 'Rode o Passo 1 do roteiro',
+    'O código do Passo 1 do roteiro já está no editor abaixo, com um comentário em cada parte. O roteiro manda copiar e colar esse trecho, então aqui você não precisa digitar nada: leia os comentários e clique em Executar código. A única linha a mais é o DROP TABLE, que apaga a tabela antiga para as vendas não duplicarem quando você rodar de novo.',
     'cursor.execute("DROP TABLE IF EXISTS vendas1")',
-    'Crie a tabela vendas1 e insira as quatorze vendas do roteiro.',
+    'Execute e veja a conferência mostrar as 14 vendas na tabela vendas1.',
   ),
   passo(
     'u3-construir-dataframe', 'construir', 'Leve a consulta ao pandas',
@@ -683,7 +683,24 @@ export const entregasDaFaculdade = [
     minutos: 160,
     ambienteEntrega: 'pycampus',
     preRequisitos: ['u3a1', 'u3a2', 'u3a3', 'u3a4'],
-    codigoInicial: 'import sqlite3\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\n# Passo 1.1: Conectar ao banco de dados (ou criar, se nao existir)\nconexao = sqlite3.connect("dados_vendas.db")\n\n# Passo 1.2: Criar um cursor\ncursor = conexao.cursor()\n',
+    codigoInicial: 'import sqlite3\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\n# PASSO 1 DO ROTEIRO: este bloco e o codigo do professor, ja pronto.\n# O roteiro manda copiar e colar. Leia os comentarios, clique em Executar\n# e confira embaixo se as 14 vendas entraram.\n\n# Passo 1.1: abrir o banco (o arquivo e criado se ainda nao existir)\nconexao = sqlite3.connect("dados_vendas.db")\n\n# Passo 1.2: o cursor e quem envia os comandos SQL ao banco\ncursor = conexao.cursor()\n\n# Apaga a tabela antiga: assim rodar duas vezes nao duplica as vendas\ncursor.execute("DROP TABLE IF EXISTS vendas1")\n\n# Passo 1.3: criar a tabela vendas1 (cada venda sera uma linha)\ncursor.execute("""\nCREATE TABLE vendas1 (\n    id_venda INTEGER PRIMARY KEY AUTOINCREMENT,\n    data_venda DATE,\n    produto TEXT,\n    categoria TEXT,\n    valor_venda REAL\n)\n""")\n\n# Passo 1.4: as 14 vendas do roteiro (data, produto, categoria, valor)\ndados = [\n    ("2023-01-01", "Produto A", "Eletrônicos", 1500.00),\n    ("2023-01-05", "Produto B", "Roupas", 350.00),\n    ("2023-02-10", "Produto C", "Eletrônicos", 1200.00),\n    ("2023-03-15", "Produto D", "Livros", 200.00),\n    ("2023-03-20", "Produto E", "Eletrônicos", 800.00),\n    ("2023-04-02", "Produto F", "Roupas", 400.00),\n    ("2023-05-05", "Produto G", "Livros", 150.00),\n    ("2023-06-10", "Produto H", "Eletrônicos", 1000.00),\n    ("2023-07-20", "Produto I", "Roupas", 600.00),\n    ("2023-08-25", "Produto J", "Eletrônicos", 700.00),\n    ("2023-09-30", "Produto K", "Livros", 300.00),\n    ("2023-10-05", "Produto L", "Roupas", 450.00),\n    ("2023-11-15", "Produto M", "Eletrônicos", 900.00),\n    ("2023-12-20", "Produto N", "Livros", 250.00),\n]\n\n# Cada ? e trocado por um valor da venda, na ordem\ncursor.executemany(\n    "INSERT INTO vendas1 (data_venda, produto, categoria, valor_venda) VALUES (?, ?, ?, ?)",\n    dados,\n)\n\n# Passo 1.5: commit grava de verdade no banco\nconexao.commit()\n\n# ---- A partir daqui e com voce: o proximo passo vai mostrar o que escrever ----\n',
+    contrato: 'Ao rodar, a tabela vendas1 precisa ter as 14 vendas do roteiro, e o DataFrame df_vendas precisa ter essas mesmas 14 linhas.',
+    conferencias: [
+      conferencia('vendas1-quatorze', 'a tabela vendas1 tem as 14 vendas', 'u3-construir-sqlite',
+        'try:\n'
+        // Abre o arquivo de novo: assim só conta o que o commit gravou de verdade.
+        + '    import sqlite3 as _sq\n'
+        + '    n = _sq.connect("dados_vendas.db").execute("SELECT COUNT(*) FROM vendas1").fetchone()[0]\n'
+        + '    ok = n == 14\n'
+        + '    detalhe = "a tabela vendas1 tem %d venda(s); o roteiro tem 14" % n\n'
+        + 'except Exception as erro:\n'
+        + '    ok = False\n'
+        + '    detalhe = "a tabela vendas1 ainda nao existe (%s)" % erro\n'),
+      conferencia('df-vendas-quatorze', 'df_vendas tem as 14 linhas da tabela', 'u3-construir-dataframe',
+        'df = globals().get("df_vendas")\n'
+        + 'ok = df is not None and hasattr(df, "shape") and len(df) == 14\n'
+        + 'detalhe = ("df_vendas tem %d linha(s)" % len(df)) if hasattr(df, "shape") else "ainda nao encontrei df_vendas; crie com pd.read_sql_query"\n'),
+    ],
     testesOrientados: ['quatorze linhas em vendas1', 'valores de venda não negativos', 'total calculado', 'segunda execução sem duplicar vendas'],
     entregaveis: ['notebook Colab reproduzível com banco, análise e gráficos', 'relatório PDF com três análises e sugestões'],
     criterios: [

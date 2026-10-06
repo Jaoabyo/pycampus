@@ -219,6 +219,8 @@ self.onmessage = async ({ data }) => {
     // infraestrutura: se contasse no limite, um primeiro uso de biblioteca seria interrompido
     // como se fosse laço infinito.
     const append = text => {
+      // Aviso de instalação do Matplotlib, não saída do programa: aparecia como resultado do estudante.
+      if (/^Matplotlib is building the font cache/.test(text)) return;
       if (output.length > 50000) throw new Error('Limite de saída atingido. Reduza a quantidade de prints.');
       output += text + '\n';
     };

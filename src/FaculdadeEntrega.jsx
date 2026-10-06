@@ -57,13 +57,15 @@ const podeConcluirPasso = (passo, entrega, trabalho, conferencias = null) => {
   if (trabalho.passosConcluidos.includes(passo.id)) return { ok: true, motivo: '' };
   if (passo.fase === 'entender') return { ok: true, motivo: '' };
   if (passo.fase === 'construir') {
-    const mudou = trabalho.codigo.trim().length > 30 && trabalho.codigo.trim() !== entrega.codigoInicial.trim();
-    if (!mudou) return { ok: false, motivo: 'Escreva ou adapte o código antes de concluir este passo.' };
     // Código escrito não é código que funciona. Quando este passo tem conferência, ela precisa
     // ter passado: marcar "construído" com a média errada foi exatamente o que levou um
-    // estudante a concluir quatro passos em cima de um acumulador quebrado.
+    // estudante a concluir quatro passos em cima de um acumulador quebrado. E quando há
+    // conferência, ela basta: o Passo 1 da U3 é o código do roteiro rodado como está.
     const doPasso = conferenciasDoPasso(entrega, passo.id);
-    if (!doPasso.length) return { ok: true, motivo: '' };
+    if (!doPasso.length) {
+      const mudou = trabalho.codigo.trim().length > 30 && trabalho.codigo.trim() !== entrega.codigoInicial.trim();
+      return mudou ? { ok: true, motivo: '' } : { ok: false, motivo: 'Escreva ou adapte o código antes de concluir este passo.' };
+    }
     if (!Array.isArray(conferencias)) {
       return { ok: false, motivo: 'Execute o código: este passo é confirmado pelo resultado, não pela escrita.' };
     }
@@ -204,7 +206,9 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
         return;
       }
       setCelebrar((valor) => valor + 1);
-      setMensagem('Execução conferida. Agora descreva o caso testado para transformar resultado em aprendizado.');
+      setMensagem(passoAtual.fase === 'testar'
+        ? 'Conferido. Agora escreva abaixo o que você testou.'
+        : 'Conferido. Clique em Registrar este passo para seguir.');
     });
   };
 
@@ -237,7 +241,6 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
   const faltando = requisitosFaltandoDaEntrega(entrega, trabalho);
   const progresso = (trabalho.passosConcluidos.length / entrega.passos.length) * 100;
   const faseAtual = passoAtual.fase;
-  const passosDaFase = entrega.passos.filter(({ fase }) => fase === faseAtual);
 
   const abrirFase = (fase) => {
     const indice = entrega.passos.findIndex((passo) => passo.fase === fase
@@ -245,6 +248,25 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
     setPassoIndice(indice >= 0 ? indice : entrega.passos.findIndex((passo) => passo.fase === fase));
     setMensagem('');
     irAoTopo();
+  };
+
+  // O código salvo tem prioridade sobre o inicial, então quem começou antes de o código inicial
+  // mudar nunca o via. Recomeçar devolve o código inicial e reabre os passos de construir em
+  // diante, porque eles foram concluídos em cima do código que está sendo descartado.
+  const recomecar = () => {
+    if (!window.confirm('Trocar o seu código pelo código inicial? O que você escreveu aqui será apagado.')) return;
+    salvar({
+      codigo: entrega.codigoInicial,
+      saida: '',
+      imagens: [],
+      passosConcluidos: trabalho.passosConcluidos.filter((id) => (
+        entrega.passos.find((passo) => passo.id === id)?.fase === 'entender'
+      )),
+    });
+    setConferencias(null);
+    python.reset();
+    setMensagem('');
+    setPassoIndice(Math.max(0, entrega.passos.findIndex(({ fase }) => fase === 'construir')));
   };
 
   const concluirPasso = () => {
@@ -465,7 +487,6 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                   <Icon name="Lightbulb" size={17} aria-hidden="true" /> Exemplo pequeno
                   <small>Preveja a saída antes de executar</small>
                 </div>
-                <p className="small">O editor inclui a preparação necessária. Execute, altere um valor e compare a saída. As primeiras linhas retomam os conceitos dos passos anteriores.</p>
                 {exemploPreparado.preparacao && <p><strong>Como ler este exemplo: </strong>{exemploPreparado.preparacao}</p>}
                 <CodeEditor
                   key={passoAtual.id}
@@ -482,7 +503,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                   emptyOutput="Preveja o que vai aparecer e clique em Executar o exemplo."
                 />
               </div>
-            ) : (
+            ) : !pontesDasEntregas[passoAtual.id]?.length && !trabalho.codigo.includes(passoAtual.exemplo.trim()) && (
               <div className="entrega-exemplo">
                 <div><Icon name="Lightbulb" size={17} aria-hidden="true" /> Exemplo pequeno</div>
                 <pre>{passoAtual.exemplo}</pre>
@@ -493,14 +514,6 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
               <Icon name="Target" size={18} aria-hidden="true" />
               <div><strong>Faça agora</strong><p>{passoAtual.evidencia}</p></div>
             </div>
-            {passosDaFase.length > 1 && (
-              <div className="entrega-subpassos" aria-label="Passos desta fase">
-                {passosDaFase.map((passo) => {
-                  const indice = entrega.passos.indexOf(passo);
-                  return <button key={passo.id} className={indice === passoIndice ? 'ativo' : ''} onClick={() => setPassoIndice(indice)} aria-label={`Abrir ${passo.titulo}`}><span>{concluidos.has(passo.id) ? '✓' : indice + 1}</span>{passo.titulo}</button>;
-                })}
-              </div>
-            )}
           </section>
 
           {(faseAtual === 'construir' || faseAtual === 'testar') && (
@@ -508,6 +521,11 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
               <div className="entrega-section-head">
                 <div><div className="eyebrow">SEU CÓDIGO</div><h2>Construa e confira</h2></div>
                 {entrega.ambienteEntrega === 'colab' && <span className="pill orange">Execução final no Colab</span>}
+                {trabalho.codigo.trim() !== entrega.codigoInicial.trim() && (
+                  <button className="button outline" onClick={recomecar}>
+                    <Icon name="RotateCcw" size={16} aria-hidden="true" /> Recomeçar do código inicial
+                  </button>
+                )}
               </div>
               {entrega.avisoAmbiente && <div className="entrega-aviso"><Icon name="Info" size={18} aria-hidden="true" /><p>{entrega.avisoAmbiente}</p></div>}
               {entrega.ambienteEntrega === 'colab' && <div className="entrega-colab-rascunho"><p>Escreva seu código abaixo. Para testar no Colab, baixe o rascunho e use <strong>Arquivo → Fazer upload de notebook</strong>. Execute as células de cima para baixo e volte à fase Testar para registrar a saída.</p><button className="button outline" onClick={baixarRascunho}><Icon name="Download" size={17} aria-hidden="true" /> Baixar rascunho para o Colab</button></div>}
@@ -535,7 +553,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                 filename={`${entrega.id}.py`}
                 runDisabled={entrega.ambienteEntrega === 'colab'}
                 runLabel={entrega.ambienteEntrega === 'colab' ? 'Execute no Colab' : 'Executar código'}
-                emptyOutput="Execute o código para registrar uma saída real."
+                emptyOutput={python.success ? "Rodou sem erro. Este código não tem print, por isso nada aparece aqui." : "Clique em Executar código para ver o resultado aqui."}
               />
               {/* A entrega não tinha ajuda de erro: os 14 erros da biblioteca apareciam só como traceback. */}
               {python.success === false && <ErrorHelp output={lerConferencias(python.output).saida} code={trabalho.codigo} />}
@@ -552,10 +570,6 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                       </h3>
                     </div>
                   </div>
-                  <p className="small">
-                    Cada item chama o seu código com valores conhecidos. Executar sem erro não
-                    prova que a conta está certa — isto prova.
-                  </p>
                   <ul>
                     {atePassoAtual(conferencias).map(({ id, descricao, ok, detalhe }) => (
                       <li key={id} className={ok ? 'confere' : 'falha'}>

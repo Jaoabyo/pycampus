@@ -127,10 +127,6 @@ export const pontesDasEntregas = {
     ponte(['SQL DATE'], 'data_venda DATE',
       'DATE avisa que a coluna guarda datas, mas o SQLite não tem um tipo de data de verdade: a data fica guardada como texto no formato ano-mês-dia, por exemplo "2024-01-15", o que faz a ordem alfabética ser também a ordem das datas.'),
   ],
-  'u3-construir-sqlite': [
-    ponte(['SQL DROP'], 'DROP TABLE IF EXISTS vendas1',
-      'DROP TABLE apaga a tabela inteira, e IF EXISTS evita erro quando ela ainda não existe. Apagar antes de criar faz a célula poder rodar quantas vezes for preciso sem duplicar as vendas.'),
-  ],
   'u3-construir-dataframe': [
     ponte(['.head'], 'df_vendas.head()',
       'head mostra só as 5 primeiras linhas da tabela. É o jeito rápido de conferir se os dados chegaram certos sem imprimir tudo.'),
