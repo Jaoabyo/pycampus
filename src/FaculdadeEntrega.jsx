@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Icon, Progress, irAoTopo } from './ui.jsx';
+import { Icon, irAoTopo } from './ui.jsx';
 import CodeEditor from './CodeEditor.jsx';
 import { usePython } from './useTrackedPython.js';
 import { appendAttempt } from './history.js';
@@ -31,17 +31,18 @@ import FaculdadeDegraus from './FaculdadeDegraus.jsx';
 import { ErrorHelp } from './RunFeedback.jsx';
 import { degrausDaFaculdade } from './faculdade-degraus.js';
 import { pontesDasEntregas } from './faculdade-pontes.js';
+import './project-studio.css';
 import './faculdade.css';
 import './faculdade-entrega.css';
 import { exemploDaEntrega } from './faculdade-exemplos.js';
-import { XP_FACULDADE, bonusDaEntrega } from './faculdade-recompensas.js';
+import { XP_FACULDADE } from './faculdade-recompensas.js';
 
 const FASES = [
-  { id: 'entender', titulo: 'Entender', icone: 'BookOpenCheck' },
-  { id: 'construir', titulo: 'Construir', icone: 'Code2' },
-  { id: 'testar', titulo: 'Testar', icone: 'FlaskConical' },
-  { id: 'explicar', titulo: 'Explicar', icone: 'Brain' },
-  { id: 'exportar', titulo: 'Exportar', icone: 'Download' },
+  { id: 'entender', titulo: 'Entender', icone: 'BookOpenCheck', dica: 'Leia e experimente o exemplo.' },
+  { id: 'construir', titulo: 'Construir', icone: 'Code2', dica: 'Escreva o código, um passo por vez.' },
+  { id: 'testar', titulo: 'Testar', icone: 'FlaskConical', dica: 'Confira se o resultado está certo.' },
+  { id: 'explicar', titulo: 'Explicar', icone: 'Brain', dica: 'Escreva com suas palavras.' },
+  { id: 'exportar', titulo: 'Exportar', icone: 'Download', dica: 'Baixe o PDF e envie no AVA.' },
 ];
 
 const nomeDoPreRequisito = (id) =>
@@ -239,7 +240,6 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
   const identificado = nomeDoEstudante.length >= 3 && String(state.registroAcademico || '').trim().length >= 3;
   const podeExportar = entregaLiberadaParaExportacao(entrega, trabalho, state) && identificado;
   const faltando = requisitosFaltandoDaEntrega(entrega, trabalho);
-  const progresso = (trabalho.passosConcluidos.length / entrega.passos.length) * 100;
   const faseAtual = passoAtual.fase;
 
   const abrirFase = (fase) => {
@@ -406,30 +406,29 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
       : 'O navegador bloqueou a nova aba. Libere pop-ups para abrir o relatório imprimível.');
   };
 
+  // Mesmo formato da aula: título simples, barra de etapas e um cartão só com a tarefa em
+  // cima. A versão anterior tinha banner, abas, três cartões e uma coluna lateral com oito
+  // itens, e o estudante disse que não dava para entender nada.
+  const faseInfo = FASES.find(({ id }) => id === faseAtual);
+  const indiceDaFase = FASES.indexOf(faseInfo);
+  const conferidas = atePassoAtual(conferencias);
+  const temEditor = faseAtual === 'construir' || faseAtual === 'testar';
+
   return (
     <div className="faculdade-entrega">
       <button className="text-button entrega-voltar" onClick={() => navigate('faculdade')}>
         <Icon name="ArrowLeft" size={17} aria-hidden="true" /> Voltar para Minha faculdade
       </button>
 
-      <header className="entrega-hero">
-        <div className="entrega-hero-copy">
+      <div className="page-heading">
+        <div>
           <div className="eyebrow">UNIDADE {entrega.unidade.slice(1)} · ENTREGA PRÁTICA</div>
           <h1>{entrega.titulo}</h1>
-          <p>{entrega.resumo}</p>
-          <p>+{XP_FACULDADE.passo} XP por passo · +{bonusDaEntrega(entrega)} XP ao concluir a entrega</p>
-          <div className="entrega-meta">
-            <span><Icon name="Clock3" size={16} aria-hidden="true" /> {entrega.minutos} min em blocos</span>
-            <span><Icon name="CalendarDays" size={16} aria-hidden="true" /> Prazo {emNumeros(PRAZO_TRABALHO)}</span>
-            <span><Icon name={entrega.ambienteEntrega === 'colab' ? 'Globe' : 'SquareTerminal'} size={16} aria-hidden="true" /> Final em {entrega.ambienteEntrega === 'colab' ? 'Google Colab' : 'PyCampus + Colab'}</span>
-          </div>
+          <p className="entrega-contagem" aria-label={`${trabalho.passosConcluidos.length} de ${entrega.passos.length} passos concluídos`}>
+            {trabalho.passosConcluidos.length} de {entrega.passos.length} passos feitos · prazo {emNumeros(PRAZO_TRABALHO)}
+          </p>
         </div>
-        <div className="entrega-progresso" aria-label={`${trabalho.passosConcluidos.length} de ${entrega.passos.length} passos concluídos`}>
-          <strong>{trabalho.passosConcluidos.length}<span>/{entrega.passos.length}</span></strong>
-          <small>passos concluídos</small>
-          <Progress value={progresso} label="Progresso da entrega" />
-        </div>
-      </header>
+      </div>
 
       {reforco && mostrarReforco && (
         <section className="entrega-reforco">
@@ -441,102 +440,102 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
           </div>
         </section>
       )}
-      {reforco && !mostrarReforco && (
-        <button className="button outline entrega-reforco-abrir" onClick={() => { setMostrarReforco(true); irAoTopo(); }}>
-          <Icon name="Footprints" size={16} /> Abrir o reforço: a biblioteca em {reforco.degraus.length} degraus
-        </button>
-      )}
 
       {!mostrarReforco && (<>
-      <nav className="entrega-fases" aria-label="Fases da entrega">
-        {FASES.map((fase) => {
-          const passos = entrega.passos.filter((passo) => passo.fase === fase.id);
-          const completos = passos.filter((passo) => concluidos.has(passo.id)).length;
-          return (
-            <button
-              key={fase.id}
-              className={faseAtual === fase.id ? 'ativa' : ''}
-              aria-current={faseAtual === fase.id ? 'step' : undefined}
-              onClick={() => abrirFase(fase.id)}
-            >
-              <Icon name={completos === passos.length ? 'CheckCircle2' : fase.icone} size={19} aria-hidden="true" />
-              <span>{fase.titulo}<small>{completos}/{passos.length}</small></span>
-            </button>
-          );
-        })}
+      <nav className="aula-etapas entrega-fases" aria-label="Fases da entrega">
+        <p className="aula-etapas-onde">
+          Etapa {indiceDaFase + 1} de {FASES.length}: <strong>{faseInfo.titulo}</strong> · {faseInfo.dica}
+        </p>
+        <ol>
+          {FASES.map((fase, i) => {
+            const passos = entrega.passos.filter((passo) => passo.fase === fase.id);
+            const completa = passos.every((passo) => concluidos.has(passo.id));
+            return (
+              <li key={fase.id}>
+                <button
+                  type="button"
+                  className={faseAtual === fase.id ? 'atual' : completa ? 'feita' : ''}
+                  aria-current={faseAtual === fase.id ? 'step' : undefined}
+                  onClick={() => abrirFase(fase.id)}
+                >
+                  <span>{completa && faseAtual !== fase.id ? <Icon name="Check" size={13} aria-hidden="true" /> : i + 1}</span>
+                  {fase.titulo}
+                </button>
+              </li>
+            );
+          })}
+        </ol>
       </nav>
 
-      <div className="entrega-layout">
-        <main className="entrega-conteudo">
-          <section className="entrega-orientacao card">
-            <div className="entrega-passo-topo">
-              <div>
-                <div className="eyebrow">{FASES.find(({ id }) => id === faseAtual).titulo.toUpperCase()} · PASSO {passoIndice + 1} DE {entrega.passos.length}</div>
-                <h2>{passoAtual.titulo}</h2>
-              </div>
-              <span className={concluidos.has(passoAtual.id) ? 'entrega-status feito' : 'entrega-status'}>
-                <Icon name={concluidos.has(passoAtual.id) ? 'Check' : 'Circle'} size={15} aria-hidden="true" />
-                {concluidos.has(passoAtual.id) ? 'Concluído' : 'Em estudo'}
-              </span>
-            </div>
-            <p className="entrega-explicacao">{passoAtual.explicacao}</p>
-            <NovidadesDoCodigo pontes={pontesDasEntregas[passoAtual.id]} />
-            {ehExemploExecutavel ? (
-              <div className="entrega-exemplo-vivo">
-                <div className="entrega-exemplo-titulo">
-                  <Icon name="Lightbulb" size={17} aria-hidden="true" /> Exemplo pequeno
-                  <small>Preveja a saída antes de executar</small>
-                </div>
-                {exemploPreparado.preparacao && <p><strong>Como ler este exemplo: </strong>{exemploPreparado.preparacao}</p>}
-                <CodeEditor
-                  key={passoAtual.id}
-                  code={exemploEditavel}
-                  onChange={setExemploEditavel}
-                  busy={exemploPython.busy}
-                  onRun={() => exemploPython.run(exemploEditavel, '')}
-                  onStop={exemploPython.stop}
-                  output={exemploPython.output}
-                  imagens={exemploPython.imagens}
-                  success={exemploPython.success}
-                  filename="exemplo.py"
-                  runLabel="Executar o exemplo"
-                  emptyOutput="Preveja o que vai aparecer e clique em Executar o exemplo."
-                />
-              </div>
-            ) : !trabalho.codigo.includes(passoAtual.exemplo.trim()) && (
-              <div className="entrega-exemplo">
-                <div><Icon name="Lightbulb" size={17} aria-hidden="true" /> Exemplo pequeno</div>
-                <pre>{passoAtual.exemplo}</pre>
-              </div>
-            )}
-            {exemploPreparado?.ambiente === 'colab' && <p className="entrega-aviso">Este trecho pertence ao notebook no Google Colab e usa os dados preparados nas células anteriores. Na fase Construir, você pode baixar seu rascunho para executar lá e praticar o pipeline local aqui.</p>}
-            <div className="entrega-evidencia">
-              <Icon name="Target" size={18} aria-hidden="true" />
-              <div><strong>Faça agora</strong><p>{passoAtual.evidencia}</p></div>
-            </div>
-          </section>
+      {preRequisitosPendentes.length > 0 && (
+        <div className="entrega-aviso entrega-preparo">
+          <Icon name="BookOpen" size={18} aria-hidden="true" />
+          <div>
+            <p>Antes deste trabalho, estude {preRequisitosPendentes.length === 1 ? 'esta aula' : 'estas aulas'}:</p>
+            <ul>{preRequisitosPendentes.map(({ id }) => (
+              <li key={id}>
+                <button type="button" className="text-button" onClick={() => navigate('faculdade', { facultyItem: id })}>
+                  <span>{nomeDoPreRequisito(id)}</span> <small>Abrir aula-base</small>
+                </button>
+              </li>
+            ))}</ul>
+          </div>
+        </div>
+      )}
 
-          {(faseAtual === 'construir' || faseAtual === 'testar') && (
-            <section className="entrega-editor card">
-              <div className="entrega-section-head">
-                <div><div className="eyebrow">SEU CÓDIGO</div><h2>Construa e confira</h2></div>
-                {entrega.ambienteEntrega === 'colab' && <span className="pill orange">Execução final no Colab</span>}
-                {trabalho.codigo.trim() !== entrega.codigoInicial.trim() && (
-                  <button className="button outline" onClick={recomecar}>
-                    <Icon name="RotateCcw" size={16} aria-hidden="true" /> Recomeçar do código inicial
-                  </button>
-                )}
+      <main className="entrega-conteudo">
+        <section className="card faculdade-passo entrega-orientacao">
+          <div className="step-head">
+            <span className="icon-tile orange">
+              <Icon name={concluidos.has(passoAtual.id) ? 'Check' : faseInfo.icone} size={21} />
+            </span>
+            <div>
+              <div className="eyebrow">PASSO {passoIndice + 1} DE {entrega.passos.length}{concluidos.has(passoAtual.id) ? ' · FEITO' : ''}</div>
+              <h3>{passoAtual.titulo}</h3>
+            </div>
+          </div>
+          <p className="coach-task">{passoAtual.evidencia}</p>
+          <p className="entrega-explicacao">{passoAtual.explicacao}</p>
+          <NovidadesDoCodigo pontes={pontesDasEntregas[passoAtual.id]} />
+          {ehExemploExecutavel ? (
+            <div className="entrega-exemplo-vivo">
+              <div className="entrega-exemplo-titulo">
+                <Icon name="Lightbulb" size={17} aria-hidden="true" /> Exemplo
+                <small>Preveja a saída antes de executar</small>
               </div>
+              {exemploPreparado.preparacao && <p>{exemploPreparado.preparacao}</p>}
+              <CodeEditor
+                key={passoAtual.id}
+                code={exemploEditavel}
+                onChange={setExemploEditavel}
+                busy={exemploPython.busy}
+                onRun={() => exemploPython.run(exemploEditavel, '')}
+                onStop={exemploPython.stop}
+                output={exemploPython.output}
+                imagens={exemploPython.imagens}
+                success={exemploPython.success}
+                filename="exemplo.py"
+                runLabel="Executar o exemplo"
+                emptyOutput="Preveja o que vai aparecer e clique em Executar o exemplo."
+              />
+            </div>
+          ) : faseAtual !== 'exportar' && !trabalho.codigo.includes(passoAtual.exemplo.trim()) && (
+            <div className="entrega-exemplo">
+              <div><Icon name="Lightbulb" size={17} aria-hidden="true" /> Exemplo</div>
+              <pre>{passoAtual.exemplo}</pre>
+            </div>
+          )}
+          {exemploPreparado?.ambiente === 'colab' && <p className="entrega-aviso">Este trecho roda no Google Colab, junto com as células anteriores.</p>}
+
+          {temEditor && (
+            <div className="entrega-editor">
               {entrega.avisoAmbiente && <div className="entrega-aviso"><Icon name="Info" size={18} aria-hidden="true" /><p>{entrega.avisoAmbiente}</p></div>}
-              {entrega.ambienteEntrega === 'colab' && <div className="entrega-colab-rascunho"><p>Escreva seu código abaixo. Para testar no Colab, baixe o rascunho e use <strong>Arquivo → Fazer upload de notebook</strong>. Execute as células de cima para baixo e volte à fase Testar para registrar a saída.</p><button className="button outline" onClick={baixarRascunho}><Icon name="Download" size={17} aria-hidden="true" /> Baixar rascunho para o Colab</button></div>}
+              {entrega.ambienteEntrega === 'colab' && <div className="entrega-colab-rascunho"><p>Escreva aqui e teste no Colab: baixe o rascunho e use <strong>Arquivo → Fazer upload de notebook</strong>.</p><button className="button outline" onClick={baixarRascunho}><Icon name="Download" size={17} aria-hidden="true" /> Baixar rascunho para o Colab</button></div>}
               {entrega.contrato && (
-                <div className="entrega-contrato">
-                  <Icon name="CheckCheck" size={18} aria-hidden="true" />
-                  <div>
-                    <strong>O que o seu código precisa fazer</strong>
-                    <p>{entrega.contrato}</p>
-                  </div>
-                </div>
+                <details className="coach-expected">
+                  <summary>O que o seu código precisa ter</summary>
+                  <p>{entrega.contrato}</p>
+                </details>
               )}
               <CodeEditor
                 code={trabalho.codigo}
@@ -547,45 +546,43 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                 output={python.output ? lerConferencias(python.output).saida : trabalho.saida}
                 imagens={python.imagens?.length ? python.imagens : trabalho.imagens}
                 success={python.success}
-                celebrate={celebrar && situacaoDasConferencias(atePassoAtual(conferencias)) !== 'reprovada' ? celebrar : 0}
+                celebrate={celebrar && situacaoDasConferencias(conferidas) !== 'reprovada' ? celebrar : 0}
                 inputRequest={python.inputRequest}
                 onReply={python.reply}
                 filename={`${entrega.id}.py`}
                 runDisabled={entrega.ambienteEntrega === 'colab'}
                 runLabel={entrega.ambienteEntrega === 'colab' ? 'Execute no Colab' : 'Executar código'}
-                emptyOutput={python.success ? "Rodou sem erro. Este código não tem print, por isso nada aparece aqui." : "Clique em Executar código para ver o resultado aqui."}
+                emptyOutput={python.success ? 'Rodou sem erro. Este código não tem print, por isso nada aparece aqui.' : 'Clique em Executar código para ver o resultado aqui.'}
               />
               {/* A entrega não tinha ajuda de erro: os 14 erros da biblioteca apareciam só como traceback. */}
               {python.success === false && <ErrorHelp output={lerConferencias(python.output).saida} code={trabalho.codigo} />}
-              {Array.isArray(atePassoAtual(conferencias)) && atePassoAtual(conferencias).length > 0 && (
+              {Array.isArray(conferidas) && conferidas.length > 0 && (
                 <div
-                  className={`entrega-conferencias ${situacaoDasConferencias(atePassoAtual(conferencias)) === 'aprovada' ? 'aprovada' : 'reprovada'}`}
+                  className={`entrega-conferencias ${situacaoDasConferencias(conferidas) === 'aprovada' ? 'aprovada' : 'reprovada'}`}
                   role="status"
                 >
-                  <div className="entrega-section-head">
-                    <div>
-                      <div className="eyebrow">CONFERÊNCIA DO RESULTADO</div>
-                      <h3>
-                        {atePassoAtual(conferencias).filter(({ ok }) => ok).length} de {atePassoAtual(conferencias).length} conferem
-                      </h3>
-                    </div>
-                  </div>
+                  <h3>{conferidas.filter(({ ok }) => ok).length} de {conferidas.length} conferem</h3>
                   <ul>
-                    {atePassoAtual(conferencias).map(({ id, descricao, ok, detalhe }) => (
+                    {conferidas.map(({ id, descricao, ok, detalhe }) => (
                       <li key={id} className={ok ? 'confere' : 'falha'}>
                         <Icon name={ok ? 'CheckCircle2' : 'TriangleAlert'} size={17} aria-hidden="true" />
                         <div>
                           <strong>{descricao}</strong>
-                          {detalhe && <span>{detalhe}</span>}
+                          {!ok && detalhe && <span>{detalhe}</span>}
                         </div>
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
+              {trabalho.codigo.trim() !== entrega.codigoInicial.trim() && (
+                <button className="text-button entrega-recomecar" onClick={recomecar}>
+                  <Icon name="RotateCcw" size={15} aria-hidden="true" /> Recomeçar do código inicial
+                </button>
+              )}
               {entrega.praticaLocal && (
                 <div className="entrega-pratica-local">
-                  <div className="entrega-section-head"><div><div className="eyebrow">PRÁTICA EXECUTÁVEL</div><h3>Treine o pipeline aqui</h3></div></div>
+                  <h3>Treine o pipeline aqui</h3>
                   <p>{entrega.praticaLocal.aviso}</p>
                   <CodeEditor
                     code={entrega.praticaLocal.codigo}
@@ -601,91 +598,72 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                   />
                 </div>
               )}
-            </section>
+            </div>
           )}
 
-          {(faseAtual === 'testar' || faseAtual === 'explicar' || faseAtual === 'exportar') && (
-            <section className="entrega-caderno card">
-              <div className="entrega-section-head"><div><div className="eyebrow">CADERNO DO ESTUDANTE</div><h2>Registre o que você comprovou</h2></div></div>
-              <label className="entrega-campo">
-                <span>Casos testados</span>
-                <small>Quais entradas usou, qual resultado esperava e o que observou?</small>
-                <textarea value={trabalho.testes} maxLength={4000} onChange={(evento) => salvar({ testes: evento.target.value })} />
-              </label>
-              <label className="entrega-campo">
-                <span>Explique a lógica com suas palavras</span>
-                <small>Descreva entrada, processamento e saída. Evite apenas repetir as linhas.</small>
-                <textarea value={trabalho.logica} maxLength={4000} onChange={(evento) => salvar({ logica: evento.target.value })} />
-              </label>
-              {entrega.unidade === 'u3' && <label className="entrega-campo"><span>Três insights da análise</span><small>Para cada um: evidência numérica → interpretação → ação sugerida.</small><textarea value={trabalho.insights} maxLength={4000} onChange={(evento) => salvar({ insights: evento.target.value })} /></label>}
-              {entrega.ambienteEntrega === 'colab' && (
-                <div className="entrega-colab-registro">
-                  <label className="entrega-campo"><span>Saída real observada no Colab</span><small>Cole a acurácia e as predições exibidas pela execução.</small><textarea value={trabalho.saidaExterna} maxLength={12000} onChange={(evento) => salvar({ saidaExterna: evento.target.value })} /></label>
-                  <label className="entrega-campo data"><span>Data da execução no Colab</span><input type="date" max={PRAZO_TRABALHO} value={trabalho.executadaNoColabEm} onChange={(evento) => salvar({ executadaNoColabEm: evento.target.value })} /></label>
-                </div>
-              )}
-              <label className="entrega-campo">
-                <span>Conclusão</span>
-                <small>O que os testes permitem concluir e qual limitação ainda existe?</small>
-                <textarea value={trabalho.conclusao} maxLength={4000} onChange={(evento) => salvar({ conclusao: evento.target.value })} />
-              </label>
-            </section>
+          {/* Cada fase mostra só o campo dela: antes, Testar, Explicar e Exportar mostravam
+              os cinco campos do caderno juntos. */}
+          {faseAtual === 'testar' && (
+            <label className="entrega-campo">
+              <span>O que você testou</span>
+              <small>Quais testes escreveu e o que aconteceu ao executar de novo?</small>
+              <textarea value={trabalho.testes} maxLength={4000} onChange={(evento) => salvar({ testes: evento.target.value })} />
+            </label>
           )}
+          {faseAtual === 'explicar' && (<>
+            <label className="entrega-campo">
+              <span>Explique a lógica com suas palavras</span>
+              <small>O que entra, o que o código faz e o que sai.</small>
+              <textarea value={trabalho.logica} maxLength={4000} onChange={(evento) => salvar({ logica: evento.target.value })} />
+            </label>
+            {entrega.unidade === 'u3' && <label className="entrega-campo"><span>Três insights</span><small>Para cada um: o número, o que ele quer dizer e uma sugestão para a empresa.</small><textarea value={trabalho.insights} maxLength={4000} onChange={(evento) => salvar({ insights: evento.target.value })} /></label>}
+            {entrega.ambienteEntrega === 'colab' && (
+              <div className="entrega-colab-registro">
+                <label className="entrega-campo"><span>Saída do Colab</span><small>Cole a acurácia e as predições que apareceram.</small><textarea value={trabalho.saidaExterna} maxLength={12000} onChange={(evento) => salvar({ saidaExterna: evento.target.value })} /></label>
+                <label className="entrega-campo data"><span>Data da execução no Colab</span><input type="date" max={PRAZO_TRABALHO} value={trabalho.executadaNoColabEm} onChange={(evento) => salvar({ executadaNoColabEm: evento.target.value })} /></label>
+              </div>
+            )}
+            <label className="entrega-campo">
+              <span>Conclusão</span>
+              <small>O que deu para concluir e o que ainda tem limite?</small>
+              <textarea value={trabalho.conclusao} maxLength={4000} onChange={(evento) => salvar({ conclusao: evento.target.value })} />
+            </label>
+          </>)}
 
           {faseAtual === 'exportar' && (
-            <section className="entrega-exportar card">
-              <div className="entrega-section-head"><div><div className="eyebrow">ARQUIVOS DA ENTREGA</div><h2>Revise antes de enviar ao AVA</h2></div></div>
-              <p>O PyCampus prepara os arquivos, mas não envia por você. Abra cada um, execute o notebook no Colab e confira se o PDF ficou abaixo de 10 MB.</p>
-              {/* O roteiro pede "um print do código executado pelo menos uma vez". O PyCampus
-                  não fotografa a tela do estudante, então ele anexa a própria captura. */}
-              <div className="entrega-capturas">
-                <div className="entrega-section-head">
-                  <div>
-                    <div className="eyebrow">PRINT EXIGIDO PELO ROTEIRO</div>
-                    <h3>Anexe a captura do código executado</h3>
-                  </div>
-                </div>
-                <p className="small">
-                  No Windows, use <strong>Win + Shift + S</strong>, recorte a área com o código e a
-                  saída, e escolha o arquivo aqui. Ele entra na primeira página do PDF.
-                </p>
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg"
-                  multiple
-                  aria-label="Anexar print do código executado"
-                  onChange={anexarCapturas}
-                />
-                {trabalho.capturas.length > 0 && (
-                  <div className="entrega-capturas-lista">
-                    {trabalho.capturas.map((captura, indice) => (
-                      <figure key={captura.slice(-32)}>
-                        <img src={captura} alt={`Print anexado ${indice + 1}`} />
-                        <figcaption>
-                          <button type="button" onClick={() => removerCaptura(indice)}>
-                            <Icon name="Trash2" size={14} aria-hidden="true" /> Remover
-                          </button>
-                        </figcaption>
-                      </figure>
-                    ))}
-                  </div>
-                )}
-                {trabalho.capturas.length === 0 && (
-                  <div className="entrega-aviso">
-                    <Icon name="TriangleAlert" size={18} aria-hidden="true" />
-                    <p>
-                      Sem o print, o PDF sai com o código em texto — o que o roteiro pede é uma
-                      captura de tela da execução.
-                    </p>
-                  </div>
+            <div className="entrega-exportar">
+              <div className="entrega-checklist">
+                <h3>{faltando.length ? `Faltam ${faltando.length} itens` : 'Tudo conferido'}</h3>
+                {faltando.length > 0 && (
+                  <ul>{faltando.map((criterio) => {
+                    // "concluir os passos guiados" sem dizer QUAL passo falta manda procurar às
+                    // cegas entre dez; o item nomeia o passo e leva até ele.
+                    const passosPendentes = criterio.id === 'passos-guiados'
+                      ? entrega.passos.filter(({ id, fase }) => fase !== 'exportar' && !concluidos.has(id))
+                      : [];
+                    return (
+                      <li key={criterio.id}>
+                        <Icon name="Circle" size={17} aria-hidden="true" />
+                        <span>
+                          {criterio.descricao}
+                          {passosPendentes.length > 0 && (
+                            <span className="entrega-pendentes">
+                              {passosPendentes.map((passo) => (
+                                <button key={passo.id} type="button" onClick={() => { irAoTopo(); setPassoIndice(entrega.passos.indexOf(passo)); }}>
+                                  {FASES.find(({ id }) => id === passo.fase)?.titulo}: {passo.titulo}
+                                </button>
+                              ))}
+                            </span>
+                          )}
+                        </span>
+                      </li>
+                    );
+                  })}</ul>
                 )}
               </div>
-              {/* O nome e o RA vão impressos no arquivo que o professor recebe. Ficavam como
-                  "Preencher antes do envio", o que sairia assim no PDF entregue. */}
               <div className="entrega-identificacao">
                 <label className="entrega-campo">
                   <span>Seu nome completo</span>
-                  <small>Aparece no topo do PDF e do notebook.</small>
                   <input
                     type="text"
                     maxLength={60}
@@ -695,8 +673,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                   />
                 </label>
                 <label className="entrega-campo">
-                  <span>Identificação (RA)</span>
-                  <small>Fica salvo e vale para as quatro entregas.</small>
+                  <span>RA</span>
                   <input
                     type="text"
                     maxLength={40}
@@ -706,8 +683,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                   />
                 </label>
                 <label className="entrega-campo">
-                  <span>Link do notebook no Colab</span>
-                  <small>Vira um link clicável no PDF. O AVA só aceita Word ou PDF, então o .ipynb não vai anexo.</small>
+                  <span>Link do Colab (opcional)</span>
                   <input
                     type="url"
                     maxLength={400}
@@ -717,110 +693,75 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                   />
                 </label>
               </div>
-              <label className="entrega-campo">
-                <span>Observação impressa no PDF</span>
-                <small>Deixe vazio para usar a frase padrão, que declara que a plataforma é sua e o código é de sua autoria.</small>
+              {/* O roteiro pede "um print do código executado pelo menos uma vez". O PyCampus
+                  não fotografa a tela do estudante, então ele anexa a própria captura. */}
+              <label className="entrega-campo entrega-capturas">
+                <span>Print do código executado</span>
+                <small>O roteiro pede. Use Win + Shift + S, recorte o código com a saída e escolha o arquivo aqui.</small>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  multiple
+                  aria-label="Anexar print do código executado"
+                  onChange={anexarCapturas}
+                />
+              </label>
+              {trabalho.capturas.length > 0 && (
+                <div className="entrega-capturas-lista">
+                  {trabalho.capturas.map((captura, indice) => (
+                    <figure key={captura.slice(-32)}>
+                      <img src={captura} alt={`Print anexado ${indice + 1}`} />
+                      <figcaption>
+                        <button type="button" onClick={() => removerCaptura(indice)}>
+                          <Icon name="Trash2" size={14} aria-hidden="true" /> Remover
+                        </button>
+                      </figcaption>
+                    </figure>
+                  ))}
+                </div>
+              )}
+              <details className="coach-expected">
+                <summary>Mudar a frase de autoria impressa no PDF</summary>
                 <textarea
                   maxLength={600}
                   rows={2}
+                  aria-label="Observação impressa no PDF"
                   value={trabalho.observacao || ''}
                   placeholder="Atividade desenvolvida e executada no PyCampus, plataforma de estudos criada pelo próprio estudante como apoio à disciplina. O código é de autoria do estudante."
                   onChange={(evento) => salvar({ observacao: evento.target.value })}
                 />
-              </label>
+              </details>
               {trabalho.linkColab && !/^https:\/\/(colab\.research\.google\.com|drive\.google\.com)/.test(trabalho.linkColab) && (
-                <div className="entrega-aviso">
-                  <Icon name="Info" size={18} aria-hidden="true" />
-                  <p>Este endereço não parece ser do Google Colab. Confira antes de gerar o PDF.</p>
-                </div>
+                <div className="entrega-aviso"><Icon name="Info" size={18} aria-hidden="true" /><p>Este link não parece ser do Google Colab.</p></div>
               )}
               {!identificado && (
-                <div className="entrega-aviso">
-                  <Icon name="TriangleAlert" size={18} aria-hidden="true" />
-                  <p>
-                    Preencha <strong>{nomeDoEstudante.length >= 3 ? 'a identificação (RA)' : 'o nome e a identificação (RA)'}</strong>{' '}
-                    nos campos logo acima para liberar o download. Sem eles o arquivo sairia com
-                    “Preencher antes do envio” impresso no lugar da sua identificação — e é por
-                    ela que o professor sabe de quem é o trabalho.
-                  </p>
-                </div>
+                <div className="entrega-aviso"><Icon name="TriangleAlert" size={18} aria-hidden="true" /><p>Preencha o nome e o RA para liberar o download.</p></div>
               )}
               {/* Os gráficos do PDF são os da última execução que deu certo. Sem este aviso, quem
                   rodou um código com erro baixava um PDF sem gráfico e só via isso no AVA. */}
               {entrega.unidade === 'u3' && !trabalho.imagens.length && (
-                <div className="entrega-aviso">
-                  <Icon name="TriangleAlert" size={18} aria-hidden="true" />
-                  <p>
-                    O PDF vai sair <strong>sem gráficos</strong>. Volte em <strong>Testar</strong>, clique em
-                    Executar código e espere os gráficos aparecerem embaixo da saída. Depois volte aqui.
-                  </p>
-                </div>
+                <div className="entrega-aviso"><Icon name="TriangleAlert" size={18} aria-hidden="true" /><p>O PDF vai sair <strong>sem gráficos</strong>. Volte em <strong>Testar</strong>, clique em Executar código e espere os gráficos aparecerem.</p></div>
               )}
               <div className="entrega-arquivos">
-                <button className="entrega-arquivo" disabled={!podeExportar} onClick={baixarNotebook}><Icon name="Download" size={22} aria-hidden="true" /><span><strong>Baixar notebook</strong><small>Arquivo .ipynb para Google Colab</small></span></button>
-                <button className="entrega-arquivo principal" disabled={!podeExportar} onClick={baixarPdf}><Icon name="CheckCheck" size={22} aria-hidden="true" /><span><strong>Baixar PDF da entrega</strong><small>Pronto para enviar no AVA</small></span></button>
-                <button className="entrega-arquivo" disabled={!podeExportar} onClick={abrirRelatorio}><Icon name="BookOpenCheck" size={22} aria-hidden="true" /><span><strong>Abrir relatório</strong><small>Versão para ler na tela</small></span></button>
+                <button className="entrega-arquivo principal" disabled={!podeExportar} onClick={baixarPdf}><Icon name="Download" size={22} aria-hidden="true" /><span><strong>Baixar PDF da entrega</strong><small>É este arquivo que vai para o AVA</small></span></button>
+                <button className="entrega-arquivo" disabled={!podeExportar} onClick={baixarNotebook}><Icon name="Download" size={22} aria-hidden="true" /><span><strong>Baixar notebook</strong><small>Para abrir no Google Colab</small></span></button>
+                <button className="entrega-arquivo" disabled={!podeExportar} onClick={abrirRelatorio}><Icon name="BookOpenCheck" size={22} aria-hidden="true" /><span><strong>Abrir relatório</strong><small>Para ler na tela</small></span></button>
               </div>
-            </section>
+            </div>
           )}
+        </section>
 
-          <div className="entrega-navegacao">
-            <button className="button outline" disabled={passoIndice === 0} onClick={() => setPassoIndice((indice) => Math.max(0, indice - 1))}><Icon name="ChevronLeft" size={17} aria-hidden="true" /> Passo anterior</button>
-            <button className="button primary" onClick={concluirPasso}>{concluidos.has(passoAtual.id) ? 'Continuar' : 'Registrar este passo'} <Icon name="ArrowRight" size={17} aria-hidden="true" /></button>
-          </div>
-          <p className="entrega-mensagem" aria-live="polite">{mensagem}</p>
-        </main>
-
-        <aside className="entrega-lateral">
-          <section className="card entrega-preparo">
-            <div className="eyebrow">ANTES DE COMEÇAR</div>
-            <h2>O que você já precisa saber</h2>
-            <ul>{preRequisitos.map(({ id, concluido }) => (
-              <li key={id} className={concluido ? 'feito' : 'pendente'}>
-                <Icon name={concluido ? 'CheckCircle2' : 'BookOpen'} size={16} aria-hidden="true" />
-                <button type="button" onClick={() => navigate('faculdade', { facultyItem: id })}>
-                  <span>{nomeDoPreRequisito(id)}</span>
-                  <small>{concluido ? 'Estudada' : 'Abrir aula-base'}</small>
-                </button>
-              </li>
-            ))}</ul>
-          </section>
-          <section className="card entrega-checklist">
-            <div className="eyebrow">CHECKLIST REAL</div>
-            <h2>{faltando.length ? `${faltando.length} itens pendentes` : 'Tudo conferido'}</h2>
-            <ul>{entrega.criterios.map((criterio) => {
-              const pendente = faltando.some(({ id }) => id === criterio.id);
-              // "concluir os passos guiados" pendente sem dizer QUAL passo falta manda o
-              // estudante procurar às cegas entre dez. O item passa a nomear o passo e a
-              // levar até ele.
-              const passosPendentes = criterio.id === 'passos-guiados' && pendente
-                ? entrega.passos.filter(({ id, fase }) => fase !== 'exportar' && !concluidos.has(id))
-                : [];
-              return (
-                <li key={criterio.id} className={pendente ? '' : 'feito'}>
-                  <Icon name={pendente ? 'Circle' : 'CheckCircle2'} size={17} aria-hidden="true" />
-                  <span>
-                    {criterio.descricao}
-                    {passosPendentes.length > 0 && (
-                      <span className="entrega-pendentes">
-                        {passosPendentes.map((passo) => (
-                          <button
-                            key={passo.id}
-                            type="button"
-                            onClick={() => { irAoTopo(); setPassoIndice(entrega.passos.indexOf(passo)); }}
-                          >
-                            {FASES.find(({ id }) => id === passo.fase)?.titulo}: {passo.titulo}
-                          </button>
-                        ))}
-                      </span>
-                    )}
-                  </span>
-                </li>
-              );
-            })}</ul>
-          </section>
-        </aside>
-      </div>
+        <div className="button-row aula-etapas-navegacao entrega-navegacao">
+          <button className="button outline" disabled={passoIndice === 0} onClick={() => setPassoIndice((indice) => Math.max(0, indice - 1))}><Icon name="ArrowLeft" size={16} aria-hidden="true" /> Voltar</button>
+          <button className="button primary" onClick={concluirPasso}>{concluidos.has(passoAtual.id) ? 'Continuar' : 'Registrar este passo'} <Icon name="ArrowRight" size={16} aria-hidden="true" /></button>
+        </div>
+        <p className="entrega-mensagem" aria-live="polite">{mensagem}</p>
+        {reforco && (
+          <button className="text-button entrega-reforco-abrir" onClick={() => { setMostrarReforco(true); irAoTopo(); }}>
+            <Icon name="Footprints" size={16} /> Rever a biblioteca em {reforco.degraus.length} degraus
+          </button>
+        )}
+      </main>
       </>)}
     </div>
   );

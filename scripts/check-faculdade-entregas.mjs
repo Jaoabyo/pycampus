@@ -32,7 +32,7 @@ page.on('console', (mensagem) => {
 
 const progresso = async (quantidade) => {
   await page.waitForFunction(
-    (valor) => document.querySelector('.entrega-progresso')
+    (valor) => document.querySelector('.entrega-contagem')
       ?.getAttribute('aria-label')?.startsWith(`${valor} de `),
     quantidade,
   );
@@ -110,7 +110,7 @@ try {
   await page.locator('.entrega-editor .console')
     .filter({ hasText: 'Média da turma: 7.0' })
     .waitFor({ timeout: 120_000 });
-  await page.getByLabel('Casos testados').fill(
+  await page.getByLabel(/O que você testou/).fill(
     'Testei média abaixo de 7, exatamente 7, acima de 7 e uma lista vazia; as saídas seguiram cada regra esperada.',
   );
   await registrar(7);
@@ -133,7 +133,7 @@ try {
   // o download fica travado até o estudante se identificar.
   assert.equal(await baixar.isDisabled(), true, 'exportar sem nome e RA não pode ser possível');
   await page.getByLabel(/Seu nome completo/).fill('João Vítor Nunes De Quevedo');
-  await page.getByLabel(/Identificação \(RA\)/).fill('RA-2026-0001');
+  await page.getByLabel('RA', { exact: true }).fill('RA-2026-0001');
   assert.equal(await baixar.isEnabled(), true);
   assert.equal(await relatorio.isEnabled(), true);
 
@@ -176,7 +176,7 @@ try {
   await page.goto(`${base}?tab=faculdade&faculty=entrega-u4`, { waitUntil: 'networkidle' });
   await page.getByRole('heading', { name: 'Classificação de flores Iris', exact: true }).waitFor();
   await page.locator('.entrega-fases').getByRole('button', { name: /Construir/ }).click();
-  assert.match(await page.locator('.entrega-aviso').innerText(), /TensorFlow.*Google Colab/s);
+  assert.match(await page.locator('.entrega-aviso:not(.entrega-preparo)').innerText(), /TensorFlow.*Google Colab/s);
   assert.equal(await page.getByRole('button', { name: 'Execute no Colab' }).isDisabled(), true);
   assert.equal(await page.getByRole('button', { name: 'Executar prática local' }).isEnabled(), true);
   await page.locator('.entrega-fases').getByRole('button', { name: /Exportar/ }).click();
