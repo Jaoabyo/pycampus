@@ -745,6 +745,17 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                   </p>
                 </div>
               )}
+              {/* Os gráficos do PDF são os da última execução que deu certo. Sem este aviso, quem
+                  rodou um código com erro baixava um PDF sem gráfico e só via isso no AVA. */}
+              {entrega.unidade === 'u3' && !trabalho.imagens.length && (
+                <div className="entrega-aviso">
+                  <Icon name="TriangleAlert" size={18} aria-hidden="true" />
+                  <p>
+                    O PDF vai sair <strong>sem gráficos</strong>. Volte em <strong>Testar</strong>, clique em
+                    Executar código e espere os gráficos aparecerem embaixo da saída. Depois volte aqui.
+                  </p>
+                </div>
+              )}
               <div className="entrega-arquivos">
                 <button className="entrega-arquivo" disabled={!podeExportar} onClick={baixarNotebook}><Icon name="Download" size={22} aria-hidden="true" /><span><strong>Baixar notebook</strong><small>Arquivo .ipynb para Google Colab</small></span></button>
                 <button className="entrega-arquivo principal" disabled={!podeExportar} onClick={baixarPdf}><Icon name="CheckCheck" size={22} aria-hidden="true" /><span><strong>Baixar PDF da entrega</strong><small>Pronto para enviar no AVA</small></span></button>
