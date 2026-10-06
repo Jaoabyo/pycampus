@@ -27,7 +27,7 @@ export default function CodeEditor({ code, onChange, busy, onRun, onStop, output
     <div className="editor-bar"><span><span className="python-dot" /> {filename}</span><span>{readOnly ? 'somente leitura' : 'Python 3'} <span className="live-dot" /></span></div>
     <div className="editor-body">
       <div className="line-numbers" aria-hidden="true">{code.split('\n').map((_, i) => <div key={i}>{i + 1}</div>)}</div>
-      <textarea ref={editor} aria-label="Editor de código Python" spellCheck="false" value={code} disabled={busy} readOnly={readOnly} onChange={e => change(e.target.value)} onKeyDown={e => {
+      <textarea ref={editor} aria-label="Editor de código Python" spellCheck="false" style={{ height: code.split('\n').length * 22 + 40 }} value={code} disabled={busy} readOnly={readOnly} onChange={e => change(e.target.value)} onKeyDown={e => {
         if (e.key === 'Tab' && !readOnly) { e.preventDefault(); const start = e.target.selectionStart, end = e.target.selectionEnd; change(code.slice(0, start) + '    ' + code.slice(end)); requestAnimationFrame(() => { editor.current.selectionStart = editor.current.selectionEnd = start + 4; }); }
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); if (!busy && !runDisabled) onRun(); }
       }} />
