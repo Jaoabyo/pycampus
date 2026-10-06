@@ -384,22 +384,22 @@ const passosU3 = [
     'Execute e veja as 5 primeiras vendas na saída e a conferência mostrar 14 linhas em df_vendas.',
   ),
   passo(
-    'u3-construir-analise', 'construir', 'Responda perguntas com dados',
-    'Calcule a receita total, o ticket médio, o produto de maior valor e a receita agrupada por categoria.',
-    'por_categoria = df_vendas.groupby("categoria")["valor_venda"].sum()',
-    'Apresente números derivados do DataFrame, sem escrevê-los manualmente.',
+    'u3-construir-analise', 'construir', 'Responda quatro perguntas sobre as vendas',
+    'Agora é você quem calcula. O exemplo abaixo faz as mesmas contas, só que com notas de alunos: sum soma a coluna, mean tira a média, groupby separa por grupo e idxmax acha a linha do maior valor. Para as suas vendas, troque notas por df_vendas, nota por valor_venda, turma por categoria e aluno por produto. Guarde cada resposta numa variável e dê print nela.',
+    'notas = pd.DataFrame({"aluno": ["Ana", "Bia", "Caio"], "turma": ["A", "B", "A"], "nota": [7.0, 9.5, 6.0]})\nsoma = notas["nota"].sum()\nmedia = notas["nota"].mean()\npor_turma = notas.groupby("turma")["nota"].sum()\nmelhor = notas.loc[notas["nota"].idxmax(), "aluno"]\nprint(soma, media, melhor)\nprint(por_turma)',
+    'Responda com código: quanto a loja vendeu no total? Qual o valor médio de uma venda? Quanto vendeu cada categoria? Qual produto teve a maior venda?',
   ),
   passo(
-    'u3-construir-graficos', 'construir', 'Transforme resultados em gráficos',
-    'Matplotlib está disponível no PyCampus. O roteiro também pede Seaborn, que só existe no Colab: escreva o gráfico de modo que ele funcione com Seaborn quando houver e com Matplotlib quando não houver. Termine cada gráfico com plt.close(): assim o gráfico seguinte, por categoria ou por produto, começa numa figura nova em vez de se misturar a este e passar a mentir.',
-    'por_categoria.plot(kind="bar", title="Receita por categoria")\nplt.tight_layout()\nplt.show()\nplt.close()',
-    'Crie um gráfico por categoria e outro por produto.',
+    'u3-construir-graficos', 'construir', 'Mostre as respostas em dois gráficos',
+    'Um gráfico de barras sai direto de um resultado do groupby: .plot(kind="bar") desenha uma barra para cada grupo. O exemplo usa as notas por turma. Faça o mesmo com a sua receita por categoria e, num segundo gráfico, com o valor de cada produto. Termine cada gráfico com plt.close(), senão o segundo é desenhado por cima do primeiro.',
+    'por_turma.plot(kind="bar", title="Notas por turma")\nplt.tight_layout()\nplt.show()\nplt.close()',
+    'Faça um gráfico com a receita de cada categoria e outro com o valor de cada produto.',
   ),
   passo(
-    'u3-testar-dados', 'testar', 'Teste consistência e reexecução',
-    'Confira o número de linhas, a ausência de valores negativos e o total esperado. Rode novamente e confirme que as vendas não duplicaram.',
-    'assert len(df_vendas) == 14\nassert (df_vendas["valor_venda"] >= 0).all()',
-    'Registre os testes e o resultado da segunda execução.',
+    'u3-testar-dados', 'testar', 'Teste se os dados estão certos',
+    'assert confere uma coisa que precisa ser verdade: se for, nada acontece; se não for, o programa para com erro. O exemplo testa as notas: são 3 alunos e nenhuma nota é negativa. Escreva dois assert parecidos para df_vendas. Depois execute duas vezes e veja se o número de vendas continua o mesmo.',
+    'assert len(notas) == 3\nassert (notas["nota"] >= 0).all()',
+    'Escreva no campo abaixo quais testes você fez e o que aconteceu na segunda execução.',
   ),
   passo(
     'u3-explicar-insights', 'explicar', 'Transforme números em decisões',
@@ -700,6 +700,31 @@ export const entregasDaFaculdade = [
         'df = globals().get("df_vendas")\n'
         + 'ok = df is not None and hasattr(df, "shape") and len(df) == 14\n'
         + 'detalhe = ("df_vendas tem %d linha(s)" % len(df)) if hasattr(df, "shape") else "ainda nao encontrei df_vendas; crie com pd.read_sql_query"\n'),
+      // As quatro respostas são procuradas pelo valor, não pelo nome: o estudante escolhe os
+      // nomes das variáveis, e o que importa é a conta estar certa.
+      conferencia('total-vendas', 'o total vendido é R$ 8800', 'u3-construir-analise',
+        'valores = [v for k, v in list(globals().items()) if not k.startswith("_")]\n'
+        + 'ok = any(isinstance(v, (int, float)) and not isinstance(v, bool) and abs(float(v) - 8800) < 0.01 for v in valores) or any(type(v).__module__.startswith("numpy") and getattr(v, "ndim", 1) == 0 and abs(float(v) - 8800) < 0.01 for v in valores)\n'
+        + 'detalhe = "encontrei uma variavel com 8800" if ok else "nao encontrei o total guardado numa variavel; some a coluna valor_venda de df_vendas"\n'),
+      conferencia('media-vendas', 'a venda média é R$ 628,57', 'u3-construir-analise',
+        'valores = [v for k, v in list(globals().items()) if not k.startswith("_")]\n'
+        + 'ok = any(getattr(v, "ndim", 0) == 0 and not isinstance(v, (bool, str)) and isinstance(getattr(v, "real", None), (int, float)) and abs(float(v) - 8800 / 14) < 0.01 for v in valores)\n'
+        + 'detalhe = "encontrei uma variavel com a media" if ok else "nao encontrei a media guardada numa variavel; tire a media da coluna valor_venda"\n'),
+      conferencia('por-categoria', 'Eletrônicos 6100, Roupas 1800, Livros 900', 'u3-construir-analise',
+        'esperado = {"Eletrônicos": 6100.0, "Roupas": 1800.0, "Livros": 900.0}\n'
+        + 'ok = any(type(v).__name__ == "Series" and {str(i): round(float(x), 2) for i, x in v.items()} == esperado for k, v in list(globals().items()) if not k.startswith("_"))\n'
+        + 'detalhe = "encontrei a receita de cada categoria" if ok else "nao encontrei a receita por categoria; agrupe df_vendas por categoria e some valor_venda"\n'),
+      conferencia('maior-venda', 'a maior venda é do Produto A', 'u3-construir-analise',
+        'ok = any(v == "Produto A" for k, v in list(globals().items()) if not k.startswith("_") and isinstance(v, str))\n'
+        + 'detalhe = "encontrei o Produto A" if ok else "nao encontrei o produto da maior venda guardado numa variavel; use idxmax na coluna valor_venda"\n'),
+      conferencia('graficos', 'há um gráfico por categoria e outro por produto', 'u3-construir-graficos',
+        'import __main__ as _m\n'
+        + 'eixos = [e for f in getattr(_m, "_campus_fatos", []) for e in f]\n'
+        + 'cat = any("Livros" in e.get("rotulos", []) for e in eixos)\n'
+        + 'prod = any("Produto N" in e.get("rotulos", []) for e in eixos)\n'
+        + 'ok = cat and prod\n'
+        + 'faltam = [n for n, tem in (("por categoria", cat), ("por produto", prod)) if not tem]\n'
+        + 'detalhe = "os dois graficos apareceram" if ok else "falta o grafico %s; lembre de terminar cada grafico com plt.close()" % " e ".join(faltam)\n'),
     ],
     testesOrientados: ['quatorze linhas em vendas1', 'valores de venda não negativos', 'total calculado', 'segunda execução sem duplicar vendas'],
     entregaveis: ['notebook Colab reproduzível com banco, análise e gráficos', 'relatório PDF com três análises e sugestões'],

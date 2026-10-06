@@ -148,6 +148,8 @@ export const solucoesEntregasFaculdade = {
     'print("Barras:", len(plt.gca().patches))',
     '# Fechar a figura evita que executar de novo desenhe as barras por cima das anteriores.',
     'plt.close()',
+    'df_vendas.groupby("produto")["valor_venda"].sum().plot(kind="bar", title="Valor por produto")',
+    'plt.close()',
     'assert len(df_vendas) == 14',
     'assert (df_vendas["valor_venda"] >= 0).all()',
     'conexao.close()',
