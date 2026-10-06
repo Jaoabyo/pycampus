@@ -379,9 +379,9 @@ const passosU3 = [
   ),
   passo(
     'u3-construir-dataframe', 'construir', 'Leve a consulta ao pandas',
-    'O roteiro pula esta ponte: no Passo 2 ele já fala do DataFrame df_vendas sem mostrar como ele nasce. Quem cria é read_sql_query, que executa o SELECT e devolve o resultado como DataFrame.',
+    'As vendas estão guardadas no banco, e o pandas não enxerga o banco sozinho. read_sql_query faz a ponte: envia o SELECT pela conexao e devolve o resultado como DataFrame. O roteiro chama esse DataFrame de df_vendas. Escreva as duas linhas do exemplo no fim do editor, depois do conexao.commit().',
     'df_vendas = pd.read_sql_query("SELECT * FROM vendas1", conexao)\nprint(df_vendas.head())',
-    'Mostre as primeiras linhas e os tipos das colunas.',
+    'Execute e veja as 5 primeiras vendas na saída e a conferência mostrar 14 linhas em df_vendas.',
   ),
   passo(
     'u3-construir-analise', 'construir', 'Responda perguntas com dados',
