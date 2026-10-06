@@ -503,7 +503,7 @@ export default function FaculdadeEntrega({ entregaId, state, update, navigate, d
                   emptyOutput="Preveja o que vai aparecer e clique em Executar o exemplo."
                 />
               </div>
-            ) : !pontesDasEntregas[passoAtual.id]?.length && !trabalho.codigo.includes(passoAtual.exemplo.trim()) && (
+            ) : !trabalho.codigo.includes(passoAtual.exemplo.trim()) && (
               <div className="entrega-exemplo">
                 <div><Icon name="Lightbulb" size={17} aria-hidden="true" /> Exemplo pequeno</div>
                 <pre>{passoAtual.exemplo}</pre>
